@@ -7,13 +7,16 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Emoji;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 use Livewire\Attributes\On;
+use Buglinjo\LaravelWebp\Webp;
+use Illuminate\Support\Facades\Storage;
 
 new #[Layout('components.layouts.app')]
 #[Title('Products - Modern POS')]
 class extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $name = '';
     public $sku = '';
@@ -22,6 +25,8 @@ class extends Component
     public $stock = '';
     public $status = 'Active';
     public $icon = '';
+    public $image;
+    public $existingImage;
     public $editingProductId = null;
     public $search = '';
     public $categoryFilter = '';
@@ -42,7 +47,7 @@ class extends Component
 
     public function create()
     {
-        $this->reset(['name', 'sku', 'category_id', 'price', 'stock', 'status', 'icon', 'editingProductId']);
+        $this->reset(['name', 'sku', 'category_id', 'price', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
         $this->icon = '🍔'; // Default
         $this->status = 'Active';
         $this->dispatch('open-modal', 'product-modal');
@@ -59,6 +64,8 @@ class extends Component
         $this->stock = $product->stock;
         $this->status = $product->status;
         $this->icon = $product->icon;
+        $this->existingImage = $product->image;
+        $this->reset('image');
 
         $this->dispatch('open-modal', 'product-modal');
     }
@@ -73,6 +80,7 @@ class extends Component
             'stock' => 'required|integer|min:0',
             'status' => 'required',
             'icon' => 'nullable',
+            'image' => 'nullable|image|max:2048', // 2MB Max
         ]);
 
         $price = str_replace('.', '', $this->price);
@@ -88,7 +96,25 @@ class extends Component
             'user_id' => auth()->user()->id,
         ];
 
-        // dd($data);
+        // Handle Image Upload with WebP Conversion
+        if ($this->image) {
+            $imageName = time() . '_' . uniqid() . '.webp';
+            $path = storage_path('app/public/products');
+
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+
+            Webp::make($this->image)->save($path . '/' . $imageName);
+            $data['image'] = 'products/' . $imageName;
+
+            // Delete old image if editing
+            if ($this->editingProductId && $this->existingImage) {
+                 if (Storage::disk('public')->exists($this->existingImage)) {
+                    Storage::disk('public')->delete($this->existingImage);
+                 }
+            }
+        }
 
         if ($this->editingProductId) {
             Product::findOrFail($this->editingProductId)->update($data);
@@ -99,7 +125,7 @@ class extends Component
         }
 
         $this->dispatch('close-modal', 'product-modal');
-        $this->reset(['name', 'sku', 'category_id', 'price', 'stock', 'status', 'icon', 'editingProductId']);
+        $this->reset(['name', 'sku', 'category_id', 'price', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
         $this->dispatch('notify', $message);
     }
 
@@ -157,7 +183,11 @@ class extends Component
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl mr-3">{{ $product->icon }}</div>
+                                @if($product->image)
+                                    <img class="h-10 w-10 rounded-lg object-cover mr-3" src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}">
+                                @else
+                                    <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl mr-3">{{ $product->icon }}</div>
+                                @endif
                                 <div>
                                     <p class="font-medium text-gray-800">{{ $product->name }}</p>
                                     <p class="text-xs text-gray-500">SKU: {{ $product->sku }}</p>
@@ -220,6 +250,32 @@ class extends Component
             </h2>
 
             <div class="space-y-6">
+                <!-- Image Upload -->
+                <div class="flex flex-col items-center justify-center">
+                    <div class="relative group">
+                         @if ($image)
+                            <img src="{{ $image->temporaryUrl() }}" class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg">
+                        @elseif ($existingImage)
+                            <img src="{{ Storage::url($existingImage) }}" class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg">
+                        @else
+                            <div class="h-24 w-24 rounded-full bg-indigo-50 flex items-center justify-center border-4 border-white shadow-lg text-indigo-300">
+                                <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        @endif
+
+                        <label for="image" class="absolute bottom-0 right-0 bg-indigo-600 rounded-full p-2 text-white hover:bg-indigo-700 cursor-pointer shadow-md transition-all transform hover:scale-110">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            <input wire:model="image" id="image" type="file" class="hidden" accept="image/*">
+                        </label>
+                    </div>
+                    <div wire:loading wire:target="image" class="text-xs text-indigo-500 mt-2 font-medium">Uploading...</div>
+                    <x-input-error :messages="$errors->get('image')" class="mt-2 text-center" />
+                </div>
+
                 <!-- Name & SKU -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>

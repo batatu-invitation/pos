@@ -36,6 +36,7 @@
     <table>
         <thead>
             <tr>
+                <th>No</th>
                 <th>Product</th>
                 <th>SKU</th>
                 <th>Stock</th>
@@ -44,8 +45,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($products as $product)
+            @foreach($products as $key => $product)
                 <tr>
+                    <td>{{ $key + 1 }}</td>
                     <td>{{ $product->name }}</td>
                     <td>{{ $product->sku }}</td>
                     <td>{{ $product->stock }}</td>
