@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('tenant_id')->nullable();
             $table->foreignUuid('user_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

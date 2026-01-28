@@ -150,6 +150,10 @@
                         <i class="fas fa-chart-bar w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">Reports</span>
                     </a>
+                    <a wire:navigate href="{{ route('settings.taxes') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('settings.taxes') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-percent w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">Taxes</span>
+                    </a>
                     <a wire:navigate href="{{ route('settings.profile') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('settings.profile') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-cog w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">Settings</span>

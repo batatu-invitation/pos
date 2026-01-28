@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('taxes', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->string('icon')->nullable();
-            $table->string('color')->nullable();
-            $table->text('description')->nullable();
-            $table->string('tenant_id')->nullable();
-            $table->foreignUuid('user_id')->nullable();
+            $table->decimal('rate', 5, 2);
+            $table->boolean('is_active')->default(false);
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('taxes');
     }
 };

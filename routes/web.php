@@ -50,6 +50,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         Volt::route('/settings/integrations', 'settings.integrations')->name('settings.integrations');
         Volt::route('/settings/api-keys', 'settings.api-keys')->name('settings.api-keys');
         Volt::route('/settings/backup', 'settings.backup')->name('settings.backup');
+        Volt::route('/settings/taxes', 'settings.taxes')->name('settings.taxes');
         Volt::route('/profile', 'settings.profile')->name('profile');
 
         // Reports Routes

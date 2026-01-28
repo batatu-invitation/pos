@@ -7,24 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Product extends Model
+class Tax extends Model
 {
     use HasUuids, SoftDeletes, LogsActivityGeneric;
 
     protected $fillable = [
         'name',
-        'sku',
-        'category_id',
-        'price',
-        'stock',
-        'status',
-        'icon',
-        'tenant_id',
+        'rate',
+        'is_active',
         'user_id',
     ];
 
-    public function category()
+    protected $casts = [
+        'is_active' => 'boolean',
+        'rate' => 'decimal:2',
+    ];
+
+    public function user()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(User::class);
     }
 }
