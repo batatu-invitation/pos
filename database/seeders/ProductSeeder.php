@@ -36,7 +36,7 @@ class ProductSeeder extends Seeder
             if (!$category) {
                  $category = Category::create([
                     'name' => $item['category'],
-                    'icon' => '📝',
+                    'icon' => '📝', 
                     'color' => 'bg-gray-100'
                 ]);
             }

@@ -3,25 +3,294 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\Customer;
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Tax;
+use Illuminate\Support\Facades\DB;
+use Livewire\WithPagination;
+use Livewire\Attributes\On;
 
-new
-#[Layout('components.layouts.pos')]
-#[Title('Mini Market POS - Modern POS')]
-class extends Component {
-    public $products = [
-        ['barcode' => '8934567890123', 'name' => 'Mineral Water 600ml', 'category' => 'Drinks', 'stock' => 124, 'price' => 0.50],
-        ['barcode' => '8934567890124', 'name' => 'Instant Noodle Chicken', 'category' => 'Food', 'stock' => 85, 'price' => 0.80],
-        ['barcode' => '8934567890125', 'name' => 'Potato Chips Original', 'category' => 'Snacks', 'stock' => 50, 'price' => 1.50],
-        ['barcode' => '8934567890126', 'name' => 'Chocolate Bar', 'category' => 'Snacks', 'stock' => 200, 'price' => 1.20],
-        ['barcode' => '8934567890127', 'name' => 'Cola Can 330ml', 'category' => 'Drinks', 'stock' => 150, 'price' => 0.90],
-        ['barcode' => '8934567890128', 'name' => 'Green Tea Bottle', 'category' => 'Drinks', 'stock' => 80, 'price' => 1.10],
-        ['barcode' => '8934567890129', 'name' => 'Sandwich Tuna', 'category' => 'Food', 'stock' => 20, 'price' => 3.50],
-        ['barcode' => '8934567890130', 'name' => 'Orange Juice', 'category' => 'Drinks', 'stock' => 40, 'price' => 2.00],
-        ['barcode' => '8934567890131', 'name' => 'Biscuits Milk', 'category' => 'Snacks', 'stock' => 90, 'price' => 1.80],
-        ['barcode' => '8934567890132', 'name' => 'Energy Drink', 'category' => 'Drinks', 'stock' => 60, 'price' => 2.50],
-        ['barcode' => '8934567890133', 'name' => 'Yogurt Strawberry', 'category' => 'Dairy', 'stock' => 30, 'price' => 1.50],
-        ['barcode' => '8934567890134', 'name' => 'Milk 1L', 'category' => 'Dairy', 'stock' => 25, 'price' => 2.20],
+new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')] class extends Component {
+    use WithPagination;
+
+    public $search = '';
+    public $categoryFilter = null;
+    public $cart = []; // [productId => [id, name, price, quantity, image, stock]]
+    public $selectedCustomerId = null;
+    public $selectedCustomerName = 'Walk-in Customer';
+    public $customerSearch = '';
+    public $showCustomerSearch = false;
+    public $taxRate = 0.10;
+    public $paymentMethod = 'cash';
+
+    // Order Details
+    public $note = '';
+    public $discount = 0;
+    public $shipping = 0;
+
+    // Modals
+    public $showNoteModal = false;
+    public $showShippingModal = false;
+    public $showDiscountModal = false;
+    public $showCreateCustomerModal = false;
+    public $showHeldOrdersModal = false;
+
+    // New Customer
+    public $newCustomer = [
+        'name' => '',
+        'email' => '',
+        'phone' => '',
+        'address' => '',
     ];
+
+    public function mount()
+    {
+        // Check for held order restoration
+        if (session()->has('restored_order')) {
+            $data = session('restored_order');
+            $this->cart = $data['cart'];
+            $this->selectedCustomerId = $data['customer_id'];
+            $this->selectedCustomerName = $data['customer_name'];
+            $this->note = $data['note'] ?? '';
+            $this->discount = $data['discount'] ?? 0;
+            $this->shipping = $data['shipping'] ?? 0;
+            session()->forget('restored_order');
+            $this->dispatch('notify', 'Order restored successfully!');
+        }
+    }
+
+    public function with()
+    {
+        $productsQuery = Product::query();
+
+        if ($this->search) {
+            $productsQuery->where(function($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('sku', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if ($this->categoryFilter) {
+            $productsQuery->where('category_id', $this->categoryFilter);
+        }
+
+        $customers = [];
+        if ($this->customerSearch) {
+            $customers = Customer::where('name', 'like', '%' . $this->customerSearch . '%')
+                ->orWhere('phone', 'like', '%' . $this->customerSearch . '%')
+                ->take(5)
+                ->get();
+        }
+
+        return [
+            'products' => $productsQuery->latest()->paginate(15),
+            'categories' => Category::all(),
+            'customers' => $customers,
+        ];
+    }
+
+    public function filterCategory($categoryId)
+    {
+        $this->categoryFilter = $categoryId;
+        $this->resetPage();
+    }
+
+    public function addToCart($productId)
+    {
+        $product = Product::find($productId);
+        if (!$product) return;
+
+        if ($product->stock <= 0) {
+            $this->dispatch('notify', 'Product is out of stock!');
+            return;
+        }
+
+        if (isset($this->cart[$productId])) {
+            if ($this->cart[$productId]['quantity'] < $product->stock) {
+                $this->cart[$productId]['quantity']++;
+            } else {
+                 $this->dispatch('notify', 'Not enough stock!');
+            }
+        } else {
+            $this->cart[$productId] = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'quantity' => 1,
+                'image' => $product->image,
+                'stock' => $product->stock
+            ];
+        }
+    }
+
+    public function updateQuantity($productId, $change)
+    {
+        if (!isset($this->cart[$productId])) return;
+
+        $newQuantity = $this->cart[$productId]['quantity'] + $change;
+
+        if ($newQuantity > 0) {
+             if ($newQuantity <= $this->cart[$productId]['stock']) {
+                $this->cart[$productId]['quantity'] = $newQuantity;
+             } else {
+                 $this->dispatch('notify', 'Not enough stock!');
+             }
+        } else {
+            unset($this->cart[$productId]);
+        }
+    }
+
+    public function removeFromCart($productId)
+    {
+        unset($this->cart[$productId]);
+    }
+
+    public function selectCustomer($customerId, $customerName)
+    {
+        $this->selectedCustomerId = $customerId;
+        $this->selectedCustomerName = $customerName;
+        $this->showCustomerSearch = false;
+        $this->customerSearch = '';
+    }
+
+    public function removeCustomer()
+    {
+         $this->selectedCustomerId = null;
+         $this->selectedCustomerName = 'Walk-in Customer';
+    }
+
+    public function getSubtotalProperty()
+    {
+        return collect($this->cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+    }
+
+    public function getTaxProperty()
+    {
+        $taxRate = Tax::where('is_active', true)->sum('rate');
+        $taxableAmount = max(0, $this->subtotal - $this->discount);
+        return $taxableAmount * ($taxRate / 100);
+    }
+
+    public function getTotalProperty()
+    {
+        return max(0, $this->subtotal - $this->discount) + $this->tax + $this->shipping;
+    }
+
+    public function saveNewCustomer()
+    {
+        $this->validate([
+            'newCustomer.name' => 'required|string|max:255',
+            'newCustomer.email' => 'nullable|email|max:255',
+            'newCustomer.phone' => 'nullable|string|max:20',
+        ]);
+
+        $customer = Customer::create([
+            'name' => $this->newCustomer['name'],
+            'email' => $this->newCustomer['email'],
+            'phone' => $this->newCustomer['phone'],
+            'address' => $this->newCustomer['address'],
+        ]);
+
+        $this->selectCustomer($customer->id, $customer->name);
+        $this->showCreateCustomerModal = false;
+        $this->newCustomer = ['name' => '', 'email' => '', 'phone' => '', 'address' => ''];
+        $this->dispatch('notify', 'Customer created successfully!');
+    }
+
+    public function holdOrder()
+    {
+        if (empty($this->cart)) {
+            $this->dispatch('notify', 'Cart is empty!');
+            return;
+        }
+
+        DB::transaction(function () {
+            $sale = Sale::create([
+                'invoice_number' => 'HOLD-' . strtoupper(uniqid()),
+                'user_id' => auth()->id(),
+                'customer_id' => $this->selectedCustomerId,
+                'subtotal' => $this->subtotal,
+                'tax' => $this->tax,
+                'discount' => $this->discount,
+                'total_amount' => $this->total,
+                'cash_received' => 0,
+                'change_amount' => 0,
+                'payment_method' => 'other',
+                'status' => 'held',
+                'notes' => $this->note,
+            ]);
+
+            foreach ($this->cart as $item) {
+                SaleItem::create([
+                    'sale_id' => $sale->id,
+                    'product_id' => $item['id'],
+                    'product_name' => $item['name'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'total_price' => $item['price'] * $item['quantity'],
+                ]);
+            }
+        });
+
+        $this->reset(['cart', 'selectedCustomerId', 'selectedCustomerName', 'note', 'discount', 'shipping']);
+        $this->dispatch('notify', 'Order held successfully!');
+    }
+
+    public function restoreOrder($saleId)
+    {
+        $sale = Sale::with('items.product', 'customer')->find($saleId);
+
+        if (!$sale) {
+            $this->dispatch('notify', 'Order not found!');
+            return;
+        }
+
+        $this->cart = [];
+        foreach ($sale->items as $item) {
+            $this->cart[$item->product_id] = [
+                'id' => $item->product_id,
+                'name' => $item->product ? $item->product->name : 'Unknown Product',
+                'price' => $item->price,
+                'quantity' => $item->quantity,
+                'image' => $item->product ? $item->product->image : null,
+                'stock' => $item->product ? $item->product->stock : 0,
+            ];
+        }
+
+        $this->selectedCustomerId = $sale->customer_id;
+        $this->selectedCustomerName = $sale->customer ? $sale->customer->name : 'Walk-in Customer';
+        $this->note = $sale->notes;
+        $this->discount = $sale->discount;
+        $this->shipping = 0;
+
+        $sale->forceDelete();
+
+        $this->showHeldOrdersModal = false;
+        $this->dispatch('notify', 'Order restored!');
+    }
+
+    public function checkout()
+    {
+        if (empty($this->cart)) {
+            $this->dispatch('notify', 'Cart is empty!');
+            return;
+        }
+
+        session([
+            'pos_cart' => $this->cart,
+            'pos_subtotal' => $this->subtotal,
+            'pos_tax' => $this->tax,
+            'pos_total' => $this->total,
+            'pos_customer_id' => $this->selectedCustomerId,
+            'pos_customer_name' => $this->selectedCustomerName,
+            'pos_discount' => $this->discount,
+        ]);
+
+        return $this->redirect(route('pos.payment'), navigate: true);
+    }
 };
 ?>
 
@@ -32,7 +301,7 @@ class extends Component {
         <!-- Header -->
         <header class="bg-white p-4 shadow-sm z-10 flex items-center justify-between">
             <div class="flex items-center space-x-4 w-full">
-                <a href="{{ route('dashboard') }}" class="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
+                <a wire:navigate href="{{ route('dashboard') }}" class="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
                     <i class="fas fa-arrow-left"></i>
                 </a>
 
@@ -40,7 +309,7 @@ class extends Component {
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                         <i class="fas fa-search text-gray-400"></i>
                     </span>
-                    <input type="text" id="search-input" class="w-full py-2.5 pl-10 pr-12 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="Scan barcode (F2) or search products..." autofocus>
+                    <input type="text" wire:model.live.debounce.300ms="search" id="search-input" class="w-full py-2.5 pl-10 pr-12 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="Scan barcode (F2) or search products..." autofocus>
                     <span class="absolute inset-y-0 right-0 flex items-center pr-3">
                         <i class="fas fa-barcode text-gray-500 cursor-pointer"></i>
                     </span>
@@ -59,6 +328,9 @@ class extends Component {
                         <button onclick="connectDevice('scanner')" id="btn-scanner" class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group" title="Connect Scanner">
                             <i class="fas fa-barcode text-lg"></i>
                             <span id="status-scanner" class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
+                        </button>
+                        <button wire:click="$set('showHeldOrdersModal', true)" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100" title="Held Orders">
+                            <i class="fas fa-clock text-lg"></i>
                         </button>
                     </div>
 
@@ -89,104 +361,38 @@ class extends Component {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="product-table-body">
-                            @foreach($products as $product)
-                            <tr class="hover:bg-indigo-50 transition-colors cursor-pointer group">
-                                <td class="p-4 text-sm text-gray-600 font-mono">{{ $product['barcode'] }}</td>
-                                <td class="p-4 text-sm font-medium text-gray-900">{{ $product['name'] }}</td>
-                                <td class="p-4 text-sm text-gray-500">{{ $product['category'] }}</td>
-                                <td class="p-4 text-sm text-gray-600 text-right">{{ $product['stock'] }}</td>
-                                <td class="p-4 text-sm font-bold text-gray-900 text-right">${{ number_format($product['price'], 2) }}</td>
+                            @forelse($products as $product)
+                            <tr wire:click="addToCart('{{ $product->id }}')" class="hover:bg-indigo-50 transition-colors cursor-pointer group">
+                                <td class="p-4 text-sm text-gray-600 font-mono">{{ $product->sku ?? $product->id }}</td>
+                                <td class="p-4 text-sm font-medium text-gray-900">
+                                    <div class="flex items-center">
+                                        @if($product->image)
+                                            <img src="{{ Storage::url($product->image) }}" class="w-8 h-8 rounded object-cover mr-2">
+                                        @endif
+                                        {{ $product->name }}
+                                    </div>
+                                </td>
+                                <td class="p-4 text-sm text-gray-500">{{ $product->category ? $product->category->name : '-' }}</td>
+                                <td class="p-4 text-sm text-gray-600 text-right">{{ $product->stock }}</td>
+                                <td class="p-4 text-sm font-bold text-gray-900 text-right">Rp. {{ number_format($product->price, 2) }}</td>
                                 <td class="p-4 text-center">
-                                    <button class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
+                                    <button wire:click.stop="addToCart('{{ $product->id }}')" class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </td>
                             </tr>
-                            @endforeach
-                        </tbody>                                        <i class="fas fa-plus"></i>
-                                    </button>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-gray-500">
+                                    No products found.
                                 </td>
                             </tr>
-                            <!-- Row 3 -->
-                            <tr class="hover:bg-indigo-50 transition-colors cursor-pointer group">
-                                <td class="p-4 text-sm text-gray-600 font-mono">8934567890125</td>
-                                <td class="p-4 text-sm font-medium text-gray-900">Chocolate Bar 50g</td>
-                                <td class="p-4 text-sm text-gray-500">Snacks</td>
-                                <td class="p-4 text-sm text-gray-600 text-right">42</td>
-                                <td class="p-4 text-sm font-bold text-gray-900 text-right">$1.20</td>
-                                <td class="p-4 text-center">
-                                    <button class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <!-- Row 4 -->
-                            <tr class="hover:bg-indigo-50 transition-colors cursor-pointer group">
-                                <td class="p-4 text-sm text-gray-600 font-mono">8934567890126</td>
-                                <td class="p-4 text-sm font-medium text-gray-900">Potato Chips Original</td>
-                                <td class="p-4 text-sm text-gray-500">Snacks</td>
-                                <td class="p-4 text-sm text-gray-600 text-right">30</td>
-                                <td class="p-4 text-sm font-bold text-gray-900 text-right">$1.50</td>
-                                <td class="p-4 text-center">
-                                    <button class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <!-- Row 5 -->
-                            <tr class="hover:bg-indigo-50 transition-colors cursor-pointer group">
-                                <td class="p-4 text-sm text-gray-600 font-mono">8934567890127</td>
-                                <td class="p-4 text-sm font-medium text-gray-900">Energy Drink 250ml</td>
-                                <td class="p-4 text-sm text-gray-500">Drinks</td>
-                                <td class="p-4 text-sm text-gray-600 text-right">60</td>
-                                <td class="p-4 text-sm font-bold text-gray-900 text-right">$2.00</td>
-                                <td class="p-4 text-center">
-                                    <button class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <!-- Row 6 -->
-                            <tr class="hover:bg-indigo-50 transition-colors cursor-pointer group">
-                                <td class="p-4 text-sm text-gray-600 font-mono">8934567890128</td>
-                                <td class="p-4 text-sm font-medium text-gray-900">Sandwich Bread</td>
-                                <td class="p-4 text-sm text-gray-500">Bakery</td>
-                                <td class="p-4 text-sm text-gray-600 text-right">15</td>
-                                <td class="p-4 text-sm font-bold text-gray-900 text-right">$2.50</td>
-                                <td class="p-4 text-center">
-                                    <button class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <!-- Row 7 -->
-                            <tr class="hover:bg-indigo-50 transition-colors cursor-pointer group">
-                                <td class="p-4 text-sm text-gray-600 font-mono">8934567890129</td>
-                                <td class="p-4 text-sm font-medium text-gray-900">Milk 1L</td>
-                                <td class="p-4 text-sm text-gray-500">Dairy</td>
-                                <td class="p-4 text-sm text-gray-600 text-right">20</td>
-                                <td class="p-4 text-sm font-bold text-gray-900 text-right">$1.80</td>
-                                <td class="p-4 text-center">
-                                    <button class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <!-- Row 8 -->
-                            <tr class="hover:bg-indigo-50 transition-colors cursor-pointer group">
-                                <td class="p-4 text-sm text-gray-600 font-mono">8934567890130</td>
-                                <td class="p-4 text-sm font-medium text-gray-900">Eggs (Dozen)</td>
-                                <td class="p-4 text-sm text-gray-500">Dairy</td>
-                                <td class="p-4 text-sm text-gray-600 text-right">25</td>
-                                <td class="p-4 text-sm font-bold text-gray-900 text-right">$3.00</td>
-                                <td class="p-4 text-center">
-                                    <button class="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    {{ $products->links() }}
                 </div>
             </div>
         </div>
@@ -196,69 +402,86 @@ class extends Component {
     <div class="w-96 bg-white border-l border-gray-200 flex flex-col h-full shadow-xl z-20">
         <!-- Customer & Options -->
         <div class="p-4 border-b border-gray-200 bg-gray-50">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-gray-300 cursor-pointer hover:border-indigo-500 transition-colors flex-1 mr-2">
-                    <i class="fas fa-user text-indigo-600"></i>
-                    <span class="text-sm font-medium text-gray-700">Walk-in Customer</span>
+            <div class="flex items-center justify-between mb-3 relative">
+                <div class="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-gray-300 cursor-pointer hover:border-indigo-500 transition-colors flex-1 mr-2"
+                     x-data="{ open: false }" @click.outside="open = false">
+
+                    <div class="flex items-center flex-1" @click="open = !open">
+                         <i class="fas fa-user text-indigo-600 mr-2"></i>
+                         <span class="text-sm font-medium text-gray-700 truncate">{{ $selectedCustomerName }}</span>
+                    </div>
+                    @if($selectedCustomerId)
+                        <button wire:click="removeCustomer" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                    @endif
+
+                    <!-- Customer Search Dropdown -->
+                    <div x-show="open" class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-2" style="display: none;">
+                        <input type="text" wire:model.live.debounce.300ms="customerSearch" class="w-full text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 mb-2" placeholder="Search customer...">
+                        <ul class="max-h-40 overflow-y-auto">
+                            @foreach($customers as $customer)
+                                <li wire:click="selectCustomer('{{ $customer->id }}', '{{ $customer->name }}')" class="p-2 hover:bg-gray-50 cursor-pointer rounded flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-2 font-bold text-xs">
+                                        {{ substr($customer->name, 0, 1) }}
+                                    </div>
+                                    <span class="text-sm text-gray-700">{{ $customer->name }}</span>
+                                </li>
+                            @endforeach
+                            @if(empty($customers) && $customerSearch)
+                                <li class="p-2 text-xs text-gray-500 text-center">No customers found</li>
+                            @endif
+                        </ul>
+                    </div>
                 </div>
-                <button class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-indigo-600">
+
+                <button wire:click="$set('showCreateCustomerModal', true)" class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-indigo-600">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <button class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
+            <div class="grid grid-cols-3 gap-2">
+                <button wire:click="$set('showNoteModal', true)" class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
                     <i class="fas fa-sticky-note mr-1"></i> Note
                 </button>
-                <button class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
+                <button wire:click="$set('showShippingModal', true)" class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
                     <i class="fas fa-truck mr-1"></i> Shipping
+                </button>
+                <button wire:click="$set('showDiscountModal', true)" class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-tag mr-1"></i> Discount
                 </button>
             </div>
         </div>
 
         <!-- Cart Items -->
         <div class="flex-1 overflow-y-auto p-4 space-y-3">
-
-            <!-- Item 1 -->
+            @forelse($cart as $item)
             <div class="flex items-start justify-between pb-3 border-b border-gray-100">
                 <div class="flex items-start space-x-3">
-                    <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                        <i class="fas fa-box"></i>
-                    </div>
+                    @if($item['image'])
+                         <img src="{{ Storage::url($item['image']) }}" class="w-10 h-10 rounded-lg object-cover" alt="Item">
+                    @else
+                        <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    @endif
                     <div>
-                        <h4 class="text-sm font-bold text-gray-800">Mineral Water 600ml</h4>
-                        <p class="text-xs text-gray-500">$0.50 / ea</p>
+                        <h4 class="text-sm font-bold text-gray-800 truncate max-w-[120px]">{{ $item['name'] }}</h4>
+                        <p class="text-xs text-gray-500">Rp. {{ number_format($item['price'], 2) }} / ea</p>
                     </div>
                 </div>
                 <div class="flex flex-col items-end">
-                    <span class="text-sm font-bold text-gray-800">$1.00</span>
+                    <span class="text-sm font-bold text-gray-800">Rp. {{ number_format($item['price'] * $item['quantity'], 2) }}</span>
                     <div class="flex items-center mt-1 bg-gray-100 rounded-lg">
-                        <button class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors">-</button>
-                        <span class="text-xs font-medium w-4 text-center">2</span>
-                        <button class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-green-500 transition-colors">+</button>
+                        <button wire:click="updateQuantity('{{ $item['id'] }}', -1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors">-</button>
+                        <span class="text-xs font-medium w-4 text-center">{{ $item['quantity'] }}</span>
+                        <button wire:click="updateQuantity('{{ $item['id'] }}', 1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-green-500 transition-colors">+</button>
                     </div>
                 </div>
             </div>
-
-            <!-- Item 2 -->
-            <div class="flex items-start justify-between pb-3 border-b border-gray-100">
-                <div class="flex items-start space-x-3">
-                    <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                        <i class="fas fa-box"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-800">Chocolate Bar 50g</h4>
-                        <p class="text-xs text-gray-500">$1.20 / ea</p>
-                    </div>
-                </div>
-                <div class="flex flex-col items-end">
-                    <span class="text-sm font-bold text-gray-800">$1.20</span>
-                    <div class="flex items-center mt-1 bg-gray-100 rounded-lg">
-                        <button class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors">-</button>
-                        <span class="text-xs font-medium w-4 text-center">1</span>
-                        <button class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-green-500 transition-colors">+</button>
-                    </div>
-                </div>
+            @empty
+            <div class="flex flex-col items-center justify-center h-40 text-gray-400">
+                <i class="fas fa-shopping-basket text-4xl mb-2"></i>
+                <p class="text-sm">Cart is empty</p>
             </div>
+            @endforelse
         </div>
 
         <!-- Footer / Totals -->
@@ -266,33 +489,219 @@ class extends Component {
             <div class="space-y-2 mb-4">
                 <div class="flex justify-between text-sm text-gray-600">
                     <span>Subtotal</span>
-                    <span>$2.20</span>
+                    <span>Rp. {{ number_format($this->subtotal, 2) }}</span>
                 </div>
+                @if($this->discount > 0)
+                <div class="flex justify-between text-sm text-green-600">
+                    <span>Discount</span>
+                    <span>-Rp. {{ number_format($this->discount, 2) }}</span>
+                </div>
+                @endif
                 <div class="flex justify-between text-sm text-gray-600">
                     <span>Tax (10%)</span>
-                    <span>$0.22</span>
+                    <span>Rp. {{ number_format($this->tax, 2) }}</span>
                 </div>
+                @if($this->shipping > 0)
+                <div class="flex justify-between text-sm text-gray-600">
+                    <span>Shipping</span>
+                    <span>Rp. {{ number_format($this->shipping, 2) }}</span>
+                </div>
+                @endif
                 <div class="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2">
                     <span>Total Payable</span>
-                    <span>$2.42</span>
+                    <span>Rp. {{ number_format($this->total, 2) }}</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-3">
-                <button class="py-3 rounded-lg border border-red-200 text-red-600 font-medium text-sm hover:bg-red-50 transition-colors">
+                <button wire:click="$set('cart', [])" class="py-3 rounded-lg border border-red-200 text-red-600 font-medium text-sm hover:bg-red-50 transition-colors">
                     Cancel
                 </button>
-                <button class="py-3 rounded-lg border border-indigo-200 text-indigo-600 font-medium text-sm hover:bg-indigo-50 transition-colors">
+                <button wire:click="holdOrder" class="py-3 rounded-lg border border-indigo-200 text-indigo-600 font-medium text-sm hover:bg-indigo-50 transition-colors">
                     Hold Order
                 </button>
             </div>
 
-            <a href="{{ route('pos.payment') }}" class="block w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                Pay Now $2.42 (F4)
-            </a>
+            <button wire:click="checkout" class="block w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                Pay Now Rp. {{ number_format($this->total, 2) }} (F4)
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Modals -->
+<!-- Note Modal -->
+@if($showNoteModal)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showNoteModal', false)"></div>
+        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-10">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add Note</h3>
+                <textarea wire:model="note" rows="4" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Enter order notes..."></textarea>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button wire:click="$set('showNoteModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    Save Note
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Shipping Modal -->
+@if($showShippingModal)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showShippingModal', false)"></div>
+        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-10">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Shipping Cost</h3>
+                <input type="number" wire:model.live="shipping" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Enter shipping cost">
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button wire:click="$set('showShippingModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Discount Modal -->
+@if($showDiscountModal)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showDiscountModal', false)"></div>
+        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-sm sm:w-full z-10">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Discount</h3>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">Rp</span>
+                    </div>
+                    <input type="number" wire:model.live="discount" step="0.01" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9 sm:text-sm border-gray-300 rounded-md" placeholder="0.00">
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button wire:click="$set('showDiscountModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Create Customer Modal -->
+@if($showCreateCustomerModal)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showCreateCustomerModal', false)"></div>
+        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-10">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Customer</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" wire:model="newCustomer.name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        @error('newCustomer.name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" wire:model="newCustomer.email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        @error('newCustomer.email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone</label>
+                        <input type="text" wire:model="newCustomer.phone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        @error('newCustomer.phone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Address</label>
+                        <textarea wire:model="newCustomer.address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button wire:click="saveNewCustomer" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    Save Customer
+                </button>
+                <button wire:click="$set('showCreateCustomerModal', false)" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Held Orders Modal -->
+@if($showHeldOrdersModal)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showHeldOrdersModal', false)"></div>
+        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-4xl sm:w-full z-10">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Held Orders</h3>
+                    <button wire:click="$set('showHeldOrdersModal', false)" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $heldOrders = \App\Models\Sale::where('status', 'held')->with('customer')->latest()->get();
+                            @endphp
+                            @forelse($heldOrders as $order)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $order->created_at->format('M d, H:i') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $order->customer ? $order->customer->name : 'Walk-in Customer' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $order->items->count() }} items
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                        Rp. {{ number_format($order->total_amount, 2) }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">
+                                        {{ $order->notes }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button wire:click="restoreOrder('{{ $order->id }}')" class="text-indigo-600 hover:text-indigo-900">Restore</button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No held orders found.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 <script>
     // Keyboard Shortcuts
@@ -305,7 +714,7 @@ class extends Component {
         // F4 to pay
         if (event.key === 'F4') {
             event.preventDefault();
-            window.location.href = '{{ route("pos.payment") }}';
+            @this.call('checkout');
         }
     });
 </script>

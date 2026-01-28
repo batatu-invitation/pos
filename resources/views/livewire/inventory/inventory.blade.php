@@ -110,7 +110,7 @@ class extends Component
         <h2 class="text-2xl font-bold text-gray-800">Inventory Stock</h2>
         <div class="flex space-x-2">
             <div class="relative">
-                <input wire:model.live="search" type="text" placeholder="Search products..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                <input wire:model.live.debounce.500ms="search" type="text" placeholder="Search products..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm">
             </div>
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">

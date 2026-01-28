@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -28,5 +29,42 @@
 <body class="bg-gray-50 h-screen overflow-hidden">
     {{ $slot }}
     <script src="{{ asset('js/main.js') }}" defer></script>
+    <script>
+        document.addEventListener('livewire:navigated', () => {
+            initSweetAlert();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSweetAlert();
+        });
+
+        function initSweetAlert() {
+            window.addEventListener('notify', event => {
+                const msg = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: msg,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            });
+
+            window.addEventListener('notify-error', event => {
+                const msg = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+                 Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: msg,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            });
+        }
+    </script>
 </body>
 </html>

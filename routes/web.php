@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ReceiptController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -29,6 +30,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         Volt::route('/pos/terminal', 'pos.terminal')->name('pos.terminal');
         Volt::route('/pos/payment', 'pos.payment')->name('pos.payment');
         Volt::route('/pos/receipt', 'pos.receipt')->name('pos.receipt');
+        Route::get('/pos/receipt/{sale}/print', [ReceiptController::class, 'print'])->name('pos.receipt.print');
         Volt::route('/analytics/growth', 'analytics.growth')->name('analytics.growth');
         Volt::route('/analytics/overview', 'analytics.overview')->name('analytics.overview');
         Volt::route('/analytics/profit-loss', 'analytics.profit-loss')->name('analytics.profit-loss');

@@ -201,61 +201,23 @@ class extends Component
         </div>
     </div>
 
-    <script>
-        // Simple Chart Configuration
-        document.addEventListener('livewire:navigated', () => {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            const salesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Sales ($)',
-                        data: [1200, 1900, 3000, 2500, 2200, 3200, 4000],
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                display: true,
-                                color: '#f3f4f6'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-        });
+    @assets
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @endassets
 
-        // Initial load check if not navigating
-        if (typeof Chart !== 'undefined' && document.getElementById('salesChart')) {
-             const ctx = document.getElementById('salesChart').getContext('2d');
-             // ... same chart code ...
-             // Actually, to avoid duplication, I should wrap it in a function.
-        }
-    </script>
     @script
     <script>
-        const initChart = () => {
-            if(!document.getElementById('salesChart')) return;
-            const ctx = document.getElementById('salesChart').getContext('2d');
+        const initSalesChart = () => {
+            const canvas = document.getElementById('salesChart');
+            if (!canvas) return;
+
+            // Destroy existing chart if it exists to prevent "Canvas is already in use" error
+            const existingChart = Chart.getChart(canvas);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -295,7 +257,16 @@ class extends Component
             });
         }
 
-        initChart();
+        // Initialize on load
+        initSalesChart();
+
+        // Re-initialize on Livewire navigation
+        document.addEventListener('livewire:navigated', () => {
+            // Only try to init if the canvas actually exists on the current page
+            if (document.getElementById('salesChart')) {
+                initSalesChart();
+            }
+        });
     </script>
     @endscript
 </div>
