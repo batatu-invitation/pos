@@ -65,7 +65,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
     public function with()
     {
         return [
-            'categories' => Category::select('id', 'name', 'icon', 'color', 'description')->latest()->paginate(12), // Changed to 9 for better grid layout (3x3)
+            'categories' => Category::select('id', 'name', 'icon', 'color', 'description')->orderBy('id', 'desc')->paginate(12), // Changed to 9 for better grid layout (3x3)
         ];
     }
 
@@ -243,7 +243,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
                 <div>
                     <x-input-label for="description" value="Description (Optional)" />
                     <textarea wire:model="description" id="description"
-                        class="block mt-1 w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="block mt-1 p-4 w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         rows="3">
 </textarea>
                     <x-input-error :messages="$errors->get('description')" class="mt-2" />
