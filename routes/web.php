@@ -37,6 +37,8 @@ foreach (config('tenancy.central_domains') as $domain) {
         Volt::route('/inventory/products', 'inventory.products')->name('inventory.products');
         Volt::route('/inventory/categories', 'inventory.categories')->name('inventory.categories');
         Volt::route('/inventory/stock', 'inventory.stock')->name('inventory.stock');
+        Volt::route('/inventory/emojis', 'inventory.emojis')->name('inventory.emojis');
+        Volt::route('/inventory/colors', 'inventory.colors')->name('inventory.colors');
         Volt::route('/sales/sales', 'sales.sales')->name('sales.sales');
         Volt::route('/people/customers', 'people.customers')->name('people.customers');
         Volt::route('/people/employees', 'people.employees')->name('people.employees');

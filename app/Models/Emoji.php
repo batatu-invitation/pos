@@ -3,19 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
-class Category extends Model
+class Emoji extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $table = 'emojis';
+
     protected $fillable = [
-        'name',
         'icon',
-        'color',
-        'description',
+        'name',
         'tenant_id',
         'user_id',
     ];

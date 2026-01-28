@@ -3,20 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
-class Category extends Model
+class Product extends Model
 {
-    use HasFactory, HasUuids;
+    use HasUuids;
 
     protected $fillable = [
         'name',
+        'sku',
+        'category_id',
+        'price',
+        'stock',
+        'status',
         'icon',
-        'color',
-        'description',
         'tenant_id',
         'user_id',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 }

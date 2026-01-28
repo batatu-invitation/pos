@@ -4,6 +4,8 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use App\Models\Category;
+use App\Models\Emoji;
+use App\Models\Color;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
 
@@ -15,42 +17,6 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
     public $color = 'bg-orange-100';
     public $description = '';
     public $editingCategoryId = null;
-
-    // Predefined colors for UI consistency
-    public $colors = [
-        'bg-orange-100' => 'Orange',
-        'bg-blue-100' => 'Blue',
-        'bg-pink-100' => 'Pink',
-        'bg-purple-100' => 'Purple',
-        'bg-yellow-100' => 'Yellow',
-        'bg-amber-100' => 'Amber',
-        'bg-red-100' => 'Red',
-        'bg-green-100' => 'Green',
-        'bg-rose-100' => 'Rose',
-        'bg-cyan-100' => 'Cyan',
-        'bg-sky-100' => 'Sky',
-        'bg-indigo-100' => 'Indigo',
-        'bg-teal-100' => 'Teal',
-    ];
-
-    // Icon mapping
-    public $icons = [
-        'foods' => '🍔',
-        'drinks' => '🥤',
-        'desserts' => '🍰',
-        'electronics' => '🔌',
-        'snacks' => '🍿',
-        'beverages' => '☕',
-        'fruits' => '🍎',
-        'vegetables' => '🥦',
-        'meats' => '🥩',
-        'seafoods' => '🦐',
-        'bakery' => '🥐',
-        'frozen' => '🍦',
-        'households' => '🏠',
-        'stationery' => '✏️',
-        'others' => '📝',
-    ];
 
     protected function rules()
     {
@@ -66,6 +32,8 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
     {
         return [
             'categories' => Category::select('id', 'name', 'icon', 'color', 'description')->orderBy('id', 'desc')->paginate(12), // Changed to 9 for better grid layout (3x3)
+            'emojis' => Emoji::all(),
+            'colors' => Color::all(),
         ];
     }
 
@@ -98,6 +66,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
             'icon' => $this->icon,
             'color' => $this->color,
             'description' => $this->description,
+            'user_id' => auth()->user()->id,
         ];
 
         if ($this->editingCategoryId) {
@@ -219,8 +188,8 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
                         <x-input-label for="icon" value="Icon (Emoji)" />
                         <select wire:model="icon" id="icon"
                             class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            @foreach ($icons as $key => $value)
-                                <option value="{{ $value }}">{{ ucfirst($key) }} {{ $value }}</option>
+                            @foreach ($emojis as $emoji)
+                                <option value="{{ $emoji->icon }}">{{ ucfirst($emoji->name) }} {{ $emoji->icon }}</option>
                             @endforeach
                         </select>
                         <x-input-error :messages="$errors->get('icon')" class="mt-2" />
@@ -231,8 +200,8 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
                         <x-input-label for="color" value="Color Theme" />
                         <select wire:model="color" id="color"
                             class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            @foreach ($colors as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
+                            @foreach ($colors as $colorItem)
+                                <option value="{{ $colorItem->class }}">{{ $colorItem->name }}</option>
                             @endforeach
                         </select>
                         <x-input-error :messages="$errors->get('color')" class="mt-2" />

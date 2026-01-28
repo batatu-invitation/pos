@@ -72,6 +72,14 @@
                         <i class="fas fa-warehouse w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">Stock</span>
                     </a>
+                    <a wire:navigate href="{{ route('inventory.emojis') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('inventory.emojis') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-icons w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">Icons</span>
+                    </a>
+                    <a wire:navigate href="{{ route('inventory.colors') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('inventory.colors') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-palette w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">Colors</span>
+                    </a>
 
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Sales</p>
                     <a wire:navigate href="{{ route('sales.sales') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('sales.sales') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
@@ -159,7 +167,7 @@
                             <p class="text-xs text-gray-400">{{ auth()->user()->email ?? '' }}</p>
                         </div>
                     </div>
-                    
+
                     <!-- Logout Button -->
                     <form method="POST" action="{{ route('logout') }}" x-data x-on:submit.prevent="
                         Swal.fire({

@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('colors', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->string('icon')->nullable();
-            $table->string('color')->nullable();
-            $table->text('description')->nullable();
+            $table->string('class');
             $table->string('tenant_id')->nullable();
             $table->foreignUuid('user_id')->nullable();
             $table->timestamps();
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('colors');
     }
 };

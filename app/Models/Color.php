@@ -3,19 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
-class Category extends Model
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Color extends Model
 {
     use HasFactory, HasUuids;
 
     protected $fillable = [
         'name',
-        'icon',
-        'color',
-        'description',
+        'class',
         'tenant_id',
         'user_id',
     ];
