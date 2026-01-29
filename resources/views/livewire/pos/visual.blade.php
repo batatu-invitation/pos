@@ -345,7 +345,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
     public function setReceivedAmount($amount)
     {
-        $this->receivedAmount = number_format($amount, 2, '.', '');
+        $this->receivedAmount = number_format($amount, 0, '.', '');
     }
 
     public function getChangeProperty()
@@ -422,7 +422,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             return;
         }
 
-        $this->receivedAmount = number_format($this->total, 2, '.', '');
+        $this->receivedAmount = number_format($this->total, 0, '.', '');
         $this->showPaymentModal = true;
     }
 };
@@ -503,7 +503,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                             @endif
                             <span
                                 class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">Rp.
-                                {{ number_format($product->price, 2) }}</span>
+                                {{ number_format($product->price, 0, ',', '.') }}</span>
                         </div>
                         <div class="p-3">
                             <h3 class="text-sm font-bold text-gray-800 truncate">{{ $product->name }}</h3>
@@ -606,12 +606,12 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         <div>
                             <h4 class="text-sm font-bold text-gray-800 truncate max-w-[120px]">{{ $item['name'] }}
                             </h4>
-                            <p class="text-xs text-gray-500">Rp. {{ number_format($item['price'], 2) }} </p>
+                            <p class="text-xs text-gray-500">Rp. {{ number_format($item['price'], 0, ',', '.') }} </p>
                         </div>
                     </div>
                     <div class="flex flex-col items-end">
                         <span class="text-sm font-bold text-gray-800">Rp.
-                            {{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                            {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
                         <div class="flex items-center mt-1 bg-gray-100 rounded-lg">
                             <button wire:click="updateQuantity('{{ $item['id'] }}', -1)"
                                 class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors">-</button>
@@ -634,27 +634,27 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             <div class="space-y-2 mb-4">
                 <div class="flex justify-between text-sm text-gray-600">
                     <span>{{ __('Subtotal') }}</span>
-                    <span>Rp. {{ number_format($this->subtotal, 2) }}</span>
+                    <span>Rp. {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                 </div>
                 @if ($this->discount > 0)
                     <div class="flex justify-between text-sm text-red-500">
                         <span>{{ __('Discount') }}</span>
-                        <span>-Rp. {{ number_format($this->discount, 2) }}</span>
+                        <span>-Rp. {{ number_format($this->discount, 0, ',', '.') }}</span>
                     </div>
                 @endif
                 <div class="flex justify-between text-staxm text-gray-600">
                     <span>{{ __('Tax') }}({{ number_format($this->taxRate, 0) }}%)</span>
-                    <span>Rp. {{ number_format($this->tax, 2) }}</span>
+                    <span>Rp. {{ number_format($this->tax, 0, ',', '.') }}</span>
                 </div>
                 @if ($this->shipping > 0)
                     <div class="flex justify-between text-sm text-gray-600">
                         <span>{{ __('Shipping') }}</span>
-                        <span>Rp. {{ number_format($this->shipping, 2) }}</span>
+                        <span>Rp. {{ number_format($this->shipping, 0, ',', '.') }}</span>
                     </div>
                 @endif
                 <div class="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2">
                     <span>{{ __('Total Payable') }}</span>
-                    <span>Rp. {{ number_format($this->total, 2) }}</span>
+                    <span>Rp. {{ number_format($this->total, 0, ',', '.') }}</span>
                 </div>
             </div>
 
@@ -671,7 +671,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
             <button wire:click="checkout" wire:loading.attr="disabled"
                 class="block w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                <span wire:loading.remove>{{ __('Pay Now') }} Rp. {{ number_format($this->total, 2) }}</span>
+                <span wire:loading.remove>{{ __('Pay Now') }} Rp. {{ number_format($this->total, 0, ',', '.') }}</span>
                 <span wire:loading>{{ __('Processing...') }}</span>
             </button>
         </div>
@@ -856,7 +856,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                         <p class="text-sm text-gray-500">{{ $order->created_at->diffForHumans() }} -
                                             {{ $order->customer ? $order->customer->name : __('Walk-in') }}</p>
                                         <p class="text-xs text-gray-400">Total: Rp.
-                                            {{ number_format($order->total_amount, 2) }} | Note: {{ $order->notes }}
+                                            {{ number_format($order->total_amount, 0, ',', '.') }} | Note: {{ $order->notes }}
                                         </p>
                                     </div>
                                     <button wire:click="restoreOrder('{{ $order->id }}')"
@@ -910,9 +910,9 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 <div class="flex justify-between items-center">
                                     <div>
                                         <p class="font-medium text-gray-800">{{ $item['name'] }}</p>
-                                        <p class="text-sm text-gray-500">{{ $item['quantity'] }} x Rp. {{ number_format($item['price'], 2) }}</p>
+                                        <p class="text-sm text-gray-500">{{ $item['quantity'] }} x Rp. {{ number_format($item['price'], 0, ',', '.') }}</p>
                                     </div>
-                                    <span class="font-bold text-gray-800">Rp. {{ number_format($item['quantity'] * $item['price'], 2) }}</span>
+                                    <span class="font-bold text-gray-800">Rp. {{ number_format($item['quantity'] * $item['price'], 0, ',', '.') }}</span>
                                 </div>
                                 @endforeach
                             </div>
@@ -920,27 +920,27 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                             <div class="border-t border-gray-200 pt-4 mt-4 space-y-2">
                                 <div class="flex justify-between text-gray-600">
                                     <span>{{ __('Subtotal') }}</span>
-                                    <span>Rp. {{ number_format($this->subtotal, 2) }}</span>
+                                    <span>Rp. {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                                 </div>
                                 @if($discount > 0)
                                 <div class="flex justify-between text-red-500">
                                     <span>{{ __('Discount') }}</span>
-                                    <span>-Rp. {{ number_format($discount, 2) }}</span>
+                                    <span>-Rp. {{ number_format($discount, 0, ',', '.') }}</span>
                                 </div>
                                 @endif
                                 <div class="flex justify-between text-gray-600">
                                     <span>{{ __('Tax') }}</span>
-                                    <span>Rp. {{ number_format($this->tax, 2) }}</span>
+                                    <span>Rp. {{ number_format($this->tax, 0, ',', '.') }}</span>
                                 </div>
                                 @if($shipping > 0)
                                 <div class="flex justify-between text-gray-600">
                                     <span>{{ __('Shipping') }}</span>
-                                    <span>Rp. {{ number_format($shipping, 2) }}</span>
+                                    <span>Rp. {{ number_format($shipping, 0, ',', '.') }}</span>
                                 </div>
                                 @endif
                                 <div class="flex justify-between text-2xl font-bold text-gray-900 pt-2">
                                     <span>{{ __('Total') }}</span>
-                                    <span>Rp. {{ number_format($this->total, 2) }}</span>
+                                    <span>Rp. {{ number_format($this->total, 0, ',', '.') }}</span>
                                 </div>
                             </div>
 
@@ -982,7 +982,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
                                 <div class="bg-green-50 rounded-xl p-4 flex justify-between items-center mb-8 border border-green-100">
                                     <span class="text-green-800 font-medium">{{ __('Change Return') }}</span>
-                                    <span class="text-2xl font-bold text-green-700">Rp. {{ number_format($this->change, 2) }}</span>
+                                    <span class="text-2xl font-bold text-green-700">Rp. {{ number_format($this->change, 0, ',', '.') }}</span>
                                 </div>
 
                                 <button onclick="confirmPayment()" wire:loading.attr="disabled" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-xl text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
@@ -1032,7 +1032,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         @foreach($lastSale->items as $item)
                         <div class="flex justify-between">
                             <span>{{ $item->quantity }} x {{ $item->product_name }}</span>
-                            <span>Rp. {{ number_format($item->total_price, 2) }}</span>
+                            <span>Rp. {{ number_format($item->total_price, 0, ',', '.') }}</span>
                         </div>
                         @endforeach
                     </div>
@@ -1041,15 +1041,15 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
                     <div class="flex justify-between font-bold text-sm">
                         <span>{{ __('TOTAL') }}</span>
-                        <span>Rp. {{ number_format($lastSale->total_amount, 2) }}</span>
+                        <span>Rp. {{ number_format($lastSale->total_amount, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-xs mt-1">
                         <span>{{ __('CASH') }}</span>
-                        <span>Rp. {{ number_format($lastSale->cash_received, 2) }}</span>
+                        <span>Rp. {{ number_format($lastSale->cash_received, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-xs mt-1">
                         <span>{{ __('CHANGE') }}</span>
-                        <span>Rp. {{ number_format($lastSale->change_amount, 2) }}</span>
+                        <span>Rp. {{ number_format($lastSale->change_amount, 0, ',', '.') }}</span>
                     </div>
 
                     <div class="border-b-2 border-dashed border-black my-4"></div>
@@ -1079,7 +1079,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         <div class="p-8">
                             <div class="text-center mb-6">
                                 <p class="text-gray-500 text-sm">{{ __('Total Paid') }}</p>
-                                <p class="text-3xl font-bold text-gray-900">Rp. {{ number_format($lastSale->total_amount, 2) }}</p>
+                                <p class="text-3xl font-bold text-gray-900">Rp. {{ number_format($lastSale->total_amount, 0, ',', '.') }}</p>
                                 <p class="text-gray-400 text-xs mt-1">{{ __('Via') }} {{ ucfirst($lastSale->payment_method) }}</p>
                             </div>
 

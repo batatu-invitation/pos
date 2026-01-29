@@ -11,6 +11,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Fix SweetAlert2 layout shift issues
+        window.Swal = window.Swal.mixin({
+            heightAuto: false,
+            scrollbarPadding: false
+        });
+    </script>
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
