@@ -32,6 +32,24 @@ class extends Component
         ['key' => 'F12', 'label' => 'Payment', 'action' => 'processPayment', 'color' => 'indigo'], // Handled by big button usually, but keeping in list for completeness if needed
     ];
 
+    public function mount()
+    {
+        $this->functionKeys = [
+            ['key' => 'F1', 'label' => __('New Trans'), 'action' => 'newTransaction', 'color' => 'indigo'],
+            ['key' => 'F2', 'label' => __('Search Item'), 'action' => 'searchItem', 'color' => 'indigo'],
+            ['key' => 'F3', 'label' => __('Qty'), 'action' => 'editQty', 'color' => 'indigo'],
+            ['key' => 'F4', 'label' => __('Disc Item'), 'action' => 'discountItem', 'color' => 'indigo'],
+            ['key' => 'F5', 'label' => __('Disc Bill'), 'action' => 'discountBill', 'color' => 'indigo'],
+            ['key' => 'F6', 'label' => __('Void Item'), 'action' => 'voidItem', 'color' => 'indigo'],
+            ['key' => 'F7', 'label' => __('Member'), 'action' => 'selectMember', 'color' => 'indigo'],
+            ['key' => 'F8', 'label' => __('Pending'), 'action' => 'pendingTransaction', 'color' => 'indigo'],
+            ['key' => 'F9', 'label' => __('Recall'), 'action' => 'recallTransaction', 'color' => 'indigo'],
+            ['key' => 'F10', 'label' => __('Drawer'), 'action' => 'openDrawer', 'color' => 'indigo'],
+            ['key' => 'F11', 'label' => __('Reprint'), 'action' => 'reprintReceipt', 'color' => 'indigo'],
+            ['key' => 'F12', 'label' => __('Payment'), 'action' => 'processPayment', 'color' => 'indigo'],
+        ];
+    }
+
     public function newTransaction() {
         // Logic for new transaction
     }
@@ -79,7 +97,7 @@ class extends Component
             <div class="flex items-center">
                 <!-- Back Button -->
                 <a href="{{ route('dashboard') }}" class="mr-6 text-gray-400 hover:text-white transition-colors flex items-center">
-                    <i class="fas fa-arrow-left mr-2"></i> Back
+                    <i class="fas fa-arrow-left mr-2"></i> {{ __('Back') }}
                 </a>
 
                 <!-- Logo -->
@@ -99,12 +117,12 @@ class extends Component
                 <div class="h-8 w-px bg-gray-600 mx-2"></div>
                 <button onclick="connectDevice('printer')" id="btn-printer" class="relative text-gray-300 hover:text-white transition-colors group flex items-center" title="Connect Printer">
                     <i class="fas fa-print text-xl mr-2"></i>
-                    <span class="text-sm font-medium hidden lg:inline">Printer</span>
+                    <span class="text-sm font-medium hidden lg:inline">{{ __('Printer') }}</span>
                     <span id="status-printer" class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-slate-800"></span>
                 </button>
                 <button onclick="connectDevice('scanner')" id="btn-scanner" class="relative text-gray-300 hover:text-white transition-colors group flex items-center" title="Connect Scanner">
                     <i class="fas fa-barcode text-xl mr-2"></i>
-                    <span class="text-sm font-medium hidden lg:inline">Scanner</span>
+                    <span class="text-sm font-medium hidden lg:inline">{{ __('Scanner') }}</span>
                     <span id="status-scanner" class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-slate-800"></span>
                 </button>
             </div>
@@ -112,20 +130,20 @@ class extends Component
             <!-- Info Section -->
             <div class="flex space-x-0 h-full">
                 <div class="flex flex-col justify-center px-6 border-l border-slate-600 h-full">
-                    <span class="text-gray-400 text-xs uppercase">Customer:</span>
-                    <span class="font-bold text-lg">CASH</span>
+                    <span class="text-gray-400 text-xs uppercase">{{ __('Customer:') }}</span>
+                    <span class="font-bold text-lg">{{ __('CASH') }}</span>
                 </div>
                 <div class="flex flex-col justify-center px-6 border-l border-slate-600 h-full">
-                    <span class="text-gray-400 text-xs uppercase">Date:</span>
+                    <span class="text-gray-400 text-xs uppercase">{{ __('Date:') }}</span>
                     <span class="font-bold text-lg" id="current-date">04 Sep 2017</span>
                 </div>
                 <div class="flex flex-col justify-center px-6 border-l border-slate-600 h-full text-right">
-                    <span class="text-gray-400 text-xs uppercase">Sale No:</span>
+                    <span class="text-gray-400 text-xs uppercase">{{ __('Sale No:') }}</span>
                     <span class="font-bold text-lg">AUTO</span>
                 </div>
                 <div class="flex flex-col justify-center px-6 border-l border-slate-600 h-full text-right bg-slate-700">
-                    <span class="text-gray-300 text-xs">Cashier 1</span>
-                    <span class="font-bold text-lg">Admin</span>
+                    <span class="text-gray-300 text-xs">{{ __('Cashier 1') }}</span>
+                    <span class="font-bold text-lg">{{ __('Admin') }}</span>
                 </div>
             </div>
         </div>
@@ -141,7 +159,7 @@ class extends Component
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <i class="fas fa-barcode text-gray-500"></i>
                         </span>
-                        <input type="text" wire:model="barcode" id="barcode-input" class="w-full py-3 pl-10 pr-4 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="Scan Item or Enter Code (F2)..." autofocus>
+                        <input type="text" wire:model="barcode" id="barcode-input" class="w-full py-3 pl-10 pr-4 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="{{ __('Scan Item or Enter Code (F2)...') }}" autofocus>
                     </div>
                 </div>
 
@@ -151,13 +169,13 @@ class extends Component
                         <thead class="bg-gray-100 sticky top-0 z-10">
                             <tr>
                                 <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 w-12">#</th>
-                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300">Item Code</th>
-                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300">Item Name</th>
-                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">Qty</th>
-                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">Price</th>
-                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">Disc.</th>
-                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">Subtotal</th>
-                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-center">Act</th>
+                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300">{{ __('Item Code') }}</th>
+                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300">{{ __('Item Name') }}</th>
+                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">{{ __('Qty') }}</th>
+                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">{{ __('Price') }}</th>
+                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">{{ __('Disc.') }}</th>
+                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-right">{{ __('Subtotal') }}</th>
+                                <th class="p-3 text-xs font-bold text-gray-500 uppercase border-b border-gray-300 text-center">{{ __('Act') }}</th>
                             </tr>
                         </thead>
                         <tbody id="cart-table-body" class="text-sm">
@@ -169,9 +187,9 @@ class extends Component
                                 <td class="p-3 text-right">
                                     <input type="number" value="{{ $item['qty'] }}" class="w-16 p-1 text-right border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500">
                                 </td>
-                                <td class="p-3 text-right font-mono">{{ number_format($item['price'], 0, '.', ',') }}</td>
-                                <td class="p-3 text-right text-red-500">{{ number_format($item['discount'], 0, '.', ',') }}</td>
-                                <td class="p-3 text-right font-bold font-mono">{{ number_format($item['subtotal'], 0, '.', ',') }}</td>
+                                <td class="p-3 text-right font-mono">Rp. {{ number_format($item['price'], 0, '.', ',') }}</td>
+                                <td class="p-3 text-right text-red-500">Rp. {{ number_format($item['discount'], 0, '.', ',') }}</td>
+                                <td class="p-3 text-right font-bold font-mono">Rp. {{ number_format($item['subtotal'], 0, '.', ',') }}</td>
                                 <td class="p-3 text-center">
                                     <button class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
                                 </td>
@@ -182,7 +200,7 @@ class extends Component
                             <tr>
                                 <td colspan="8" class="p-8 text-center text-gray-400">
                                     <i class="fas fa-shopping-basket text-4xl mb-3"></i>
-                                    <p>Cart is empty. Scan an item to start.</p>
+                                    <p>{{ __('Cart is empty. Scan an item to start.') }}</p>
                                 </td>
                             </tr>
                             @endif
@@ -196,7 +214,7 @@ class extends Component
 
                 <!-- Total Display -->
                 <div class="bg-secondary text-white p-6 text-right">
-                    <div class="text-sm text-gray-400 uppercase mb-1">Total Amount</div>
+                    <div class="text-sm text-gray-400 uppercase mb-1">{{ __('Total Amount') }}</div>
                     <div class="text-4xl font-bold font-mono tracking-wider">
                         {{ number_format(collect($cart)->sum('subtotal'), 0, '.', ',') }}
                     </div>
@@ -205,15 +223,15 @@ class extends Component
                 <!-- Summary Details -->
                 <div class="p-4 space-y-2 bg-white border-b border-gray-200">
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Subtotal</span>
+                        <span class="text-gray-600">{{ __('Subtotal') }}</span>
                         <span class="font-bold">{{ number_format(collect($cart)->sum('subtotal'), 0, '.', ',') }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Tax</span>
+                        <span class="text-gray-600">{{ __('Tax') }}</span>
                         <span class="font-bold">0</span>
                     </div>
                     <div class="flex justify-between text-sm text-red-500">
-                        <span class="text-red-500">Discount</span>
+                        <span class="text-red-500">{{ __('Discount') }}</span>
                         <span class="font-bold">-0</span>
                     </div>
                 </div>
@@ -231,7 +249,7 @@ class extends Component
                 <!-- Pay Button -->
                 <div class="p-4 bg-gray-200 border-t border-gray-300">
                     <button class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md transition-colors flex items-center justify-between px-6">
-                        <span class="font-bold text-lg">PAYMENT</span>
+                        <span class="font-bold text-lg">{{ __('PAYMENT') }}</span>
                         <span class="bg-white text-indigo-600 px-2 py-1 rounded font-bold text-sm">F12</span>
                     </button>
                 </div>
@@ -241,11 +259,11 @@ class extends Component
         <!-- Bottom Status Bar -->
         <div class="bg-gray-800 text-gray-400 text-xs py-1 px-4 flex justify-between">
             <div>
-                <span>Connected: Online</span> |
-                <span>Printer: Ready</span>
+                <span>{{ __('Connected: Online') }}</span> |
+                <span>{{ __('Printer: Ready') }}</span>
             </div>
             <div>
-                <span>Version 2.0.1</span>
+                <span>{{ __('Version 2.0.1') }}</span>
             </div>
         </div>
 

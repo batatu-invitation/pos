@@ -9,7 +9,7 @@ use Livewire\WithPagination;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
-new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class extends Component {
+new #[Layout('components.layouts.app')] #[Title(__('User Management'))] class extends Component {
     use WithPagination;
 
     public $first_name = '';
@@ -20,13 +20,33 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
     public $status = 'Active';
     public $password = '';
     public $editingUserId = null;
+    public $search = '';
+    public $roleFilter = '';
 
     public function with()
     {
         return [
-            'users' => User::latest()->paginate(10),
+            'users' => User::query()
+                ->when($this->search, fn($q) => $q->where(function($sub) {
+                    $sub->where('first_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('last_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
+                }))
+                ->when($this->roleFilter && $this->roleFilter !== 'All Roles', fn($q) => $q->role($this->roleFilter))
+                ->latest()
+                ->paginate(10),
             'roles' => Role::all(),
         ];
+    }
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingRoleFilter()
+    {
+        $this->resetPage();
     }
 
     public function create()
@@ -86,11 +106,11 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
             $user = User::findOrFail($this->editingUserId);
             $user->update($data);
             $user->syncRoles($this->role);
-            $message = 'User updated successfully!';
+            $message = __('User updated successfully!');
         } else {
             $user = User::create($data);
             $user->assignRole($this->role);
-            $message = 'User created successfully!';
+            $message = __('User created successfully!');
         }
 
         $this->dispatch('close-modal', 'user-modal');
@@ -102,17 +122,17 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
     {
         $user = User::findOrFail($id);
         $user->delete();
-        $this->dispatch('notify', 'User deleted successfully!');
+        $this->dispatch('notify', __('User deleted successfully!'));
     }
 };
 ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('User Management') }}</h2>
         <button wire:click="create"
             class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-            <i class="fas fa-plus mr-2"></i> Add New User
+            <i class="fas fa-plus mr-2"></i> {{ __('Add New User') }}
         </button>
     </div>
 
@@ -122,12 +142,12 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                 <input type="text"
                     class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 w-64"
-                    placeholder="Search users...">
+                    placeholder="{{ __('Search users...') }}">
             </div>
             <div class="flex gap-2">
                 <select
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2">
-                    <option>All Roles</option>
+                    <option>{{ __('All Roles') }}</option>
                     @foreach ($roles as $roleItem)
                         <option value="{{ $roleItem->name }}">{{ $roleItem->name }}</option>
                     @endforeach
@@ -138,11 +158,11 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
             <table class="w-full text-left">
                 <thead class="bg-gray-50 text-gray-500 font-semibold text-xs uppercase">
                     <tr>
-                        <th class="px-6 py-3">Name</th>
-                        <th class="px-6 py-3">Role</th>
-                        <th class="px-6 py-3">Status</th>
-                        <th class="px-6 py-3">Joined</th>
-                        <th class="px-6 py-3 text-right">Actions</th>
+                        <th class="px-6 py-3">{{ __('Name') }}</th>
+                        <th class="px-6 py-3">{{ __('Role') }}</th>
+                        <th class="px-6 py-3">{{ __('Status') }}</th>
+                        <th class="px-6 py-3">{{ __('Joined') }}</th>
+                        <th class="px-6 py-3 text-right">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-sm">
@@ -190,8 +210,8 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
                                         class="fas fa-edit"></i></button>
                                 <button type="button"
                                     x-on:click="$dispatch('swal:confirm', {
-                                title: 'Delete User?',
-                                text: 'Are you sure you want to delete this user?',
+                                title: '{{ __('Delete User?') }}',
+                                text: '{{ __('Are you sure you want to delete this user?') }}',
                                 icon: 'warning',
                                 method: 'delete',
                                 params: [{{ $user->id }}],
@@ -205,7 +225,7 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
                     @empty
                         <tr>
                             <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                                No users found. Click "Add New User" to create one.
+                                {{ __('No users found. Click "Add New User" to create one.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -221,23 +241,23 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
     <x-modal name="user-modal" focusable>
         <form
             x-on:submit.prevent="$dispatch('swal:confirm', {
-            title: '{{ $editingUserId ? 'Update User?' : 'Create User?' }}',
-            text: '{{ $editingUserId ? 'Are you sure you want to update this user?' : 'Are you sure you want to create this new user?' }}',
+            title: '{{ $editingUserId ? __('Update User?') : __('Create User?') }}',
+            text: '{{ $editingUserId ? __('Are you sure you want to update this user?') : __('Are you sure you want to create this new user?') }}',
             icon: 'question',
-            confirmButtonText: '{{ $editingUserId ? 'Yes, update it!' : 'Yes, create it!' }}',
+            confirmButtonText: '{{ $editingUserId ? __('Yes, update it!') : __('Yes, create it!') }}',
             method: 'save',
             params: [],
             componentId: '{{ $this->getId() }}'
         })"
             class="p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-6">
-                {{ $editingUserId ? 'Edit User' : 'Create New User' }}
+                {{ $editingUserId ? __('Edit User') : __('Create New User') }}
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- First Name -->
                 <div>
-                    <x-input-label for="first_name" value="First Name" />
+                    <x-input-label for="first_name" value="{{ __('First Name') }}" />
                     <x-text-input wire:model="first_name" id="first_name" class="block mt-1 w-full" type="text"
                         placeholder="John" />
                     <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
@@ -245,7 +265,7 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
 
                 <!-- Last Name -->
                 <div>
-                    <x-input-label for="last_name" value="Last Name" />
+                    <x-input-label for="last_name" value="{{ __('Last Name') }}" />
                     <x-text-input wire:model="last_name" id="last_name" class="block mt-1 w-full" type="text"
                         placeholder="Doe" />
                     <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
@@ -253,7 +273,7 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
 
                 <!-- Email -->
                 <div class="col-span-1 md:col-span-2">
-                    <x-input-label for="email" value="Email Address" />
+                    <x-input-label for="email" value="{{ __('Email Address') }}" />
                     <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email"
                         placeholder="john@example.com" />
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
@@ -261,7 +281,7 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
 
                 <!-- Phone -->
                 <div>
-                    <x-input-label for="phone" value="Phone Number" />
+                    <x-input-label for="phone" value="{{ __('Phone Number') }}" />
                     <x-text-input wire:model="phone" id="phone" class="block mt-1 w-full" type="text"
                         placeholder="+1 234 567 890" />
                     <x-input-error :messages="$errors->get('phone')" class="mt-2" />
@@ -269,7 +289,7 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
 
                 <!-- Role -->
                 <div>
-                    <x-input-label for="role" value="Role" />
+                    <x-input-label for="role" value="{{ __('Role') }}" />
                     <select wire:model="role" id="role"
                         class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                         @foreach ($roles as $roleItem)
@@ -281,12 +301,12 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
 
                 <!-- Status -->
                 <div>
-                    <x-input-label for="status" value="Status" />
+                    <x-input-label for="status" value="{{ __('Status') }}" />
                     <select wire:model="status" id="status"
                         class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                        <option value="Suspended">Suspended</option>
+                        <option value="Active">{{ __('Active') }}</option>
+                        <option value="Inactive">{{ __('Inactive') }}</option>
+                        <option value="Suspended">{{ __('Suspended') }}</option>
                     </select>
                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                 </div>
@@ -294,7 +314,7 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
                 <!-- Password -->
                 <div class="col-span-1 md:col-span-2">
                     <x-input-label for="password"
-                        value="{{ $editingUserId ? 'New Password (Optional)' : 'Password' }}" />
+                        value="{{ $editingUserId ? __('New Password (Optional)') : __('Password') }}" />
                     <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password"
                         placeholder="********" />
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
@@ -304,11 +324,11 @@ new #[Layout('components.layouts.app')] #[Title('Users - Modern POS')] class ext
             <div class="mt-6 flex justify-end">
                 <button type="button" x-on:click="$dispatch('close-modal', 'user-modal')"
                     class="mr-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                    Cancel
+                    {{ __('Cancel') }}
                 </button>
                 <button type="submit"
                     class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                    {{ $editingUserId ? 'Update User' : 'Create User' }}
+                    {{ $editingUserId ? __('Update User') : __('Create User') }}
                 </button>
             </div>
         </form>

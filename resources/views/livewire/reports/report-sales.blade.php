@@ -9,20 +9,25 @@ new
 #[Title('Sales Report - Modern POS')]
 class extends Component
 {
-    public $transactions = [
-        ['id' => '#ORD-001', 'date' => '2023-10-24 10:30 AM', 'customer' => 'Walk-in Customer', 'total' => 45.00, 'status' => 'Completed'],
-        ['id' => '#ORD-002', 'date' => '2023-10-24 11:15 AM', 'customer' => 'John Doe', 'total' => 120.50, 'status' => 'Completed'],
-        ['id' => '#ORD-003', 'date' => '2023-10-24 12:45 PM', 'customer' => 'Jane Smith', 'total' => 32.00, 'status' => 'Completed'],
-        ['id' => '#ORD-004', 'date' => '2023-10-24 01:20 PM', 'customer' => 'Walk-in Customer', 'total' => 15.00, 'status' => 'Refunded'],
-        ['id' => '#ORD-005', 'date' => '2023-10-24 02:00 PM', 'customer' => 'Mike Johnson', 'total' => 210.00, 'status' => 'Completed'],
-        ['id' => '#ORD-006', 'date' => '2023-10-24 02:45 PM', 'customer' => 'Sarah Williams', 'total' => 55.00, 'status' => 'Completed'],
-        ['id' => '#ORD-007', 'date' => '2023-10-24 03:10 PM', 'customer' => 'Walk-in Customer', 'total' => 12.50, 'status' => 'Completed'],
-        ['id' => '#ORD-008', 'date' => '2023-10-24 04:30 PM', 'customer' => 'David Brown', 'total' => 89.90, 'status' => 'Completed'],
-        ['id' => '#ORD-009', 'date' => '2023-10-24 05:15 PM', 'customer' => 'Emily Davis', 'total' => 42.00, 'status' => 'Pending'],
-        ['id' => '#ORD-010', 'date' => '2023-10-24 06:00 PM', 'customer' => 'Walk-in Customer', 'total' => 28.00, 'status' => 'Completed'],
-        ['id' => '#ORD-011', 'date' => '2023-10-24 06:45 PM', 'customer' => 'Michael Wilson', 'total' => 150.00, 'status' => 'Completed'],
-        ['id' => '#ORD-012', 'date' => '2023-10-24 07:30 PM', 'customer' => 'Jessica Taylor', 'total' => 65.50, 'status' => 'Completed'],
-    ];
+    public $transactions = [];
+
+    public function mount()
+    {
+        $this->transactions = [
+            ['id' => '#ORD-001', 'date' => '2023-10-24 10:30 AM', 'customer' => __('Walk-in Customer'), 'total' => 45.00, 'status' => 'Completed'],
+            ['id' => '#ORD-002', 'date' => '2023-10-24 11:15 AM', 'customer' => 'John Doe', 'total' => 120.50, 'status' => 'Completed'],
+            ['id' => '#ORD-003', 'date' => '2023-10-24 12:45 PM', 'customer' => 'Jane Smith', 'total' => 32.00, 'status' => 'Completed'],
+            ['id' => '#ORD-004', 'date' => '2023-10-24 01:20 PM', 'customer' => __('Walk-in Customer'), 'total' => 15.00, 'status' => 'Refunded'],
+            ['id' => '#ORD-005', 'date' => '2023-10-24 02:00 PM', 'customer' => 'Mike Johnson', 'total' => 210.00, 'status' => 'Completed'],
+            ['id' => '#ORD-006', 'date' => '2023-10-24 02:45 PM', 'customer' => 'Sarah Williams', 'total' => 55.00, 'status' => 'Completed'],
+            ['id' => '#ORD-007', 'date' => '2023-10-24 03:10 PM', 'customer' => __('Walk-in Customer'), 'total' => 12.50, 'status' => 'Completed'],
+            ['id' => '#ORD-008', 'date' => '2023-10-24 04:30 PM', 'customer' => 'David Brown', 'total' => 89.90, 'status' => 'Completed'],
+            ['id' => '#ORD-009', 'date' => '2023-10-24 05:15 PM', 'customer' => 'Emily Davis', 'total' => 42.00, 'status' => 'Pending'],
+            ['id' => '#ORD-010', 'date' => '2023-10-24 06:00 PM', 'customer' => __('Walk-in Customer'), 'total' => 28.00, 'status' => 'Completed'],
+            ['id' => '#ORD-011', 'date' => '2023-10-24 06:45 PM', 'customer' => 'Michael Wilson', 'total' => 150.00, 'status' => 'Completed'],
+            ['id' => '#ORD-012', 'date' => '2023-10-24 07:30 PM', 'customer' => 'Jessica Taylor', 'total' => 65.50, 'status' => 'Completed'],
+        ];
+    }
 
     public function getStatusColor($status)
     {
@@ -45,7 +50,7 @@ class extends Component
                 <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 focus:outline-none mr-4 md:hidden">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <h1 class="text-2xl font-semibold text-gray-800">Sales Report</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">{{ __('Sales Report') }}</h1>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -53,7 +58,7 @@ class extends Component
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                         <i class="fas fa-search text-gray-400"></i>
                     </span>
-                    <input type="text" class="w-64 py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="Search...">
+                    <input type="text" class="w-64 py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="{{ __('Search...') }}">
                 </div>
 
                 <button class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors">
@@ -63,7 +68,7 @@ class extends Component
 
                 <a href="{{ route('pos.visual') }}" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                     <i class="fas fa-cash-register mr-2"></i>
-                    Open POS
+                    {{ __('Open POS') }}
                 </a>
             </div>
         </header>
@@ -80,7 +85,7 @@ class extends Component
                     data: {
                         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                         datasets: [{
-                            label: 'Sales ($)',
+                            label: '{{ __('Sales (Rp.)') }}',
                             data: [1200, 1900, 3000, 2500, 2200, 3200, 4000],
                             borderColor: '#4f46e5',
                             backgroundColor: 'rgba(79, 70, 229, 0.1)',

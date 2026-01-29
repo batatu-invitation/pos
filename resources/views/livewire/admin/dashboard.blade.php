@@ -33,7 +33,7 @@ class extends Component
         // Recent Logs
         $recentAuditLogs = Activity::with('causer')->latest()->take(10)->get()->map(function($log) {
             return [
-                'user' => $log->causer ? $log->causer->name : 'System',
+                'user' => $log->causer ? $log->causer->name : __('System'),
                 'action' => ucfirst($log->event),
                 'action_color' => $this->getActionColor($log->event),
                 'module' => $this->getModuleName($log->subject_type),
@@ -55,7 +55,7 @@ class extends Component
         try {
             $rolesData = Role::withCount('users')->get();
             if ($rolesData->isEmpty()) {
-                $roleLabels = ['Users'];
+                $roleLabels = [__('Users')];
                 $roleCounts = [$totalUsers];
             } else {
                 $roleLabels = $rolesData->pluck('name')->toArray();
@@ -63,7 +63,7 @@ class extends Component
             }
         } catch (\Exception $e) {
             // Fallback if Spatie Roles are not fully set up
-            $roleLabels = ['Users'];
+            $roleLabels = [__('Users')];
             $roleCounts = [$totalUsers];
         }
 
@@ -79,7 +79,7 @@ class extends Component
         $activityLabels = ['00-04', '04-08', '08-12', '12-16', '16-20', '20-24'];
         $activityData = [];
         $startOfDay = Carbon::now()->startOfDay();
-        
+
         for ($i = 0; $i < 6; $i++) {
             $start = $startOfDay->copy()->addHours($i * 4);
             $end = $start->copy()->addHours(4);
@@ -126,25 +126,28 @@ class extends Component
 
     public function getModuleName($model)
     {
-        return $model ? class_basename($model) : 'System';
+        return $model ? class_basename($model) : __('System');
     }
 };
 ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6" 
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6"
      x-data="dashboardCharts({
         activityLabels: {{ json_encode($activityLabels) }},
         activityData: {{ json_encode($activityData) }},
         roleLabels: {{ json_encode($roleLabels) }},
         roleCounts: {{ json_encode($roleCounts) }},
-        roleColors: {{ json_encode($roleColors) }}
-     })" 
+        roleColors: {{ json_encode($roleColors) }},
+        translations: {
+            activity: '{{ __('Activity') }}'
+        }
+     })"
      x-init="initCharts(); Livewire.hook('morph.updated', () => { initCharts(); });">
-    
+
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('Admin Dashboard') }}</h2>
         <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-500">Last updated: Just now</span>
+            <span class="text-sm text-gray-500">{{ __('Last updated: Just now') }}</span>
             <button wire:click="$refresh" class="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-indigo-600 shadow-sm transition-colors">
                 <i class="fas fa-sync-alt"></i>
             </button>
@@ -155,9 +158,9 @@ class extends Component
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
-                <h3 class="text-gray-500 text-sm font-medium">Total Users</h3>
+                <h3 class="text-gray-500 text-sm font-medium">{{ __('Total Users') }}</h3>
                 <p class="text-3xl font-bold text-indigo-600 mt-2">{{ $totalUsers }}</p>
-                <p class="text-xs text-gray-500 mt-1">+{{ $newUsersCount }} this month</p>
+                <p class="text-xs text-gray-500 mt-1">+{{ $newUsersCount }} {{ __('this month') }}</p>
             </div>
             <div class="p-3 bg-indigo-50 rounded-full">
                 <i class="fas fa-users text-indigo-600 text-xl"></i>
@@ -165,9 +168,9 @@ class extends Component
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
-                <h3 class="text-gray-500 text-sm font-medium">Active Branches</h3>
+                <h3 class="text-gray-500 text-sm font-medium">{{ __('Active Branches') }}</h3>
                 <p class="text-3xl font-bold text-gray-800 mt-2">{{ $activeBranches }}</p>
-                <p class="text-xs text-gray-500 mt-1">Operational</p>
+                <p class="text-xs text-gray-500 mt-1">{{ __('Operational') }}</p>
             </div>
             <div class="p-3 bg-green-50 rounded-full">
                 <i class="fas fa-store text-green-600 text-xl"></i>
@@ -175,9 +178,9 @@ class extends Component
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
-                <h3 class="text-gray-500 text-sm font-medium">System Health</h3>
+                <h3 class="text-gray-500 text-sm font-medium">{{ __('System Health') }}</h3>
                 <p class="text-3xl font-bold text-green-500 mt-2">{{ $healthPercentage }}%</p>
-                <p class="text-xs text-gray-500 mt-1">Branch Uptime</p>
+                <p class="text-xs text-gray-500 mt-1">{{ __('Branch Uptime') }}</p>
             </div>
             <div class="p-3 bg-blue-50 rounded-full">
                 <i class="fas fa-heartbeat text-blue-600 text-xl"></i>
@@ -185,9 +188,9 @@ class extends Component
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
-                <h3 class="text-gray-500 text-sm font-medium">Audit Logs</h3>
+                <h3 class="text-gray-500 text-sm font-medium">{{ __('Audit Logs') }}</h3>
                 <p class="text-3xl font-bold text-indigo-600 mt-2">{{ $auditLogsCount }}</p>
-                <p class="text-xs text-gray-500 mt-1">Last 24 hours</p>
+                <p class="text-xs text-gray-500 mt-1">{{ __('Last 24 hours') }}</p>
             </div>
             <div class="p-3 bg-purple-50 rounded-full">
                 <i class="fas fa-history text-purple-600 text-xl"></i>
@@ -200,7 +203,7 @@ class extends Component
         <!-- System Activity Chart -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-800">System Activity (Today)</h3>
+                <h3 class="text-lg font-bold text-gray-800">{{ __('System Activity (Today)') }}</h3>
             </div>
             <div class="h-80">
                 <canvas id="activityChart"></canvas>
@@ -209,7 +212,7 @@ class extends Component
 
         <!-- User Role Distribution -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">User Roles</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('User Roles') }}</h3>
             <div class="h-64 relative">
                 <canvas id="rolesChart"></canvas>
             </div>
@@ -232,17 +235,17 @@ class extends Component
         <!-- Recent Logs -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800">Recent Audit Logs</h3>
-                <a href="{{ route('admin.audit-logs') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">View All</a>
+                <h3 class="text-lg font-bold text-gray-800">{{ __('Recent Audit Logs') }}</h3>
+                <a href="{{ route('admin.audit-logs') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">{{ __('View All') }}</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3">User</th>
-                            <th class="px-6 py-3">Action</th>
-                            <th class="px-6 py-3">Module</th>
-                            <th class="px-6 py-3">Time</th>
+                            <th class="px-6 py-3">{{ __('User') }}</th>
+                            <th class="px-6 py-3">{{ __('Action') }}</th>
+                            <th class="px-6 py-3">{{ __('Module') }}</th>
+                            <th class="px-6 py-3">{{ __('Time') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -262,7 +265,7 @@ class extends Component
         <!-- Branch Status -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-800">Branch Status</h3>
+                <h3 class="text-lg font-bold text-gray-800">{{ __('Branch Status') }}</h3>
                 <button wire:click="$refresh" class="text-sm text-gray-500 hover:text-indigo-600"><i class="fas fa-sync-alt"></i></button>
             </div>
             <div class="space-y-4 max-h-80 overflow-y-auto pr-2">
@@ -272,20 +275,20 @@ class extends Component
                         <div class="w-2 h-2 rounded-full bg-{{ $branch['dot_color'] }} mr-3"></div>
                         <span class="font-medium text-gray-700">{{ $branch['name'] }}</span>
                     </div>
-                    <span class="text-xs font-semibold text-{{ $branch['status_color'] }}-600 bg-{{ $branch['status_color'] }}-100 px-2 py-1 rounded">{{ $branch['status'] }}</span>
+                    <span class="text-xs font-semibold text-{{ $branch['status_color'] }}-600 bg-{{ $branch['status_color'] }}-100 px-2 py-1 rounded">{{ __($branch['status']) }}</span>
                 </div>
                 @endforeach
             </div>
         </div>
     </div>
-    
+
     <script>
         function dashboardCharts(data) {
             return {
                 activityChartInstance: null,
                 rolesChartInstance: null,
                 data: data,
-                
+
                 initCharts() {
                     // Wait for next tick to ensure DOM is ready
                     this.$nextTick(() => {
@@ -309,7 +312,7 @@ class extends Component
                                 data: {
                                     labels: this.data.activityLabels,
                                     datasets: [{
-                                        label: 'Activity',
+                                        label: this.data.translations.activity,
                                         data: this.data.activityData,
                                         borderColor: '#4f46e5',
                                         backgroundColor: 'rgba(79, 70, 229, 0.1)',

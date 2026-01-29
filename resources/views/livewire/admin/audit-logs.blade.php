@@ -76,13 +76,13 @@ class extends Component
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">System Audit Logs</h2>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('System Audit Logs') }}</h2>
         <div class="flex space-x-3">
             <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm">
-                <i class="fas fa-filter mr-2"></i> Filter
+                <i class="fas fa-filter mr-2"></i> {{ __('Filter') }}
             </button>
             <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm">
-                <i class="fas fa-download mr-2"></i> Export
+                <i class="fas fa-download mr-2"></i> {{ __('Export') }}
             </button>
         </div>
     </div>
@@ -91,14 +91,14 @@ class extends Component
         <div class="p-4 border-b border-gray-200 flex flex-wrap gap-4 justify-between items-center">
             <div class="relative">
                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input wire:model.live.debounce.300ms="search" type="text" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 w-64" placeholder="Search logs...">
+                <input wire:model.live.debounce.300ms="search" type="text" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 w-64" placeholder="{{ __('Search logs...') }}">
             </div>
             <select wire:model.live="actionFilter" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5">
-                <option>All Actions</option>
-                <option value="login">Login</option>
-                <option value="created">Create</option>
-                <option value="updated">Update</option>
-                <option value="deleted">Delete</option>
+                <option>{{ __('All Actions') }}</option>
+                <option value="login">{{ __('Login') }}</option>
+                <option value="created">{{ __('Create') }}</option>
+                <option value="updated">{{ __('Update') }}</option>
+                <option value="deleted">{{ __('Delete') }}</option>
             </select>
         </div>
 
@@ -106,22 +106,22 @@ class extends Component
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                     <tr>
-                        <th class="px-6 py-4 font-semibold">Timestamp</th>
-                        <th class="px-6 py-4 font-semibold">User</th>
-                        <th class="px-6 py-4 font-semibold">Action</th>
-                        <th class="px-6 py-4 font-semibold">Details</th>
-                        <th class="px-6 py-4 font-semibold">Resource</th>
-                        <th class="px-6 py-4 font-semibold">IP Address</th>
-                        <th class="px-6 py-4 font-semibold">Status</th>
+                        <th class="px-6 py-4 font-semibold">{{ __('Timestamp') }}</th>
+                        <th class="px-6 py-4 font-semibold">{{ __('User') }}</th>
+                        <th class="px-6 py-4 font-semibold">{{ __('Action') }}</th>
+                        <th class="px-6 py-4 font-semibold">{{ __('Details') }}</th>
+                        <th class="px-6 py-4 font-semibold">{{ __('Resource') }}</th>
+                        <th class="px-6 py-4 font-semibold">{{ __('IP Address') }}</th>
+                        <th class="px-6 py-4 font-semibold">{{ __('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($auditLogs as $log)
                         @php
                             $actionColor = $this->getActionColor($log->event);
-                            $status = $log->getExtraProperty('status') ?? 'Success';
-                            $statusColor = $status === 'Success' ? 'green' : 'red';
-                            $statusIcon = $status === 'Success' ? 'check-circle' : 'times-circle';
+                            $status = $log->getExtraProperty('status') ?? __('Success');
+                            $statusColor = $status === __('Success') ? 'green' : 'red';
+                            $statusIcon = $status === __('Success') ? 'check-circle' : 'times-circle';
                         @endphp
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 text-gray-500">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
@@ -134,7 +134,7 @@ class extends Component
                         <td class="px-6 py-4"><span class="px-2 py-1 bg-{{ $actionColor }}-100 text-{{ $actionColor }}-700 rounded text-xs font-semibold uppercase">{{ $log->event }}</span></td>
                         <td class="px-6 py-4">
                             <button wire:click="viewDetails({{ $log->id }})" class="text-indigo-600 hover:text-indigo-900 font-medium text-sm">
-                                <i class="fas fa-eye mr-1"></i> View
+                                <i class="fas fa-eye mr-1"></i> {{ __('View') }}
                             </button>
                         </td>
                         <td class="px-6 py-4">
@@ -150,7 +150,7 @@ class extends Component
                     @empty
                     <tr>
                         <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                            No audit logs found.
+                            {{ __('No audit logs found.') }}
                         </td>
                     </tr>
                     @endforelse
@@ -168,37 +168,37 @@ class extends Component
     <x-modal name="audit-detail-modal" focusable>
         <div class="p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">
-                Audit Log Details
+                {{ __('Audit Log Details') }}
             </h2>
 
             @if($selectedLog)
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <p class="text-sm font-medium text-gray-500">User</p>
+                            <p class="text-sm font-medium text-gray-500">{{ __('User') }}</p>
                             <p class="mt-1 text-sm text-gray-900">{{ $selectedLog->causer?->name ?? 'System' }}</p>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Event</p>
+                            <p class="text-sm font-medium text-gray-500">{{ __('Event') }}</p>
                             <p class="mt-1 text-sm text-gray-900 uppercase">
                                 <span class="px-2 py-1 bg-gray-100 rounded text-xs font-semibold">{{ $selectedLog->event }}</span>
                             </p>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Date & Time</p>
+                            <p class="text-sm font-medium text-gray-500">{{ __('Date & Time') }}</p>
                             <p class="mt-1 text-sm text-gray-900">{{ $selectedLog->created_at->format('F j, Y g:i A') }}</p>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">IP Address</p>
+                            <p class="text-sm font-medium text-gray-500">{{ __('IP Address') }}</p>
                             <p class="mt-1 text-sm text-gray-900">{{ $selectedLog->getExtraProperty('ip') ?? 'N/A' }}</p>
                         </div>
                         <div class="col-span-2">
-                            <p class="text-sm font-medium text-gray-500">Description</p>
+                            <p class="text-sm font-medium text-gray-500">{{ __('Description') }}</p>
                             <p class="mt-1 text-sm text-gray-900">{{ $selectedLog->description }}</p>
                         </div>
                         @if($selectedLog->subject_type)
                         <div class="col-span-2">
-                            <p class="text-sm font-medium text-gray-500">Subject</p>
+                            <p class="text-sm font-medium text-gray-500">{{ __('Subject') }}</p>
                             <p class="mt-1 text-sm text-gray-900">{{ $selectedLog->subject_type }} #{{ $selectedLog->subject_id }}</p>
                         </div>
                         @endif
@@ -206,7 +206,7 @@ class extends Component
 
                     @if($selectedLog->properties && $selectedLog->properties->count() > 0)
                         <div class="mt-4">
-                            <p class="text-sm font-medium text-gray-500 mb-2">Properties</p>
+                            <p class="text-sm font-medium text-gray-500 mb-2">{{ __('Properties') }}</p>
                             <div class="bg-gray-50 rounded-lg p-3 overflow-x-auto">
                                 <pre class="text-xs text-gray-700 whitespace-pre-wrap">{{ json_encode($selectedLog->properties, JSON_PRETTY_PRINT) }}</pre>
                             </div>
@@ -216,7 +216,7 @@ class extends Component
 
                 <div class="mt-6 flex justify-end">
                     <button x-on:click="$dispatch('close-modal', 'audit-detail-modal')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        Close
+                        {{ __('Close') }}
                     </button>
                 </div>
             @endif

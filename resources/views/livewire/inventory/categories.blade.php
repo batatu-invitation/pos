@@ -9,7 +9,7 @@ use App\Models\Color;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
 
-new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Categories - Modern POS')] class extends Component {
+new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kategori - Modern POS')] class extends Component {
     use WithPagination;
 
     public $name = '';
@@ -71,10 +71,10 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
 
         if ($this->editingCategoryId) {
             Category::findOrFail($this->editingCategoryId)->update($data);
-            $message = 'Category updated successfully!';
+            $message = __('Category updated successfully!');
         } else {
             Category::create($data);
-            $message = 'Category created successfully!';
+            $message = __('Category created successfully!');
         }
 
         $this->dispatch('close-modal', 'category-modal');
@@ -86,7 +86,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
     public function delete($id)
     {
         Category::findOrFail($id)->delete();
-        $this->dispatch('notify', 'Category deleted successfully!');
+        $this->dispatch('notify', __('Category deleted successfully!'));
     }
 }; ?>
 
@@ -98,7 +98,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
         <h2 class="text-2xl font-bold text-gray-800"></h2>
         <button wire:click="create"
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i> Add Category
+            <i class="fas fa-plus mr-2"></i> {{ __('Add Category') }}
         </button>
     </div>
 
@@ -109,19 +109,19 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
                 <!-- Actions (Visible on Hover) -->
                 <div class="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button wire:click="edit('{{ $category->id }}')"
-                        class="text-gray-400 hover:text-indigo-600 transition-colors" title="Edit">
+                        class="text-gray-400 hover:text-indigo-600 transition-colors" title="{{ __('Edit') }}">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button type="button"
                         x-on:click="$dispatch('swal:confirm', {
-                        title: 'Delete Category?',
-                        text: 'Are you sure you want to delete this category?',
+                        title: '{{ __('Delete Category?') }}',
+                        text: '{{ __('Are you sure you want to delete this category?') }}',
                         icon: 'warning',
                         method: 'delete',
                         params: ['{{ $category->id }}'],
                         componentId: '{{ $this->getId() }}'
                     })"
-                        class="text-gray-400 hover:text-red-500 transition-colors" title="Delete">
+                        class="text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Delete') }}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -131,20 +131,20 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
                     {{ $category->icon }}
                 </div>
                 <h3 class="font-bold text-gray-800 text-lg">{{ $category->name }}</h3>
-                <p class="text-gray-500 text-sm mt-1">0 Items</p>
+                <p class="text-gray-500 text-sm mt-1">{{ __('0 Items') }}</p>
             </div>
         @empty
             <div class="col-span-full bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
                 <div class="mx-auto h-12 w-12 text-gray-400">
                     <i class="fas fa-folder-open text-4xl"></i>
                 </div>
-                <h3 class="mt-2 text-sm font-semibold text-gray-900">No categories</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating a new category.</p>
+                <h3 class="mt-2 text-sm font-semibold text-gray-900">{{ __('No categories') }}</h3>
+                <p class="mt-1 text-sm text-gray-500">{{ __('Get started by creating a new category.') }}</p>
                 <div class="mt-6">
                     <button wire:click="create"
                         class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                         <i class="fas fa-plus -ml-0.5 mr-1.5" aria-hidden="true"></i>
-                        Add Category
+                        {{ __('Add Category') }}
                     </button>
                 </div>
             </div>
@@ -160,32 +160,32 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
     <x-modal name="category-modal" focusable>
         <form
             x-on:submit.prevent="$dispatch('swal:confirm', {
-            title: '{{ $editingCategoryId ? 'Update Category?' : 'Create Category?' }}',
-            text: '{{ $editingCategoryId ? 'Are you sure you want to update this category?' : 'Are you sure you want to create this new category?' }}',
+            title: '{{ $editingCategoryId ? __('Update Category?') : __('Create Category?') }}',
+            text: '{{ $editingCategoryId ? __('Are you sure you want to update this category?') : __('Are you sure you want to create this new category?') }}',
             icon: 'question',
-            confirmButtonText: '{{ $editingCategoryId ? 'Yes, update it!' : 'Yes, create it!' }}',
+            confirmButtonText: '{{ $editingCategoryId ? __('Yes, update it!') : __('Yes, create it!') }}',
             method: 'save',
             params: [],
             componentId: '{{ $this->getId() }}'
         })"
             class="p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-6">
-                {{ $editingCategoryId ? 'Edit Category' : 'Create New Category' }}
+                {{ $editingCategoryId ? __('Edit Category') : __('Create New Category') }}
             </h2>
 
             <div class="space-y-6">
                 <!-- Name -->
                 <div>
-                    <x-input-label for="name" value="Name" />
+                    <x-input-label for="name" value="{{ __('Name') }}" />
                     <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text"
-                        placeholder="e.g. Food" />
+                        placeholder="{{ __('e.g. Food') }}" />
                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Icon -->
                     <div>
-                        <x-input-label for="icon" value="Icon (Emoji)" />
+                        <x-input-label for="icon" value="{{ __('Icon (Emoji)') }}" />
                         <select wire:model="icon" id="icon"
                             class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             @foreach ($emojis as $emoji)
@@ -197,7 +197,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
 
                     <!-- Color -->
                     <div>
-                        <x-input-label for="color" value="Color Theme" />
+                        <x-input-label for="color" value="{{ __('Color Theme') }}" />
                         <select wire:model="color" id="color"
                             class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             @foreach ($colors as $colorItem)
@@ -210,7 +210,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
 
                 <!-- Description -->
                 <div>
-                    <x-input-label for="description" value="Description (Optional)" />
+                    <x-input-label for="description" value="{{ __('Description (Optional)') }}" />
                     <textarea wire:model="description" id="description"
                         class="block mt-1 p-4 w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         rows="3">
@@ -221,11 +221,11 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    Cancel
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-primary-button class="ml-3">
-                    {{ $editingCategoryId ? 'Update Category' : 'Create Category' }}
+                    {{ $editingCategoryId ? __('Update Category') : __('Create Category') }}
                 </x-primary-button>
             </div>
         </form>
@@ -237,7 +237,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
             Livewire.on('notify', (message) => {
                 const msg = Array.isArray(message) ? message[0] : message;
                 Swal.fire({
-                    title: 'Success!',
+                    title: '{{ __('Success!') }}',
                     text: msg,
                     icon: 'success',
                     timer: 2000,
@@ -256,7 +256,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Cat
                     showCancelButton: true,
                     confirmButtonColor: '#4f46e5',
                     cancelButtonColor: '#ef4444',
-                    confirmButtonText: options.confirmButtonText || 'Yes, proceed!'
+                    confirmButtonText: options.confirmButtonText || '{{ __('Yes, proceed!') }}'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         if (options.componentId) {

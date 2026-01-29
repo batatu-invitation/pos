@@ -52,6 +52,24 @@ class extends Component
         ['name' => 'Capital Contributions', 'amount' => 5000.00, 'type' => 'positive'],
     ];
 
+    public function mount()
+    {
+        $this->operatingActivities = array_map(function ($item) {
+            $item['name'] = __($item['name']);
+            return $item;
+        }, $this->operatingActivities);
+
+        $this->investingActivities = array_map(function ($item) {
+            $item['name'] = __($item['name']);
+            return $item;
+        }, $this->investingActivities);
+
+        $this->financingActivities = array_map(function ($item) {
+            $item['name'] = __($item['name']);
+            return $item;
+        }, $this->financingActivities);
+    }
+
     public function calculateTotal($activities)
     {
         $total = 0;
@@ -76,7 +94,7 @@ class extends Component
                 <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 focus:outline-none mr-4 md:hidden">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <h1 class="text-2xl font-semibold text-gray-800">Cash Flow Statement</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">{{ __('Cash Flow Statement') }}</h1>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -86,7 +104,7 @@ class extends Component
                 </button>
                 <a href="{{ route('pos.visual') }}" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                     <i class="fas fa-cash-register mr-2"></i>
-                    Open POS
+                    {{ __('Open POS') }}
                 </a>
             </div>
         </header>
@@ -99,23 +117,23 @@ class extends Component
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Period</label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Period') }}</label>
                             <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
-                                <option>This Month</option>
-                                <option>Last Month</option>
-                                <option>This Quarter</option>
-                                <option>This Year</option>
+                                <option>{{ __('This Month') }}</option>
+                                <option>{{ __('Last Month') }}</option>
+                                <option>{{ __('This Quarter') }}</option>
+                                <option>{{ __('This Year') }}</option>
                             </select>
                         </div>
                         <div class="relative self-end">
                             <button class="px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                                Update
+                                {{ __('Update') }}
                             </button>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-download mr-2"></i> Export
+                            <i class="fas fa-download mr-2"></i> {{ __('Export') }}
                         </button>
                     </div>
                 </div>
@@ -124,29 +142,29 @@ class extends Component
             <!-- Cash Flow Statement -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-gray-800">Cash Flow Statement</h2>
+                    <h2 class="text-lg font-bold text-gray-800">{{ __('Cash Flow Statement') }}</h2>
                     <span class="text-sm text-gray-500">Jan 1, 2024 - Jan 31, 2024</span>
                 </div>
 
                 <div class="p-6">
                     <!-- Operating Activities -->
                     <div class="mb-8">
-                        <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">Operating Activities</h3>
+                        <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Operating Activities') }}</h3>
                         <div class="space-y-3">
                             @foreach($operatingActivities as $activity)
                             <div class="flex justify-between items-center py-2 border-b border-gray-50">
                                 <span class="text-gray-700">{{ $activity['name'] }}</span>
                                 <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ $activity['type'] === 'negative' ? '(' : '' }}${{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
+                                    {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
                                 </span>
                             </div>
                             @endforeach
 
                             <div class="flex justify-between items-center py-3 bg-indigo-50 px-4 rounded-lg mt-2">
-                                <span class="font-bold text-indigo-900">Net Cash from Operating Activities</span>
+                                <span class="font-bold text-indigo-900">{{ __('Net Cash from Operating Activities') }}</span>
                                 @php $totalOperating = $this->calculateTotal($operatingActivities); @endphp
                                 <span class="font-bold {{ $totalOperating < 0 ? 'text-red-700' : 'text-indigo-900' }}">
-                                    {{ $totalOperating < 0 ? '(' : '' }}${{ number_format(abs($totalOperating), 2) }}{{ $totalOperating < 0 ? ')' : '' }}
+                                    {{ $totalOperating < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalOperating), 2) }}{{ $totalOperating < 0 ? ')' : '' }}
                                 </span>
                             </div>
                         </div>
@@ -154,22 +172,22 @@ class extends Component
 
                     <!-- Investing Activities -->
                     <div class="mb-8">
-                        <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">Investing Activities</h3>
+                        <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Investing Activities') }}</h3>
                         <div class="space-y-3">
                             @foreach($investingActivities as $activity)
                             <div class="flex justify-between items-center py-2 border-b border-gray-50">
                                 <span class="text-gray-700">{{ $activity['name'] }}</span>
                                 <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ $activity['type'] === 'negative' ? '(' : '' }}${{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
+                                    {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
                                 </span>
                             </div>
                             @endforeach
 
                             <div class="flex justify-between items-center py-3 bg-indigo-50 px-4 rounded-lg mt-2">
-                                <span class="font-bold text-indigo-900">Net Cash from Investing Activities</span>
+                                <span class="font-bold text-indigo-900">{{ __('Net Cash from Investing Activities') }}</span>
                                 @php $totalInvesting = $this->calculateTotal($investingActivities); @endphp
                                 <span class="font-bold {{ $totalInvesting < 0 ? 'text-red-700' : 'text-indigo-900' }}">
-                                    {{ $totalInvesting < 0 ? '(' : '' }}${{ number_format(abs($totalInvesting), 2) }}{{ $totalInvesting < 0 ? ')' : '' }}
+                                    {{ $totalInvesting < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalInvesting), 2) }}{{ $totalInvesting < 0 ? ')' : '' }}
                                 </span>
                             </div>
                         </div>
@@ -177,22 +195,22 @@ class extends Component
 
                     <!-- Financing Activities -->
                     <div class="mb-8">
-                        <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">Financing Activities</h3>
+                        <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Financing Activities') }}</h3>
                         <div class="space-y-3">
                             @foreach($financingActivities as $activity)
                             <div class="flex justify-between items-center py-2 border-b border-gray-50">
                                 <span class="text-gray-700">{{ $activity['name'] }}</span>
                                 <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ $activity['type'] === 'negative' ? '(' : '' }}${{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
+                                    {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
                                 </span>
                             </div>
                             @endforeach
 
                             <div class="flex justify-between items-center py-3 bg-indigo-50 px-4 rounded-lg mt-2">
-                                <span class="font-bold text-indigo-900">Net Cash from Financing Activities</span>
+                                <span class="font-bold text-indigo-900">{{ __('Net Cash from Financing Activities') }}</span>
                                 @php $totalFinancing = $this->calculateTotal($financingActivities); @endphp
                                 <span class="font-bold {{ $totalFinancing < 0 ? 'text-red-700' : 'text-indigo-900' }}">
-                                    {{ $totalFinancing < 0 ? '(' : '' }}${{ number_format(abs($totalFinancing), 2) }}{{ $totalFinancing < 0 ? ')' : '' }}
+                                    {{ $totalFinancing < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalFinancing), 2) }}{{ $totalFinancing < 0 ? ')' : '' }}
                                 </span>
                             </div>
                         </div>
@@ -201,10 +219,10 @@ class extends Component
                     <!-- Total Cash Flow -->
                     <div class="mt-8 border-t-2 border-gray-200 pt-6">
                         <div class="flex justify-between items-center py-4 bg-gray-900 text-white px-6 rounded-xl shadow-lg">
-                            <span class="text-lg font-bold">Net Increase (Decrease) in Cash</span>
+                            <span class="text-lg font-bold">{{ __('Net Increase (Decrease) in Cash') }}</span>
                             @php $netCash = $totalOperating + $totalInvesting + $totalFinancing; @endphp
                             <span class="text-xl font-bold {{ $netCash < 0 ? 'text-red-400' : 'text-green-400' }}">
-                                {{ $netCash < 0 ? '(' : '' }}${{ number_format(abs($netCash), 2) }}{{ $netCash < 0 ? ')' : '' }}
+                                {{ $netCash < 0 ? '(' : '' }}Rp. {{ number_format(abs($netCash), 2) }}{{ $netCash < 0 ? ')' : '' }}
                             </span>
                         </div>
                     </div>

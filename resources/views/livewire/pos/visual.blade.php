@@ -20,7 +20,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     public $categoryFilter = null;
     public $cart = []; // [productId => [id, name, price, quantity, image, stock]]
     public $selectedCustomerId = null;
-    public $selectedCustomerName = 'Walk-in Customer';
+    public $selectedCustomerName = '';
     public $customerSearch = '';
     public $showCustomerSearch = false;
     public $taxRate = 0.1;
@@ -43,12 +43,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     // Payment State
     public $receivedAmount = '';
     public $paymentMethod = 'cash';
-    public $paymentMethods = [
-        ['id' => 'cash', 'name' => 'Cash', 'icon' => 'fa-money-bill-wave', 'color' => 'indigo'],
-        ['id' => 'card', 'name' => 'Credit/Debit Card', 'icon' => 'fa-credit-card', 'color' => 'gray'],
-        ['id' => 'qr', 'name' => 'QR Code', 'icon' => 'fa-qrcode', 'color' => 'gray'],
-        ['id' => 'ewallet', 'name' => 'E-Wallet', 'icon' => 'fa-wallet', 'color' => 'gray'],
-    ];
+    public $paymentMethods = [];
 
     // New Customer
     public $newCustomer = [
@@ -60,6 +55,15 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
     public function mount()
     {
+        $this->selectedCustomerName = __('Walk-in Customer');
+
+        $this->paymentMethods = [
+            ['id' => 'cash', 'name' => __('Cash'), 'icon' => 'fa-money-bill-wave', 'color' => 'indigo'],
+            ['id' => 'card', 'name' => __('Credit/Debit Card'), 'icon' => 'fa-credit-card', 'color' => 'gray'],
+            ['id' => 'qr', 'name' => __('QR Code'), 'icon' => 'fa-qrcode', 'color' => 'gray'],
+            ['id' => 'ewallet', 'name' => __('E-Wallet'), 'icon' => 'fa-wallet', 'color' => 'gray'],
+        ];
+
         // Check for held order restoration from query parameter
         if (request()->has('restore')) {
             $sale = Sale::with(['items', 'customer'])->find(request()->get('restore'));
@@ -77,14 +81,14 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     ];
                 }
                 $this->selectedCustomerId = $sale->customer_id;
-                $this->selectedCustomerName = $sale->customer ? $sale->customer->name : 'Walk-in Customer';
+                $this->selectedCustomerName = $sale->customer ? $sale->customer->name : __('Walk-in Customer');
                 $this->note = $sale->notes ?? '';
                 $this->discount = $sale->discount ?? 0;
                 // Shipping is not in the create method, but if it was added to model, we could restore it.
                 // Assuming shipping is 0 for now as it wasn't in the create method visible in search results.
                 $this->shipping = 0;
 
-                $this->dispatch('notify', 'Held order restored successfully!');
+                $this->dispatch('notify', __('Held order restored successfully!'));
             }
         }
         // Check for held order restoration from session
@@ -97,7 +101,9 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             $this->discount = $data['discount'] ?? 0;
             $this->shipping = $data['shipping'] ?? 0;
             session()->forget('restored_order');
-            $this->dispatch('notify', 'Order restored successfully!');
+            $this->dispatch('notify', __('Order restored successfully!'));
+        } else {
+             $this->selectedCustomerName = __('Walk-in Customer');
         }
     }
 
@@ -148,7 +154,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         }
 
         if ($product->stock <= 0) {
-            $this->dispatch('notify', 'Product is out of stock!');
+            $this->dispatch('notify', __('Product is out of stock!'));
             return;
         }
 
@@ -156,7 +162,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             if ($this->cart[$productId]['quantity'] < $product->stock) {
                 $this->cart[$productId]['quantity']++;
             } else {
-                $this->dispatch('notify', 'Not enough stock!');
+                $this->dispatch('notify', __('Not enough stock!'));
             }
         } else {
             $this->cart[$productId] = [
@@ -182,7 +188,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             if ($newQuantity <= $this->cart[$productId]['stock']) {
                 $this->cart[$productId]['quantity'] = $newQuantity;
             } else {
-                $this->dispatch('notify', 'Not enough stock!');
+                $this->dispatch('notify', __('Not enough stock!'));
             }
         } else {
             unset($this->cart[$productId]);
@@ -205,7 +211,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     public function removeCustomer()
     {
         $this->selectedCustomerId = null;
-        $this->selectedCustomerName = 'Walk-in Customer';
+        $this->selectedCustomerName = __('Walk-in Customer');
     }
 
     public function getSubtotalProperty()
@@ -251,13 +257,13 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         $this->selectCustomer($customer->id, $customer->name);
         $this->showCreateCustomerModal = false;
         $this->newCustomer = ['name' => '', 'email' => '', 'phone' => '', 'address' => ''];
-        $this->dispatch('notify', 'Customer created successfully!');
+        $this->dispatch('notify', __('Customer created successfully!'));
     }
 
     public function holdOrder()
     {
         if (empty($this->cart)) {
-            $this->dispatch('notify', 'Cart is empty!');
+            $this->dispatch('notify', __('Cart is empty!'));
             return;
         }
 
@@ -290,7 +296,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         });
 
         $this->reset(['cart', 'selectedCustomerId', 'selectedCustomerName', 'note', 'discount', 'shipping']);
-        $this->dispatch('notify', 'Order held successfully!');
+        $this->dispatch('notify', __('Order held successfully!'));
     }
 
     public function restoreOrder($saleId)
@@ -298,7 +304,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         $sale = Sale::with('items.product', 'customer')->find($saleId);
 
         if (!$sale) {
-            $this->dispatch('notify', 'Order not found!');
+            $this->dispatch('notify', __('Order not found!'));
             return;
         }
 
@@ -306,7 +312,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         foreach ($sale->items as $item) {
             $this->cart[$item->product_id] = [
                 'id' => $item->product_id,
-                'name' => $item->product ? $item->product->name : 'Unknown Product',
+                'name' => $item->product ? $item->product->name : __('Unknown Product'),
                 'price' => $item->price,
                 'quantity' => $item->quantity,
                 'image' => $item->product ? $item->product->image : null,
@@ -315,7 +321,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         }
 
         $this->selectedCustomerId = $sale->customer_id;
-        $this->selectedCustomerName = $sale->customer ? $sale->customer->name : 'Walk-in Customer';
+        $this->selectedCustomerName = $sale->customer ? $sale->customer->name : __('Walk-in Customer');
         $this->note = $sale->notes;
         $this->discount = $sale->discount;
         // Shipping is not in Sale model yet, assuming 0 for restored orders unless we add it
@@ -329,7 +335,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         // But if we delete it, it won't show in held orders.
 
         $this->showHeldOrdersModal = false;
-        $this->dispatch('notify', 'Order restored!');
+        $this->dispatch('notify', __('Order restored!'));
     }
 
     public function selectPaymentMethod($methodId)
@@ -356,7 +362,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     public function completePayment()
     {
         if (empty($this->cart)) {
-            $this->dispatch('notify', 'Cart is empty!');
+            $this->dispatch('notify', __('Cart is empty!'));
             return;
         }
 
@@ -399,7 +405,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         $this->showPaymentModal = false;
         $this->showReceiptModal = true;
         $this->reset(['cart', 'selectedCustomerId', 'selectedCustomerName', 'note', 'discount', 'shipping', 'receivedAmount', 'paymentMethod']);
-        $this->dispatch('notify', 'Payment completed successfully!');
+        $this->dispatch('notify', __('Payment completed successfully!'));
     }
 
     public function newSale()
@@ -412,7 +418,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     public function checkout()
     {
         if (empty($this->cart)) {
-            $this->dispatch('notify', 'Cart is empty!');
+            $this->dispatch('notify', __('Cart is empty!'));
             return;
         }
 
@@ -440,7 +446,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     </span>
                     <input type="text" wire:model.live.debounce.300ms="search"
                         class="w-full py-2.5 pl-10 pr-4 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 transition-colors"
-                        placeholder="Scan barcode or search products...">
+                        placeholder="{{ __('Scan barcode or search products...') }}">
                     <span class="absolute inset-y-0 right-0 flex items-center pr-3">
                         <i class="fas fa-barcode text-gray-500 cursor-pointer"></i>
                     </span>
@@ -450,27 +456,26 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="flex items-center space-x-1 mr-2 border-r border-gray-200 pr-2">
                         <button onclick="toggleFullscreen()"
                             class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100"
-                            title="Toggle Fullscreen">
+                            title="{{ __('Toggle Fullscreen') }}">
                             <i class="fas fa-expand text-lg"></i>
                         </button>
                         <button onclick="connectDevice('printer')" id="btn-printer"
                             class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group"
-                            title="Connect Printer">
+                            title="{{ __('Connect Printer') }}">
                             <i class="fas fa-print text-lg"></i>
                             <span id="status-printer"
                                 class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
                         </button>
                         <button onclick="connectDevice('scanner')" id="btn-scanner"
                             class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group"
-                            title="Connect Scanner">
+                            title="{{ __('Connect Scanner') }}">
                             <i class="fas fa-barcode text-lg"></i>
                             <span id="status-scanner"
                                 class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
                         </button>
                     </div>
                     <button wire:click="filterCategory(null)"
-                        class="px-4 py-2 {{ is_null($categoryFilter) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }} rounded-lg text-sm font-medium whitespace-nowrap shadow-sm transition-colors">All
-                        Items</button>
+                        class="px-4 py-2 {{ is_null($categoryFilter) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }} rounded-lg text-sm font-medium whitespace-nowrap shadow-sm transition-colors">{{ __('All Items') }}</button>
                     <div class="flex flex-nowrap space-x-2 overflow-x-auto no-scrollbar md:max-w-[440px]">
                         @foreach ($categories as $category)
                             <button wire:click="filterCategory('{{ $category->id }}')"
@@ -503,13 +508,13 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         <div class="p-3">
                             <h3 class="text-sm font-bold text-gray-800 truncate">{{ $product->name }}</h3>
                             <p class="text-xs text-gray-500 mt-1">
-                                {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of stock' }}</p>
+                                {{ $product->stock > 0 ? $product->stock . ' ' . __('in stock') : __('Out of stock') }}</p>
                         </div>
                     </div>
                 @empty
                     <div class="col-span-full text-center py-10 text-gray-500">
                         <i class="fas fa-box-open text-4xl mb-2"></i>
-                        <p>No products found.</p>
+                        <p>{{ __('No products found.') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -526,7 +531,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         <!-- Customer & Options -->
         <div class="p-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between mb-3 relative">
-                <div class="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-gray-300 cursor-pointer hover:border-indigo-500 transition-colors flex-1 mr-2"
+                <div class="flex items-center space-x-2 bg-white px-3 py-2.5 rounded-lg border border-gray-300 cursor-pointer hover:border-indigo-500 transition-colors flex-1 mr-2"
                     x-data="{ open: false }" @click.outside="open = false">
 
                     <div class="flex items-center flex-1" @click="open = !open">
@@ -544,7 +549,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         style="display: none;">
                         <input type="text" wire:model.live.debounce.300ms="customerSearch"
                             class="w-full text-sm p-4 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 mb-2"
-                            placeholder="Search customer...">
+                            placeholder="{{ __('Search customer...') }}">
                         <ul class="max-h-40 overflow-y-auto">
                             @foreach ($customers as $customer)
                                 <li wire:click="selectCustomer('{{ $customer->id }}', '{{ $customer->name }}')"
@@ -557,7 +562,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 </li>
                             @endforeach
                             @if (empty($customers) && $customerSearch)
-                                <li class="p-2 text-xs text-gray-500 text-center">No customers found</li>
+                                <li class="p-2 text-xs text-gray-500 text-center">{{ __('No customers found') }}</li>
                             @endif
                         </ul>
                     </div>
@@ -571,15 +576,15 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             <div class="grid grid-cols-3 gap-2">
                 <button wire:click="$set('showNoteModal', true)"
                     class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="fas fa-sticky-note mr-1"></i> Note
+                    <i class="fas fa-sticky-note mr-1"></i> {{ __('Note') }}
                 </button>
                 <button wire:click="$set('showShippingModal', true)"
                     class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="fas fa-truck mr-1"></i> Shipping
+                    <i class="fas fa-truck mr-1"></i> {{ __('Shipping') }}
                 </button>
                 <button wire:click="$set('showDiscountModal', true)"
                     class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="fas fa-percent mr-1"></i> Discount
+                    <i class="fas fa-percent mr-1"></i> {{ __('Discount') }}
                 </button>
             </div>
         </div>
@@ -619,7 +624,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             @empty
                 <div class="h-full flex flex-col items-center justify-center text-gray-400">
                     <i class="fas fa-shopping-cart text-4xl mb-2"></i>
-                    <p class="text-sm">Cart is empty</p>
+                    <p class="text-sm">{{ __('Cart is empty. Scan an item to start.') }}</p>
                 </div>
             @endforelse
         </div>
@@ -628,27 +633,27 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         <div class="bg-gray-50 p-4 border-t border-gray-200">
             <div class="space-y-2 mb-4">
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span>
+                    <span>{{ __('Subtotal') }}</span>
                     <span>Rp. {{ number_format($this->subtotal, 2) }}</span>
                 </div>
                 @if ($this->discount > 0)
                     <div class="flex justify-between text-sm text-red-500">
-                        <span>Discount</span>
+                        <span>{{ __('Discount') }}</span>
                         <span>-Rp. {{ number_format($this->discount, 2) }}</span>
                     </div>
                 @endif
                 <div class="flex justify-between text-staxm text-gray-600">
-                    <span>Tax({{ number_format($this->taxRate, 0) }}%)</span>
+                    <span>{{ __('Tax') }}({{ number_format($this->taxRate, 0) }}%)</span>
                     <span>Rp. {{ number_format($this->tax, 2) }}</span>
                 </div>
                 @if ($this->shipping > 0)
                     <div class="flex justify-between text-sm text-gray-600">
-                        <span>Shipping</span>
+                        <span>{{ __('Shipping') }}</span>
                         <span>Rp. {{ number_format($this->shipping, 2) }}</span>
                     </div>
                 @endif
                 <div class="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2">
-                    <span>Total Payable</span>
+                    <span>{{ __('Total Payable') }}</span>
                     <span>Rp. {{ number_format($this->total, 2) }}</span>
                 </div>
             </div>
@@ -656,18 +661,18 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <button wire:click="$set('cart', [])"
                     class="py-3 rounded-lg border border-red-200 text-red-600 font-medium text-sm hover:bg-red-50 transition-colors">
-                    Cancel
+                    {{ __('Cancel') }}
                 </button>
                 <button wire:click="holdOrder"
                     class="py-3 rounded-lg border border-indigo-200 text-indigo-600 font-medium text-sm hover:bg-indigo-50 transition-colors">
-                    Hold Order
+                    {{ __('Held Orders') }}
                 </button>
             </div>
 
             <button wire:click="checkout" wire:loading.attr="disabled"
                 class="block w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                <span wire:loading.remove>Pay Now Rp. {{ number_format($this->total, 2) }}</span>
-                <span wire:loading>Processing...</span>
+                <span wire:loading.remove>{{ __('Pay Now') }} Rp. {{ number_format($this->total, 2) }}</span>
+                <span wire:loading>{{ __('Processing...') }}</span>
             </button>
         </div>
     </div>
@@ -683,17 +688,17 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Order Note</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Order Note') }}</h3>
                         <div class="mt-2">
                             <textarea wire:model="note" rows="4"
                                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm px-4 py-2 border border-gray-300 rounded-md"
-                                placeholder="Add a note to this order..."></textarea>
+                                placeholder="{{ __('Add a note to this order...') }}"></textarea>
                         </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" wire:click="$set('showNoteModal', false)"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Save Note
+                            {{ __('Save Note') }}
                         </button>
                     </div>
                 </div>
@@ -712,7 +717,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Shipping Cost</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Shipping Cost') }}</h3>
                         <div class="mt-2">
                             <div class="relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -727,7 +732,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" wire:click="$set('showShippingModal', false)"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Close
+                            {{ __('Close') }}
                         </button>
                     </div>
                 </div>
@@ -746,7 +751,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Discount</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Discount') }}</h3>
                         <div class="mt-2">
                             <div class="relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -762,7 +767,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" wire:click="$set('showDiscountModal', false)"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Close
+                            {{ __('Close') }}
                         </button>
                     </div>
                 </div>
@@ -781,11 +786,11 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">New Customer
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">{{ __('New Customer') }}
                         </h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                <label class="block text-sm font-medium text-gray-700">{{ __('Name') }}</label>
                                 <input type="text" wire:model="newCustomer.name"
                                     class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md">
                                 @error('newCustomer.name')
@@ -793,7 +798,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Email</label>
+                                <label class="block text-sm font-medium text-gray-700">{{ __('Email') }}</label>
                                 <input type="email" wire:model="newCustomer.email"
                                     class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md">
                                 @error('newCustomer.email')
@@ -801,7 +806,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Phone</label>
+                                <label class="block text-sm font-medium text-gray-700">{{ __('Phone') }}</label>
                                 <input type="text" wire:model="newCustomer.phone"
                                     class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md">
                                 @error('newCustomer.phone')
@@ -809,7 +814,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Address</label>
+                                <label class="block text-sm font-medium text-gray-700">{{ __('Address') }}</label>
                                 <textarea wire:model="newCustomer.address" rows="2"
                                     class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md"></textarea>
                             </div>
@@ -818,11 +823,11 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" wire:click="saveNewCustomer"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Save Customer
+                            {{ __('Save Customer') }}
                         </button>
                         <button type="button" wire:click="$set('showCreateCustomerModal', false)"
                             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Cancel
+                            {{ __('Cancel') }}
                         </button>
                     </div>
                 </div>
@@ -841,7 +846,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">Held Orders</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">{{ __('Held Orders') }}</h3>
                         <div class="overflow-y-auto max-h-96">
                             @forelse($this->heldOrders as $order)
                                 <div
@@ -849,20 +854,20 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                     <div>
                                         <p class="font-bold text-gray-800">{{ $order->invoice_number }}</p>
                                         <p class="text-sm text-gray-500">{{ $order->created_at->diffForHumans() }} -
-                                            {{ $order->customer ? $order->customer->name : 'Walk-in' }}</p>
+                                            {{ $order->customer ? $order->customer->name : __('Walk-in') }}</p>
                                         <p class="text-xs text-gray-400">Total: Rp.
                                             {{ number_format($order->total_amount, 2) }} | Note: {{ $order->notes }}
                                         </p>
                                     </div>
                                     <button wire:click="restoreOrder('{{ $order->id }}')"
                                         class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 text-sm font-medium">
-                                        Restore
+                                        {{ __('Restore') }}
                                     </button>
                                 </div>
                             @empty
                                 <div class="text-center text-gray-500 py-8">
                                     <i class="fas fa-box-open text-4xl mb-2"></i>
-                                    <p>No held orders found.</p>
+                                    <p>{{ __('No held orders found.') }}</p>
                                 </div>
                             @endforelse
                         </div>
@@ -870,7 +875,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" wire:click="$set('showHeldOrdersModal', false)"
                             class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Close
+                            {{ __('Close') }}
                         </button>
                     </div>
                 </div>
@@ -890,10 +895,10 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="flex flex-col md:flex-row h-[80vh]">
                         <!-- Left: Order Summary -->
                         <div class="w-full md:w-1/3 bg-gray-50 border-r border-gray-200 p-6 flex flex-col">
-                            <h2 class="text-xl font-bold text-gray-800 mb-6">Order Summary</h2>
+                            <h2 class="text-xl font-bold text-gray-800 mb-6">{{ __('Order Summary') }}</h2>
 
                             <div class="mb-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-                                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Customer</p>
+                                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">{{ __('Customer') }}</p>
                                 <div class="flex items-center text-gray-800 font-medium">
                                     <i class="fas fa-user-circle text-indigo-500 mr-2 text-lg"></i>
                                     {{ $selectedCustomerName }}
@@ -914,33 +919,33 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
                             <div class="border-t border-gray-200 pt-4 mt-4 space-y-2">
                                 <div class="flex justify-between text-gray-600">
-                                    <span>Subtotal</span>
+                                    <span>{{ __('Subtotal') }}</span>
                                     <span>Rp. {{ number_format($this->subtotal, 2) }}</span>
                                 </div>
                                 @if($discount > 0)
                                 <div class="flex justify-between text-red-500">
-                                    <span>Discount</span>
+                                    <span>{{ __('Discount') }}</span>
                                     <span>-Rp. {{ number_format($discount, 2) }}</span>
                                 </div>
                                 @endif
                                 <div class="flex justify-between text-gray-600">
-                                    <span>Tax</span>
+                                    <span>{{ __('Tax') }}</span>
                                     <span>Rp. {{ number_format($this->tax, 2) }}</span>
                                 </div>
                                 @if($shipping > 0)
                                 <div class="flex justify-between text-gray-600">
-                                    <span>Shipping</span>
+                                    <span>{{ __('Shipping') }}</span>
                                     <span>Rp. {{ number_format($shipping, 2) }}</span>
                                 </div>
                                 @endif
                                 <div class="flex justify-between text-2xl font-bold text-gray-900 pt-2">
-                                    <span>Total</span>
+                                    <span>{{ __('Total') }}</span>
                                     <span>Rp. {{ number_format($this->total, 2) }}</span>
                                 </div>
                             </div>
 
                             <button wire:click="$set('showPaymentModal', false)" class="mt-6 text-center text-indigo-600 font-medium hover:text-indigo-800">
-                                <i class="fas fa-arrow-left mr-2"></i> Back to POS
+                                <i class="fas fa-arrow-left mr-2"></i> {{ __('Back to POS') }}
                             </button>
                         </div>
 
@@ -961,7 +966,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                             <div class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
 
                                 <div class="mb-6">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Received Amount</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Received Amount') }}</label>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 text-xl font-bold">Rp.</span>
                                         <input type="number" step="0.01" wire:model.live="receivedAmount" class="w-full pl-12 pr-4 py-4 text-3xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
@@ -969,20 +974,20 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 </div>
 
                                 <div class="grid grid-cols-4 gap-3 mb-6">
-                                    <button wire:click="setReceivedAmount({{ $this->total }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">Exact</button>
+                                    <button wire:click="setReceivedAmount({{ $this->total }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ __('Exact') }}</button>
                                     <button wire:click="setReceivedAmount({{ ceil($this->total / 1000) * 1000 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 1000) * 1000, 0) }}</button>
                                     <button wire:click="setReceivedAmount({{ ceil($this->total / 5000) * 5000 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 5000) * 5000, 0) }}</button>
                                     <button wire:click="setReceivedAmount({{ ceil($this->total / 10000) * 10000 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 10000) * 10000, 0) }}</button>
                                 </div>
 
                                 <div class="bg-green-50 rounded-xl p-4 flex justify-between items-center mb-8 border border-green-100">
-                                    <span class="text-green-800 font-medium">Change Return</span>
+                                    <span class="text-green-800 font-medium">{{ __('Change Return') }}</span>
                                     <span class="text-2xl font-bold text-green-700">Rp. {{ number_format($this->change, 2) }}</span>
                                 </div>
 
                                 <button onclick="confirmPayment()" wire:loading.attr="disabled" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-xl text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-                                    <span wire:loading.remove>Complete Payment</span>
-                                    <span wire:loading>Processing...</span>
+                                    <span wire:loading.remove>{{ __('Complete Payment') }}</span>
+                                    <span wire:loading>{{ __('Processing...') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -1013,12 +1018,12 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="border-b-2 border-dashed border-black my-2"></div>
 
                     <div class="flex justify-between text-xs mb-2">
-                        <span>Date: {{ $lastSale->created_at->format('Y-m-d') }}</span>
-                        <span>Time: {{ $lastSale->created_at->format('h:i A') }}</span>
+                        <span>{{ __('Date') }}: {{ $lastSale->created_at->format('Y-m-d') }}</span>
+                        <span>{{ __('Time') }}: {{ $lastSale->created_at->format('h:i A') }}</span>
                     </div>
                     <div class="flex justify-between text-xs mb-2">
-                        <span>Order: {{ $lastSale->invoice_number }}</span>
-                        <span>Cashier: {{ auth()->user()->name ?? 'Admin' }}</span>
+                        <span>{{ __('Order') }}: {{ $lastSale->invoice_number }}</span>
+                        <span>{{ __('Cashier') }}: {{ auth()->user()->name ?? 'Admin' }}</span>
                     </div>
 
                     <div class="border-b-2 border-dashed border-black my-2"></div>
@@ -1035,23 +1040,23 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="border-b-2 border-dashed border-black my-2"></div>
 
                     <div class="flex justify-between font-bold text-sm">
-                        <span>TOTAL</span>
+                        <span>{{ __('TOTAL') }}</span>
                         <span>Rp. {{ number_format($lastSale->total_amount, 2) }}</span>
                     </div>
                     <div class="flex justify-between text-xs mt-1">
-                        <span>CASH</span>
+                        <span>{{ __('CASH') }}</span>
                         <span>Rp. {{ number_format($lastSale->cash_received, 2) }}</span>
                     </div>
                     <div class="flex justify-between text-xs mt-1">
-                        <span>CHANGE</span>
+                        <span>{{ __('CHANGE') }}</span>
                         <span>Rp. {{ number_format($lastSale->change_amount, 2) }}</span>
                     </div>
 
                     <div class="border-b-2 border-dashed border-black my-4"></div>
 
                     <div class="text-center text-xs">
-                        <p class="mb-2">Thank you for your purchase!</p>
-                        <p>Please visit us again.</p>
+                        <p class="mb-2">{{ __('Thank you for your purchase!') }}</p>
+                        <p>{{ __('Please visit us again.') }}</p>
                         <div class="mt-4 mx-auto max-w-[150px]">
                             <!-- Barcode Placeholder -->
                             <div class="h-8 bg-black"></div>
@@ -1067,38 +1072,38 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                             <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
                                 <i class="fas fa-check text-3xl"></i>
                             </div>
-                            <h2 class="text-2xl font-bold">Payment Successful!</h2>
-                            <p class="text-green-100 mt-1">Transaction {{ $lastSale->invoice_number }}</p>
+                            <h2 class="text-2xl font-bold">{{ __('Payment Successful!') }}</h2>
+                            <p class="text-green-100 mt-1">{{ __('Transaction') }} {{ $lastSale->invoice_number }}</p>
                         </div>
 
                         <div class="p-8">
                             <div class="text-center mb-6">
-                                <p class="text-gray-500 text-sm">Total Paid</p>
+                                <p class="text-gray-500 text-sm">{{ __('Total Paid') }}</p>
                                 <p class="text-3xl font-bold text-gray-900">Rp. {{ number_format($lastSale->total_amount, 2) }}</p>
-                                <p class="text-gray-400 text-xs mt-1">Via {{ ucfirst($lastSale->payment_method) }}</p>
+                                <p class="text-gray-400 text-xs mt-1">{{ __('Via') }} {{ ucfirst($lastSale->payment_method) }}</p>
                             </div>
 
                             <div class="border-t border-b border-gray-100 py-4 mb-6 space-y-2">
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Date</span>
+                                    <span class="text-gray-600">{{ __('Date') }}</span>
                                     <span class="font-medium text-gray-900">{{ $lastSale->created_at->format('M d, Y, h:i A') }}</span>
                                 </div>
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Customer</span>
-                                    <span class="font-medium text-gray-900">{{ $lastSale->customer ? $lastSale->customer->name : 'Walk-in Customer' }}</span>
+                                    <span class="text-gray-600">{{ __('Customer') }}</span>
+                                    <span class="font-medium text-gray-900">{{ $lastSale->customer ? $lastSale->customer->name : __('Walk-in Customer') }}</span>
                                 </div>
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Cashier</span>
+                                    <span class="text-gray-600">{{ __('Cashier') }}</span>
                                     <span class="font-medium text-gray-900">{{ auth()->user()->name ?? 'Admin' }}</span>
                                 </div>
                             </div>
 
                             <div class="space-y-3">
                                 <a href="{{ route('pos.receipt.print', $lastSale->id) }}" target="_blank" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-colors flex items-center justify-center">
-                                    <i class="fas fa-print mr-2"></i> Print Receipt (PDF)
+                                    <i class="fas fa-print mr-2"></i> {{ __('Print Receipt (PDF)') }}
                                 </a>
                                 <button class="w-full py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors flex items-center justify-center">
-                                    <i class="fas fa-envelope mr-2"></i> Email Receipt
+                                    <i class="fas fa-envelope mr-2"></i> {{ __('Email Receipt') }}
                                 </button>
                             </div>
                         </div>
@@ -1106,7 +1111,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
                     <div class="text-center">
                         <button wire:click="newSale" class="inline-flex items-center text-white hover:text-gray-200 font-medium">
-                            <i class="fas fa-arrow-left mr-2"></i> New Sale
+                            <i class="fas fa-arrow-left mr-2"></i> {{ __('New Sale') }}
                         </button>
                     </div>
                 </div>
@@ -1119,13 +1124,14 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     <script>
         function confirmPayment() {
             Swal.fire({
-                title: 'Confirm Payment?',
-                text: "Are you sure you want to complete this transaction?",
+                title: '{{ __('Confirm Payment?') }}',
+                text: "{{ __('Are you sure you want to complete this transaction?') }}",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#4f46e5',
                 cancelButtonColor: '#ef4444',
-                confirmButtonText: 'Yes, Complete Payment!'
+                confirmButtonText: '{{ __('Yes, Complete Payment!') }}',
+                cancelButtonText: '{{ __('Cancel') }}'
             }).then((result) => {
                 if (result.isConfirmed) {
                     @this.call('completePayment');
@@ -1139,7 +1145,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 // Assuming Swal is available globally as in other components
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        title: 'Info',
+                        title: '{{ __('Info') }}',
                         text: msg,
                         icon: 'info',
                         timer: 2000,

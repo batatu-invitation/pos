@@ -10,7 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\WithPagination;
 
 new #[Layout('components.layouts.app')]
-#[Title('Inventory Stock - Modern POS')]
+#[Title('Stok Inventaris - Modern POS')]
 class extends Component
 {
     use WithPagination;
@@ -95,7 +95,7 @@ class extends Component
             $product->increment('stock', $this->adjustmentQuantity);
         } elseif ($this->adjustmentType === 'subtract') {
             if ($product->stock < $this->adjustmentQuantity) {
-                $this->addError('adjustmentQuantity', 'Cannot subtract more than current stock.');
+                $this->addError('adjustmentQuantity', __('Cannot subtract more than current stock.'));
                 return;
             }
             $product->decrement('stock', $this->adjustmentQuantity);
@@ -110,14 +110,14 @@ class extends Component
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Inventory Stock</h2>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('Inventory Stock') }}</h2>
         <div class="flex space-x-2">
             <div class="relative">
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search products..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="{{ __('Search products...') }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm">
             </div>
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-file-export mr-2"></i> Export
+                    <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
                 </button>
                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
                     <button @click="
@@ -139,13 +139,14 @@ class extends Component
                     </button>
                     <button @click="
                         Swal.fire({
-                            title: 'Export PDF?',
-                            text: 'Do you want to export the inventory to PDF?',
+                            title: '{{ __('Export PDF?') }}',
+                            text: '{{ __('Do you want to export the inventory to PDF?') }}',
                             icon: 'question',
                             showCancelButton: true,
                             confirmButtonColor: '#3085d6',
                             cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes, export!'
+                            confirmButtonText: '{{ __('Yes, export!') }}',
+                            cancelButtonText: '{{ __('Cancel') }}'
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 $wire.exportPdf();
@@ -240,7 +241,7 @@ class extends Component
                             <div class="mt-2 space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Product</label>
-                                    <select wire:model="selectedProductId" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <select wire:model="selectedProductId" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                         <option value="">Select a product</option>
                                         @foreach($allProducts as $p)
                                             <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->sku }}) - Current: {{ $p->stock }}</option>
@@ -251,7 +252,7 @@ class extends Component
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Adjustment Type</label>
-                                    <select wire:model="adjustmentType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <select wire:model="adjustmentType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                         <option value="add">Add Stock</option>
                                         <option value="subtract">Subtract Stock</option>
                                         <option value="set">Set Quantity</option>

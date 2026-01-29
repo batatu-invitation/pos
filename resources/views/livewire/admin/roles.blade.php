@@ -7,8 +7,8 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
 new
-#[Layout('components.layouts.app', ['header' => 'Roles & Permissions'])]
-#[Title('Roles & Permissions - Modern POS')]
+#[Layout('components.layouts.app', ['header' => __('Roles & Permissions')])]
+#[Title(__('Roles & Permissions - Modern POS'))]
 class extends Component
 {
     public $roleName = '';
@@ -67,7 +67,7 @@ class extends Component
 
         $this->dispatch('close-modal', 'role-modal');
         $this->reset('roleName', 'editingRoleId');
-        $this->dispatch('notify', 'Role saved successfully!');
+        $this->dispatch('notify', __('Role saved successfully!'));
     }
 
     public function deleteRole($id)
@@ -77,7 +77,7 @@ class extends Component
             return; // Prevent deleting Super Admin
         }
         $role->delete();
-        $this->dispatch('notify', 'Role deleted successfully!');
+        $this->dispatch('notify', __('Role deleted successfully!'));
     }
 
     // Permission Management
@@ -103,10 +103,10 @@ class extends Component
         if ($this->editingPermissionId) {
             $permission = Permission::find($this->editingPermissionId);
             $permission->update(['name' => $this->permissionName]);
-            $message = 'Permission updated successfully!';
+            $message = __('Permission updated successfully!');
         } else {
             Permission::create(['name' => $this->permissionName]);
-            $message = 'Permission created successfully!';
+            $message = __('Permission created successfully!');
         }
 
         $this->dispatch('close-modal', 'permission-modal');
@@ -117,7 +117,7 @@ class extends Component
     public function deletePermission($id)
     {
         Permission::find($id)->delete();
-        $this->dispatch('notify', 'Permission deleted successfully!');
+        $this->dispatch('notify', __('Permission deleted successfully!'));
     }
 
     // Configure (Assign Permissions)
@@ -140,7 +140,7 @@ class extends Component
         $role->syncPermissions($this->selectedPermissions);
 
         $this->dispatch('close-modal', 'configure-role-modal');
-        $this->dispatch('notify', 'Role permissions updated successfully!');
+        $this->dispatch('notify', __('Role permissions updated successfully!'));
     }
 }
 ?>
@@ -155,17 +155,17 @@ class extends Component
 
             <div class="flex justify-between items-center mb-6">
                  <div>
-                    <h2 class="text-lg font-medium text-gray-900">Manage Access</h2>
+                    <h2 class="text-lg font-medium text-gray-900">{{ __('Manage Access') }}</h2>
                     <p class="mt-1 text-sm text-gray-600">
-                        Control user access and permissions across the system.
+                        {{ __('Control user access and permissions across the system.') }}
                     </p>
                 </div>
                 <div class="flex space-x-3">
                     <button wire:click="createPermission" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-colors">
-                        <i class="fas fa-key mr-2"></i> Create Permission
+                        <i class="fas fa-key mr-2"></i> {{ __('Create Permission') }}
                     </button>
                     <button wire:click="createRole" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm transition-colors">
-                        <i class="fas fa-plus mr-2"></i> Create New Role
+                        <i class="fas fa-plus mr-2"></i> {{ __('Create New Role') }}
                     </button>
                 </div>
             </div>
@@ -175,8 +175,8 @@ class extends Component
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow relative group">
                          @if($role->name !== 'Super Admin')
                             <button type="button" x-on:click="$dispatch('swal:confirm', {
-                                title: 'Delete Role?',
-                                text: 'Are you sure you want to delete this role? This action cannot be undone.',
+                                title: '{{ __('Delete Role?') }}',
+                                text: '{{ __('Are you sure you want to delete this role? This action cannot be undone.') }}',
                                 icon: 'warning',
                                 method: 'deleteRole',
                                 params: [{{ $role->id }}],
@@ -193,7 +193,7 @@ class extends Component
                             </div>
                         </div>
                         <p class="text-sm text-gray-500 mb-6 h-10">
-                            {{ $role->name }} role with {{ $role->permissions->count() }} associated permissions.
+                            {{ __(':role role with :count associated permissions.', ['role' => $role->name, 'count' => $role->permissions->count()]) }}
                         </p>
                         <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
                             <div class="flex -space-x-2">
@@ -202,12 +202,12 @@ class extends Component
                                         {{ $role->users_count }}
                                     </div>
                                 @else
-                                    <span class="text-xs text-gray-400">No users</span>
+                                    <span class="text-xs text-gray-400">{{ __('No users') }}</span>
                                 @endif
                             </div>
                             <div class="flex space-x-3">
-                                <button wire:click="editRole({{ $role->id }})" class="text-gray-600 text-sm font-medium hover:text-indigo-600">Edit</button>
-                                <button wire:click="configureRole({{ $role->id }})" class="text-indigo-600 text-sm font-medium hover:text-indigo-800">Configure <i class="fas fa-arrow-right ml-1"></i></button>
+                                <button wire:click="editRole({{ $role->id }})" class="text-gray-600 text-sm font-medium hover:text-indigo-600">{{ __('Edit') }}</button>
+                                <button wire:click="configureRole({{ $role->id }})" class="text-indigo-600 text-sm font-medium hover:text-indigo-800">{{ __('Configure') }} <i class="fas fa-arrow-right ml-1"></i></button>
                             </div>
                         </div>
                     </div>
@@ -216,7 +216,7 @@ class extends Component
 
             <!-- Permissions List -->
             <div class="mt-10">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Available Permissions</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Available Permissions') }}</h3>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         @foreach($permissions as $permission)
@@ -227,8 +227,8 @@ class extends Component
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button type="button" x-on:click="$dispatch('swal:confirm', {
-                                        title: 'Delete Permission?',
-                                        text: 'Are you sure you want to delete this permission?',
+                                        title: '{{ __('Delete Permission?') }}',
+                                        text: '{{ __('Are you sure you want to delete this permission?') }}',
                                         icon: 'warning',
                                         method: 'deletePermission',
                                         params: [{{ $permission->id }}],
@@ -241,7 +241,7 @@ class extends Component
                         @endforeach
                         @if($permissions->isEmpty())
                             <div class="col-span-full text-center py-4 text-gray-500 text-sm">
-                                No permissions found.
+                                {{ __('No permissions found.') }}
                             </div>
                         @endif
                     </div>
@@ -253,31 +253,31 @@ class extends Component
     <!-- Role Modal -->
     <x-modal name="role-modal" focusable>
         <form x-on:submit.prevent="$dispatch('swal:confirm', {
-            title: '{{ $editingRoleId ? 'Update Role?' : 'Create Role?' }}',
-            text: '{{ $editingRoleId ? 'Are you sure you want to update this role?' : 'Are you sure you want to create this new role?' }}',
+            title: '{{ $editingRoleId ? __('Update Role?') : __('Create Role?') }}',
+            text: '{{ $editingRoleId ? __('Are you sure you want to update this role?') : __('Are you sure you want to create this new role?') }}',
             icon: 'question',
-            confirmButtonText: '{{ $editingRoleId ? 'Yes, update it!' : 'Yes, create it!' }}',
+            confirmButtonText: '{{ $editingRoleId ? __('Yes, update it!') : __('Yes, create it!') }}',
             method: 'saveRole',
             params: [],
             componentId: '{{ $this->getId() }}'
         })" class="p-6">
             <h2 class="text-lg font-medium text-gray-900">
-                {{ $editingRoleId ? 'Edit Role' : 'Create New Role' }}
+                {{ $editingRoleId ? __('Edit Role') : __('Create New Role') }}
             </h2>
 
             <div class="mt-6">
-                <x-input-label for="roleName" value="Role Name" />
-                <x-text-input wire:model="roleName" id="roleName" class="block mt-1 w-full" type="text" placeholder="e.g. Store Manager" />
+                <x-input-label for="roleName" value="{{ __('Role Name') }}" />
+                <x-text-input wire:model="roleName" id="roleName" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. Store Manager') }}" />
                 <x-input-error :messages="$errors->get('roleName')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    Cancel
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-primary-button class="ml-3">
-                    Save Role
+                    {{ __('Save Role') }}
                 </x-primary-button>
             </div>
         </form>
@@ -286,31 +286,31 @@ class extends Component
     <!-- Permission Modal -->
     <x-modal name="permission-modal" focusable>
         <form x-on:submit.prevent="$dispatch('swal:confirm', {
-            title: '{{ $editingPermissionId ? 'Update Permission?' : 'Create Permission?' }}',
-            text: '{{ $editingPermissionId ? 'Are you sure you want to update this permission?' : 'Are you sure you want to create this new permission?' }}',
+            title: '{{ $editingPermissionId ? __('Update Permission?') : __('Create Permission?') }}',
+            text: '{{ $editingPermissionId ? __('Are you sure you want to update this permission?') : __('Are you sure you want to create this new permission?') }}',
             icon: 'question',
-            confirmButtonText: '{{ $editingPermissionId ? 'Yes, update it!' : 'Yes, create it!' }}',
+            confirmButtonText: '{{ $editingPermissionId ? __('Yes, update it!') : __('Yes, create it!') }}',
             method: 'savePermission',
             params: [],
             componentId: '{{ $this->getId() }}'
         })" class="p-6">
             <h2 class="text-lg font-medium text-gray-900">
-                {{ $editingPermissionId ? 'Edit Permission' : 'Create New Permission' }}
+                {{ $editingPermissionId ? __('Edit Permission') : __('Create New Permission') }}
             </h2>
 
             <div class="mt-6">
-                <x-input-label for="permissionName" value="Permission Name" />
-                <x-text-input wire:model="permissionName" id="permissionName" class="block mt-1 w-full" type="text" placeholder="e.g. edit_products" />
+                <x-input-label for="permissionName" value="{{ __('Permission Name') }}" />
+                <x-text-input wire:model="permissionName" id="permissionName" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. edit_products') }}" />
                 <x-input-error :messages="$errors->get('permissionName')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    Cancel
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-primary-button class="ml-3">
-                    {{ $editingPermissionId ? 'Update Permission' : 'Save Permission' }}
+                    {{ $editingPermissionId ? __('Update Permission') : __('Save Permission') }}
                 </x-primary-button>
             </div>
         </form>
@@ -319,16 +319,16 @@ class extends Component
     <!-- Configure Role Modal -->
     <x-modal name="configure-role-modal" maxWidth="4xl">
         <form x-on:submit.prevent="$dispatch('swal:confirm', {
-            title: 'Update Permissions?',
-            text: 'Are you sure you want to update the permissions for this role?',
+            title: '{{ __('Update Permissions?') }}',
+            text: '{{ __('Are you sure you want to update the permissions for this role?') }}',
             icon: 'question',
-            confirmButtonText: 'Yes, update permissions!',
+            confirmButtonText: '{{ __('Yes, update permissions!') }}',
             method: 'updateRolePermissions',
             params: [],
             componentId: '{{ $this->getId() }}'
         })" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">
-                Configure Permissions: <span class="text-indigo-600">{{ $editingRoleName }}</span>
+                {{ __('Configure Permissions') }}: <span class="text-indigo-600">{{ $editingRoleName }}</span>
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto p-2">
@@ -341,18 +341,18 @@ class extends Component
 
                 @if($permissions->isEmpty())
                     <div class="col-span-full text-center py-8 text-gray-500">
-                        No permissions found. Create some permissions first.
+                        {{ __('No permissions found. Create some permissions first.') }}
                     </div>
                 @endif
             </div>
 
             <div class="mt-6 flex justify-end border-t pt-4">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    Cancel
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-primary-button class="ml-3">
-                    Update Permissions
+                    {{ __('Update Permissions') }}
                 </x-primary-button>
             </div>
         </form>

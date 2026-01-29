@@ -48,6 +48,8 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
 
     public function mount()
     {
+        $this->selectedCustomerName = __('Walk-in Customer');
+
         // Check for held order restoration
         if (session()->has('restored_order')) {
             $data = session('restored_order');
@@ -58,7 +60,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
             $this->discount = $data['discount'] ?? 0;
             $this->shipping = $data['shipping'] ?? 0;
             session()->forget('restored_order');
-            $this->dispatch('notify', 'Order restored successfully!');
+            $this->dispatch('notify', __('Order restored successfully!'));
         }
     }
 
@@ -104,7 +106,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
         if (!$product) return;
 
         if ($product->stock <= 0) {
-            $this->dispatch('notify', 'Product is out of stock!');
+            $this->dispatch('notify', __('Product is out of stock!'));
             return;
         }
 
@@ -112,7 +114,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
             if ($this->cart[$productId]['quantity'] < $product->stock) {
                 $this->cart[$productId]['quantity']++;
             } else {
-                 $this->dispatch('notify', 'Not enough stock!');
+                 $this->dispatch('notify', __('Not enough stock!'));
             }
         } else {
             $this->cart[$productId] = [
@@ -136,7 +138,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
              if ($newQuantity <= $this->cart[$productId]['stock']) {
                 $this->cart[$productId]['quantity'] = $newQuantity;
              } else {
-                 $this->dispatch('notify', 'Not enough stock!');
+                 $this->dispatch('notify', __('Not enough stock!'));
              }
         } else {
             unset($this->cart[$productId]);
@@ -159,7 +161,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
     public function removeCustomer()
     {
          $this->selectedCustomerId = null;
-         $this->selectedCustomerName = 'Walk-in Customer';
+         $this->selectedCustomerName = __('Walk-in Customer');
     }
 
     public function getSubtotalProperty()
@@ -309,7 +311,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                         <i class="fas fa-search text-gray-400"></i>
                     </span>
-                    <input type="text" wire:model.live.debounce.300ms="search" id="search-input" class="w-full py-2.5 pl-10 pr-12 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="Scan barcode (F2) or search products..." autofocus>
+                    <input type="text" wire:model.live.debounce.300ms="search" id="search-input" class="w-full py-2.5 pl-10 pr-12 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="{{ __('Scan barcode (F2) or search products...') }}" autofocus>
                     <span class="absolute inset-y-0 right-0 flex items-center pr-3">
                         <i class="fas fa-barcode text-gray-500 cursor-pointer"></i>
                     </span>
@@ -318,27 +320,27 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
                 <div class="hidden md:flex items-center space-x-3">
                     <!-- Extra Buttons -->
                     <div class="flex items-center space-x-1 mr-2 border-r border-gray-200 pr-2">
-                        <button onclick="toggleFullscreen()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100" title="Toggle Fullscreen">
+                        <button onclick="toggleFullscreen()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100" title="{{ __('Toggle Fullscreen') }}">
                             <i class="fas fa-expand text-lg"></i>
                         </button>
-                        <button onclick="connectDevice('printer')" id="btn-printer" class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group" title="Connect Printer">
+                        <button onclick="connectDevice('printer')" id="btn-printer" class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group" title="{{ __('Connect Printer') }}">
                             <i class="fas fa-print text-lg"></i>
                             <span id="status-printer" class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
                         </button>
-                        <button onclick="connectDevice('scanner')" id="btn-scanner" class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group" title="Connect Scanner">
+                        <button onclick="connectDevice('scanner')" id="btn-scanner" class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group" title="{{ __('Connect Scanner') }}">
                             <i class="fas fa-barcode text-lg"></i>
                             <span id="status-scanner" class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
                         </button>
-                        <button wire:click="$set('showHeldOrdersModal', true)" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100" title="Held Orders">
+                        <button wire:click="$set('showHeldOrdersModal', true)" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100" title="{{ __('Held Orders') }}">
                             <i class="fas fa-clock text-lg"></i>
                         </button>
                     </div>
 
                     <div class="text-sm text-gray-500">
-                        <span class="font-bold text-gray-700">F2</span> Focus Search
+                        <span class="font-bold text-gray-700">F2</span> {{ __('Focus Search') }}
                     </div>
                     <div class="text-sm text-gray-500">
-                        <span class="font-bold text-gray-700">F4</span> Pay
+                        <span class="font-bold text-gray-700">F4</span> {{ __('Pay') }}
                     </div>
                 </div>
             </div>
@@ -352,12 +354,12 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-gray-50 sticky top-0 z-10">
                             <tr>
-                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200">Barcode</th>
-                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200">Item Name</th>
-                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200">Category</th>
-                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200 text-right">Stock</th>
-                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200 text-right">Price</th>
-                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200 text-center">Action</th>
+                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200">{{ __('Barcode') }}</th>
+                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200">{{ __('Item Name') }}</th>
+                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200">{{ __('Category') }}</th>
+                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200 text-right">{{ __('Stock') }}</th>
+                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200 text-right">{{ __('Price') }}</th>
+                                <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase border-b border-gray-200 text-center">{{ __('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="product-table-body">
@@ -384,8 +386,8 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
                             @empty
                             <tr>
                                 <td colspan="6" class="p-8 text-center text-gray-500">
-                                    No products found.
-                                </td>
+                                {{ __('No products found.') }}
+                            </td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -416,7 +418,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
 
                     <!-- Customer Search Dropdown -->
                     <div x-show="open" class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-2" style="display: none;">
-                        <input type="text" wire:model.live.debounce.300ms="customerSearch" class="w-full text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 mb-2" placeholder="Search customer...">
+                        <input type="text" wire:model.live.debounce.300ms="customerSearch" class="w-full text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 mb-2" placeholder="{{ __('Search customer...') }}">
                         <ul class="max-h-40 overflow-y-auto">
                             @foreach($customers as $customer)
                                 <li wire:click="selectCustomer('{{ $customer->id }}', '{{ $customer->name }}')" class="p-2 hover:bg-gray-50 cursor-pointer rounded flex items-center">
@@ -427,7 +429,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
                                 </li>
                             @endforeach
                             @if(empty($customers) && $customerSearch)
-                                <li class="p-2 text-xs text-gray-500 text-center">No customers found</li>
+                                <li class="p-2 text-xs text-gray-500 text-center">{{ __('No customers found') }}</li>
                             @endif
                         </ul>
                     </div>
@@ -439,13 +441,13 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
             </div>
             <div class="grid grid-cols-3 gap-2">
                 <button wire:click="$set('showNoteModal', true)" class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="fas fa-sticky-note mr-1"></i> Note
+                    <i class="fas fa-sticky-note mr-1"></i> {{ __('Note') }}
                 </button>
                 <button wire:click="$set('showShippingModal', true)" class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="fas fa-truck mr-1"></i> Shipping
+                    <i class="fas fa-truck mr-1"></i> {{ __('Shipping') }}
                 </button>
                 <button wire:click="$set('showDiscountModal', true)" class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="fas fa-tag mr-1"></i> Discount
+                    <i class="fas fa-tag mr-1"></i> {{ __('Discount') }}
                 </button>
             </div>
         </div>
@@ -479,7 +481,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
             @empty
             <div class="flex flex-col items-center justify-center h-40 text-gray-400">
                 <i class="fas fa-shopping-basket text-4xl mb-2"></i>
-                <p class="text-sm">Cart is empty</p>
+                <p class="text-sm">{{ __('Cart is empty') }}</p>
             </div>
             @endforelse
         </div>
@@ -488,42 +490,42 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
         <div class="bg-gray-50 p-4 border-t border-gray-200">
             <div class="space-y-2 mb-4">
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span>
+                    <span>{{ __('Subtotal') }}</span>
                     <span>Rp. {{ number_format($this->subtotal, 2) }}</span>
                 </div>
                 @if($this->discount > 0)
                 <div class="flex justify-between text-sm text-green-600">
-                    <span>Discount</span>
+                    <span>{{ __('Discount') }}</span>
                     <span>-Rp. {{ number_format($this->discount, 2) }}</span>
                 </div>
                 @endif
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Tax (10%)</span>
+                    <span>{{ __('Tax (10%)') }}</span>
                     <span>Rp. {{ number_format($this->tax, 2) }}</span>
                 </div>
                 @if($this->shipping > 0)
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Shipping</span>
+                    <span>{{ __('Shipping') }}</span>
                     <span>Rp. {{ number_format($this->shipping, 2) }}</span>
                 </div>
                 @endif
                 <div class="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2">
-                    <span>Total Payable</span>
+                    <span>{{ __('Total Payable') }}</span>
                     <span>Rp. {{ number_format($this->total, 2) }}</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <button wire:click="$set('cart', [])" class="py-3 rounded-lg border border-red-200 text-red-600 font-medium text-sm hover:bg-red-50 transition-colors">
-                    Cancel
+                    {{ __('Cancel') }}
                 </button>
                 <button wire:click="holdOrder" class="py-3 rounded-lg border border-indigo-200 text-indigo-600 font-medium text-sm hover:bg-indigo-50 transition-colors">
-                    Hold Order
+                    {{ __('Hold Order') }}
                 </button>
             </div>
 
             <button wire:click="checkout" class="block w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                Pay Now Rp. {{ number_format($this->total, 2) }} (F4)
+                {{ __('Pay Now') }} Rp. {{ number_format($this->total, 2) }} (F4)
             </button>
         </div>
     </div>
@@ -537,12 +539,12 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showNoteModal', false)"></div>
         <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-10">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add Note</h3>
-                <textarea wire:model="note" rows="4" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Enter order notes..."></textarea>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ __('Add Note') }}</h3>
+                <textarea wire:model="note" rows="4" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="{{ __('Enter order notes...') }}"></textarea>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button wire:click="$set('showNoteModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                    Save Note
+                    {{ __('Save Note') }}
                 </button>
             </div>
         </div>
@@ -557,12 +559,12 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showShippingModal', false)"></div>
         <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-10">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Shipping Cost</h3>
-                <input type="number" wire:model.live="shipping" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Enter shipping cost">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ __('Shipping Cost') }}</h3>
+                <input type="number" wire:model.live="shipping" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="{{ __('Enter shipping cost') }}">
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button wire:click="$set('showShippingModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                    Save
+                    {{ __('Save') }}
                 </button>
             </div>
         </div>
@@ -577,7 +579,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showDiscountModal', false)"></div>
         <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-sm sm:w-full z-10">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Discount</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ __('Discount') }}</h3>
                 <div class="relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <span class="text-gray-500 sm:text-sm">Rp</span>
@@ -587,7 +589,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button wire:click="$set('showDiscountModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                    Close
+                    {{ __('Close') }}
                 </button>
             </div>
         </div>
@@ -602,35 +604,35 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showCreateCustomerModal', false)"></div>
         <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-10">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Customer</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ __('Create New Customer') }}</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                        <label class="block text-sm font-medium text-gray-700">{{ __('Name') }}</label>
                         <input type="text" wire:model="newCustomer.name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         @error('newCustomer.name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <label class="block text-sm font-medium text-gray-700">{{ __('Email') }}</label>
                         <input type="email" wire:model="newCustomer.email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         @error('newCustomer.email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Phone</label>
+                        <label class="block text-sm font-medium text-gray-700">{{ __('Phone') }}</label>
                         <input type="text" wire:model="newCustomer.phone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         @error('newCustomer.phone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Address</label>
+                        <label class="block text-sm font-medium text-gray-700">{{ __('Address') }}</label>
                         <textarea wire:model="newCustomer.address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                     </div>
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button wire:click="saveNewCustomer" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                    Save Customer
+                    {{ __('Save Customer') }}
                 </button>
                 <button wire:click="$set('showCreateCustomerModal', false)" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                    Cancel
+                    {{ __('Cancel') }}
                 </button>
             </div>
         </div>
@@ -646,7 +648,7 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
         <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-4xl sm:w-full z-10">
             <div class="px-4 py-5 sm:p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">Held Orders</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('Held Orders') }}</h3>
                     <button wire:click="$set('showHeldOrdersModal', false)" class="text-gray-400 hover:text-gray-500">
                         <i class="fas fa-times"></i>
                     </button>
@@ -656,12 +658,12 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Date') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Customer') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Items') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Total') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Note') }}</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -686,12 +688,12 @@ new #[Layout('components.layouts.pos')] #[Title('Mini Market POS - Modern POS')]
                                         {{ $order->notes }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button wire:click="restoreOrder('{{ $order->id }}')" class="text-indigo-600 hover:text-indigo-900">Restore</button>
+                                        <button wire:click="restoreOrder('{{ $order->id }}')" class="text-indigo-600 hover:text-indigo-900">{{ __('Restore') }}</button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No held orders found.</td>
+                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">{{ __('No held orders found.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

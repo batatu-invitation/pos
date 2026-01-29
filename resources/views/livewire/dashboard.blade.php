@@ -42,7 +42,7 @@ class extends Component
 ?>
 
 <div>
-    <x-slot name="header">Dashboard</x-slot>
+    <x-slot name="header">{{ __('Dashboard') }}</x-slot>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -50,7 +50,7 @@ class extends Component
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Total Sales</p>
+                    <p class="text-sm font-medium text-gray-500">{{ __('Total Sales') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">$12,426</h3>
                 </div>
                 <div class="p-3 bg-indigo-50 rounded-full text-indigo-600">
@@ -61,7 +61,7 @@ class extends Component
                 <span class="text-green-500 flex items-center font-medium">
                     <i class="fas fa-arrow-up mr-1"></i> 12%
                 </span>
-                <span class="text-gray-400 ml-2">vs last month</span>
+                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
             </div>
         </div>
 
@@ -69,7 +69,7 @@ class extends Component
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Total Orders</p>
+                    <p class="text-sm font-medium text-gray-500">{{ __('Total Orders') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">1,240</h3>
                 </div>
                 <div class="p-3 bg-blue-50 rounded-full text-blue-600">
@@ -80,7 +80,7 @@ class extends Component
                 <span class="text-green-500 flex items-center font-medium">
                     <i class="fas fa-arrow-up mr-1"></i> 8%
                 </span>
-                <span class="text-gray-400 ml-2">vs last month</span>
+                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
             </div>
         </div>
 
@@ -88,7 +88,7 @@ class extends Component
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Total Products</p>
+                    <p class="text-sm font-medium text-gray-500">{{ __('Total Products') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">845</h3>
                 </div>
                 <div class="p-3 bg-orange-50 rounded-full text-orange-600">
@@ -99,7 +99,7 @@ class extends Component
                 <span class="text-red-500 flex items-center font-medium">
                     <i class="fas fa-arrow-down mr-1"></i> 2%
                 </span>
-                <span class="text-gray-400 ml-2">vs last month</span>
+                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
             </div>
         </div>
 
@@ -107,7 +107,7 @@ class extends Component
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Total Customers</p>
+                    <p class="text-sm font-medium text-gray-500">{{ __('Total Customers') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">3,200</h3>
                 </div>
                 <div class="p-3 bg-teal-50 rounded-full text-teal-600">
@@ -118,7 +118,7 @@ class extends Component
                 <span class="text-green-500 flex items-center font-medium">
                     <i class="fas fa-arrow-up mr-1"></i> 14%
                 </span>
-                <span class="text-gray-400 ml-2">vs last month</span>
+                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
             </div>
         </div>
     </div>
@@ -128,11 +128,11 @@ class extends Component
         <!-- Chart -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:col-span-2">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold text-gray-800">Sales Overview</h3>
+                <h3 class="text-lg font-bold text-gray-800">{{ __('Sales Overview') }}</h3>
                 <select class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2">
-                    <option>Last 7 Days</option>
-                    <option>Last 30 Days</option>
-                    <option>This Year</option>
+                    <option>{{ __('Last 7 Days') }}</option>
+                    <option>{{ __('Last 30 Days') }}</option>
+                    <option>{{ __('This Year') }}</option>
                 </select>
             </div>
             <div class="relative h-64 w-full">
@@ -142,7 +142,7 @@ class extends Component
 
         <!-- Top Products -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Top Selling Products</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Top Selling Products') }}</h3>
             <div class="space-y-4">
                 @foreach($topProducts as $product)
                 <div class="flex items-center justify-between">
@@ -150,34 +150,34 @@ class extends Component
                         <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl mr-3">{{ $product['icon'] }}</div>
                         <div>
                             <p class="text-sm font-medium text-gray-800">{{ $product['name'] }}</p>
-                            <p class="text-xs text-gray-500">{{ $product['sales'] }} sales</p>
+                            <p class="text-xs text-gray-500">{{ $product['sales'] }} {{ __('sales') }}</p>
                         </div>
                     </div>
                     <span class="text-sm font-bold text-gray-800">${{ number_format($product['revenue'], 0) }}</span>
                 </div>
                 @endforeach
             </div>
-            <button class="w-full mt-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">View All Products</button>
+            <button class="w-full mt-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">{{ __('View All Products') }}</button>
         </div>
     </div>
 
     <!-- Recent Transactions -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">Recent Transactions</h3>
-            <a href="#" class="text-indigo-600 text-sm font-medium hover:text-indigo-800">View All</a>
+            <h3 class="text-lg font-bold text-gray-800">{{ __('Recent Transactions') }}</h3>
+            <a href="#" class="text-indigo-600 text-sm font-medium hover:text-indigo-800">{{ __('View All') }}</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
                     <tr>
-                        <th class="px-6 py-4">Order ID</th>
-                        <th class="px-6 py-4">Customer</th>
-                        <th class="px-6 py-4">Date</th>
-                        <th class="px-6 py-4">Items</th>
-                        <th class="px-6 py-4">Total</th>
-                        <th class="px-6 py-4">Status</th>
-                        <th class="px-6 py-4">Action</th>
+                        <th class="px-6 py-4">{{ __('Order ID') }}</th>
+                        <th class="px-6 py-4">{{ __('Customer') }}</th>
+                        <th class="px-6 py-4">{{ __('Date') }}</th>
+                        <th class="px-6 py-4">{{ __('Items') }}</th>
+                        <th class="px-6 py-4">{{ __('Total') }}</th>
+                        <th class="px-6 py-4">{{ __('Status') }}</th>
+                        <th class="px-6 py-4">{{ __('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">

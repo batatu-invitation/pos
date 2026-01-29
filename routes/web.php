@@ -7,10 +7,16 @@ use Livewire\Volt\Volt;
 foreach (config('tenancy.central_domains') as $domain) {
     Route::domain($domain)->group(function () {
         Route::get('/', function () {
-           return view('welcome');
+            return view('welcome');
         });
     });
     Route::middleware('auth')->group(function () {
+        Route::get('lang/{locale}', function ($locale) {
+            if (in_array($locale, ['en', 'id'])) {
+                session(['locale' => $locale]);
+            }
+            return redirect()->back();
+        })->name('lang.switch');
         Volt::route('/dashboard', 'dashboard')->name('dashboard');
         // Admin Routes
         Volt::route('/admin/dashboard', 'admin.dashboard')->name('admin.dashboard');

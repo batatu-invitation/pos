@@ -87,6 +87,7 @@ class extends Component
 
     public function save()
     {
+        $this->domain = str_replace('.localhost', '', $this->domain);
         $this->validate();
 
         $data = [
@@ -105,16 +106,13 @@ class extends Component
 
         if ($this->editingBranchId) {
             $tenant = Tenant::find($this->editingBranchId);
-            foreach ($data as $key => $value) {
-                $tenant->$key = $value;
-            }
-            $tenant->save();
+            $tenant->update($data);
             Domain::updateOrCreate(['tenant_id' => $tenant->id], ['domain' => $this->domain.'.localhost']);
-            $message = 'Branch updated successfully!';
+            $message = __('Branch updated successfully!');
         } else {
             $tenant = Tenant::create($data);
             Domain::updateOrCreate(['tenant_id' => $tenant->id], ['domain' => $this->domain.'.localhost']);
-            $message = 'Branch created successfully!';
+            $message = __('Branch created successfully!');
         }
 
         $this->dispatch('close-modal', 'branch-modal');
@@ -127,7 +125,7 @@ class extends Component
         $tenant = Tenant::find($id);
         if ($tenant) {
             $tenant->delete();
-            $this->dispatch('notify', 'Branch deleted successfully!');
+            $this->dispatch('notify', __('Branch deleted successfully!'));
         }
     }
 
@@ -153,9 +151,9 @@ class extends Component
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Branch Management</h2>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('Branch Management') }}</h2>
         <button wire:click="create" class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap">
-            <i class="fas fa-plus mr-2"></i> Add New Branch
+            <i class="fas fa-plus mr-2"></i> {{ __('Add New Branch') }}
         </button>
     </div>
 
@@ -164,14 +162,14 @@ class extends Component
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
-                        <th class="px-6 py-3 font-semibold">Branch Name</th>
-                        <th class="px-6 py-3 font-semibold">Code</th>
-                        <th class="px-6 py-3 font-semibold">Domain</th>
-                        <th class="px-6 py-3 font-semibold">Location</th>
-                        <th class="px-6 py-3 font-semibold">Manager</th>
-                        <th class="px-6 py-3 font-semibold">Contact</th>
-                        <th class="px-6 py-3 font-semibold">Status</th>
-                        <th class="px-6 py-3 font-semibold text-right">Actions</th>
+                        <th class="px-6 py-3 font-semibold">{{ __('Branch Name') }}</th>
+                        <th class="px-6 py-3 font-semibold">{{ __('Code') }}</th>
+                        <th class="px-6 py-3 font-semibold">{{ __('Domain') }}</th>
+                        <th class="px-6 py-3 font-semibold">{{ __('Location') }}</th>
+                        <th class="px-6 py-3 font-semibold">{{ __('Manager') }}</th>
+                        <th class="px-6 py-3 font-semibold">{{ __('Contact') }}</th>
+                        <th class="px-6 py-3 font-semibold">{{ __('Status') }}</th>
+                        <th class="px-6 py-3 font-semibold text-right">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 text-sm">
@@ -184,7 +182,7 @@ class extends Component
                                 </div>
                                 <div>
                                     <p class="font-medium text-gray-900">{{ $branch->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $branch->type }}</p>
+                                    <p class="text-xs text-gray-500">{{ __($branch->type) }}</p>
                                 </div>
                             </div>
                         </td>
@@ -204,13 +202,13 @@ class extends Component
                             <div><i class="fas fa-envelope text-xs text-gray-400 mr-1"></i> {{ $branch->email }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 bg-{{ $branch->status_color ?? 'green' }}-100 text-{{ $branch->status_color ?? 'green' }}-700 rounded-full text-xs font-semibold">{{ $branch->status }}</span>
+                            <span class="px-2 py-1 bg-{{ $branch->status_color ?? 'green' }}-100 text-{{ $branch->status_color ?? 'green' }}-700 rounded-full text-xs font-semibold">{{ __($branch->status) }}</span>
                         </td>
                         <td class="px-6 py-4 text-right space-x-2">
                             <button wire:click="edit('{{ $branch->id }}')" class="text-gray-400 hover:text-indigo-600 transition-colors"><i class="fas fa-edit"></i></button>
                             <button type="button" x-on:click="$dispatch('swal:confirm', {
-                                title: 'Delete Branch?',
-                                text: 'Are you sure you want to delete this branch?',
+                                title: '{{ __('Delete Branch?') }}',
+                                text: '{{ __('Are you sure you want to delete this branch?') }}',
                                 icon: 'warning',
                                 method: 'delete',
                                 params: ['{{ $branch->id }}'],
@@ -223,7 +221,7 @@ class extends Component
                     @empty
                     <tr>
                         <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                            No branches found. Click "Add New Branch" to create one.
+                            {{ __('No branches found. Click "Add New Branch" to create one.') }}
                         </td>
                     </tr>
                     @endforelse
@@ -240,56 +238,56 @@ class extends Component
     <!-- Branch Modal -->
     <x-modal name="branch-modal" focusable>
         <form x-on:submit.prevent="$dispatch('swal:confirm', {
-            title: '{{ $editingBranchId ? 'Update Branch?' : 'Create Branch?' }}',
-            text: '{{ $editingBranchId ? 'Are you sure you want to update this branch?' : 'Are you sure you want to create this new branch?' }}',
+            title: '{{ $editingBranchId ? __('Update Branch?') : __('Create Branch?') }}',
+            text: '{{ $editingBranchId ? __('Are you sure you want to update this branch?') : __('Are you sure you want to create this new branch?') }}',
             icon: 'question',
-            confirmButtonText: '{{ $editingBranchId ? 'Yes, update it!' : 'Yes, create it!' }}',
+            confirmButtonText: '{{ $editingBranchId ? __('Yes, update it!') : __('Yes, create it!') }}',
             method: 'save',
             params: [],
             componentId: '{{ $this->getId() }}'
         })" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-6">
-                {{ $editingBranchId ? 'Edit Branch' : 'Create New Branch' }}
+                {{ $editingBranchId ? __('Edit Branch') : __('Create New Branch') }}
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Name -->
                 <div class="col-span-1 md:col-span-2">
-                    <x-input-label for="name" value="Branch Name" />
-                    <x-text-input wire:model.live="name" id="name" class="block mt-1 w-full" type="text" placeholder="e.g. Main Headquarters" />
+                    <x-input-label for="name" value="{{ __('Branch Name') }}" />
+                    <x-text-input wire:model.live="name" id="name" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. Main Headquarters') }}" />
                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                 </div>
 
                 <!-- Code -->
                 <div>
-                    <x-input-label for="code" value="Branch Code" />
-                    <x-text-input wire:model="code" id="code" class="block mt-1 w-full" type="text" placeholder="e.g. BR-001" />
+                    <x-input-label for="code" value="{{ __('Branch Code') }}" />
+                    <x-text-input wire:model="code" id="code" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. BR-001') }}" />
                     <x-input-error :messages="$errors->get('code')" class="mt-2" />
                 </div>
 
                 <!-- Domain -->
                 <div class="col-span-1 md:col-span-2">
-                    <x-input-label for="domain" value="Domain" />
+                    <x-input-label for="domain" value="{{ __('Domain') }}" />
                     <div class="flex mt-1">
-                        <x-text-input wire:model="domain" id="domain" class="block w-full rounded-r-none" type="text" placeholder="e.g. branch1" />
+                        <x-text-input wire:model="domain" id="domain" class="block w-full rounded-r-none" type="text" placeholder="{{ __('e.g. branch1') }}" />
                         <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                             .localhost
                         </span>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500">The unique subdomain for this branch.</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ __('The unique subdomain for this branch.') }}</p>
                     <x-input-error :messages="$errors->get('domain')" class="mt-2" />
                 </div>
 
                 <!-- Type -->
                 <div>
-                    <x-input-label for="type" value="Branch Type" />
+                    <x-input-label for="type" value="{{ __('Branch Type') }}" />
                     <select wire:model="type" id="type" class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="Retail Store">Retail Store</option>
-                        <option value="Warehouse">Warehouse</option>
-                        <option value="Central Office">Central Office</option>
-                        <option value="Outlet Store">Outlet Store</option>
-                        <option value="Shopping Mall">Shopping Mall</option>
-                        <option value="Kiosk">Kiosk</option>
+                        <option value="Retail Store">{{ __('Retail Store') }}</option>
+                        <option value="Warehouse">{{ __('Warehouse') }}</option>
+                        <option value="Central Office">{{ __('Central Office') }}</option>
+                        <option value="Outlet Store">{{ __('Outlet Store') }}</option>
+                        <option value="Shopping Mall">{{ __('Shopping Mall') }}</option>
+                        <option value="Kiosk">{{ __('Kiosk') }}</option>
                     </select>
                     <x-input-error :messages="$errors->get('type')" class="mt-2" />
                 </div>
@@ -302,7 +300,7 @@ class extends Component
                         init() {
                             this.select = $(this.$refs.select);
                             this.select.select2({
-                                placeholder: 'Select Manager',
+                                placeholder: '{{ __('Select Manager') }}',
                                 allowClear: true,
                                 width: '100%'
                             });
@@ -331,9 +329,9 @@ class extends Component
                      x-on:set-manager-select.window="setValue($event.detail.manager)"
                      x-on:clear-manager-select.window="setValue(null)"
                 >
-                    <x-input-label for="manager" value="Manager Name" />
+                    <x-input-label for="manager" value="{{ __('Manager Name') }}" />
                     <select x-ref="select" id="manager-select" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="">Select Manager</option>
+                        <option value="">{{ __('Select Manager') }}</option>
                         @foreach($managers as $m)
                             <option value="{{ $m->name }}" data-email="{{ $m->email }}" data-phone="{{ $m->phone }}">
                                 {{ $m->name }}
@@ -345,32 +343,32 @@ class extends Component
 
                 <!-- Email -->
                 <div>
-                    <x-input-label for="email" value="Email Address" />
-                    <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" placeholder="e.g. branch@example.com" />
+                    <x-input-label for="email" value="{{ __('Email Address') }}" />
+                    <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" placeholder="{{ __('e.g. branch@example.com') }}" />
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
 
                 <!-- Phone -->
                 <div>
-                    <x-input-label for="phone" value="Phone Number" />
-                    <x-text-input wire:model="phone" id="phone" class="block mt-1 w-full" type="text" placeholder="e.g. +1 234-567-8900" />
+                    <x-input-label for="phone" value="{{ __('Phone Number') }}" />
+                    <x-text-input wire:model="phone" id="phone" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. +1 234-567-8900') }}" />
                     <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                 </div>
 
                 <!-- Location -->
                 <div>
-                    <x-input-label for="location" value="Location" />
-                    <x-text-input wire:model="location" id="location" class="block mt-1 w-full" type="text" placeholder="e.g. New York, NY" />
+                    <x-input-label for="location" value="{{ __('Location') }}" />
+                    <x-text-input wire:model="location" id="location" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. New York, NY') }}" />
                     <x-input-error :messages="$errors->get('location')" class="mt-2" />
                 </div>
 
                 <!-- Status -->
                 <div>
-                    <x-input-label for="status" value="Status" />
+                    <x-input-label for="status" value="{{ __('Status') }}" />
                     <select wire:model="status" id="status" class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="Active">Active</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Closed">Closed</option>
+                        <option value="Active">{{ __('Active') }}</option>
+                        <option value="Maintenance">{{ __('Maintenance') }}</option>
+                        <option value="Closed">{{ __('Closed') }}</option>
                     </select>
                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                 </div>
@@ -378,12 +376,12 @@ class extends Component
                 <!-- Initial & Color -->
                 <div class="flex space-x-4">
                     <div class="w-1/3">
-                        <x-input-label for="initial" value="Initial" />
+                        <x-input-label for="initial" value="{{ __('Initial') }}" />
                         <x-text-input wire:model="initial" id="initial" class="block mt-1 w-full uppercase" type="text" maxlength="2" />
                         <x-input-error :messages="$errors->get('initial')" class="mt-2" />
                     </div>
                     <div class="w-2/3">
-                        <x-input-label for="initial_color" value="Color Theme" />
+                        <x-input-label for="initial_color" value="{{ __('Color Theme') }}" />
                         <select wire:model="initial_color" id="initial_color" class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             @foreach($colors as $color)
                                 <option value="{{ $color }}">{{ ucfirst($color) }}</option>
@@ -396,11 +394,11 @@ class extends Component
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    Cancel
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-primary-button class="ml-3">
-                    {{ $editingBranchId ? 'Update Branch' : 'Create Branch' }}
+                    {{ $editingBranchId ? __('Update Branch') : __('Create Branch') }}
                 </x-primary-button>
             </div>
         </form>

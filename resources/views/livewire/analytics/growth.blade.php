@@ -22,6 +22,19 @@ new #[Layout('components.layouts.app')]
         ['period' => 'Dec 2022', 'revenue' => 13952.00, 'growth_rate' => 20.5, 'customers' => 150, 'avg_order' => 48.00, 'status' => 'Excellent'],
         ['period' => 'Nov 2022', 'revenue' => 11578.00, 'growth_rate' => 5.5, 'customers' => 130, 'avg_order' => 34.00, 'status' => 'Good'],
     ];
+
+    public function mount()
+    {
+        $this->growthHistory = array_map(function ($item) {
+            $item['status'] = __($item['status']);
+            // Translate Month in "Month Year" format
+            $parts = explode(' ', $item['period']);
+            if (count($parts) === 2) {
+                $item['period'] = __($parts[0]) . ' ' . $parts[1];
+            }
+            return $item;
+        }, $this->growthHistory);
+    }
 }; ?>
 
 <div x-data="{
@@ -36,7 +49,7 @@ new #[Layout('components.layouts.app')]
             data: {
                 labels: ['2020', '2021', '2022', '2023', '2024'],
                 datasets: [{
-                    label: 'Annual Revenue ($)',
+                    label: '{{ __('Annual Revenue (Rp.)') }}',
                     data: [50000, 75000, 120000, 180000, 250000],
                     borderColor: '#4f46e5',
                     backgroundColor: 'rgba(79, 70, 229, 0.1)',
@@ -72,7 +85,7 @@ new #[Layout('components.layouts.app')]
         window.monthlyCompChartInstance = new Chart(monthlyCtx, {
             type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels: ['{{ __('Jan') }}', '{{ __('Feb') }}', '{{ __('Mar') }}', '{{ __('Apr') }}', '{{ __('May') }}', '{{ __('Jun') }}'],
                 datasets: [
                     {
                         label: '2024',
@@ -114,7 +127,7 @@ new #[Layout('components.layouts.app')]
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
-                    label: 'New Customers',
+                    label: '{{ __('New Customers') }}',
                     data: [120, 150, 180, 220, 250, 300],
                     borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -141,21 +154,21 @@ new #[Layout('components.layouts.app')]
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Annual Revenue Growth</p>
+                    <p class="text-sm text-gray-500 mb-1">{{ __('Annual Revenue Growth') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">+25.4%</h3>
                 </div>
                 <div class="p-2 bg-green-50 rounded-lg text-green-600">
                     <i class="fas fa-chart-line text-xl"></i>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 mt-2">Compared to last year</p>
+            <p class="text-xs text-gray-500 mt-2">{{ __('Compared to last year') }}</p>
         </div>
 
         <!-- New Customers -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">New Customer Rate</p>
+                    <p class="text-sm text-gray-500 mb-1">{{ __('New Customer Rate') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">+12.8%</h3>
                 </div>
                 <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
@@ -163,7 +176,7 @@ new #[Layout('components.layouts.app')]
                 </div>
             </div>
             <p class="text-xs text-green-600 mt-2 flex items-center">
-                <i class="fas fa-arrow-up mr-1"></i> 2.1% from last month
+                <i class="fas fa-arrow-up mr-1"></i> 2.1% {{ __('from last month') }}
             </p>
         </div>
 
@@ -171,21 +184,21 @@ new #[Layout('components.layouts.app')]
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Customer Retention</p>
+                    <p class="text-sm text-gray-500 mb-1">{{ __('Customer Retention') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">88.5%</h3>
                 </div>
                 <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
                     <i class="fas fa-hand-holding-heart text-xl"></i>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 mt-2">Returning customers</p>
+            <p class="text-xs text-gray-500 mt-2">{{ __('Returning customers') }}</p>
         </div>
 
         <!-- Market Share -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Avg. Order Value</p>
+                    <p class="text-sm text-gray-500 mb-1">{{ __('Avg. Order Value') }}</p>
                     <h3 class="text-2xl font-bold text-gray-800">$42.50</h3>
                 </div>
                 <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
@@ -193,7 +206,7 @@ new #[Layout('components.layouts.app')]
                 </div>
             </div>
                 <p class="text-xs text-green-600 mt-2 flex items-center">
-                <i class="fas fa-arrow-up mr-1"></i> 5.3% YoY
+                <i class="fas fa-arrow-up mr-1"></i> 5.3% {{ __('YoY') }}
             </p>
         </div>
     </div>
@@ -202,7 +215,7 @@ new #[Layout('components.layouts.app')]
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Revenue Trend -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Revenue Growth Trend (5 Years)</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Revenue Growth Trend (5 Years)') }}</h3>
             <div class="relative h-72 w-full">
                 <canvas id="growthChart"></canvas>
             </div>
@@ -211,7 +224,7 @@ new #[Layout('components.layouts.app')]
         <!-- Monthly Comparison -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-800">Monthly Performance</h3>
+                <h3 class="text-lg font-bold text-gray-800">{{ __('Monthly Performance') }}</h3>
                 <div class="flex space-x-2">
                     <span class="flex items-center text-xs text-gray-500">
                         <span class="w-3 h-3 bg-indigo-500 rounded-full mr-1"></span> 2024
@@ -231,7 +244,7 @@ new #[Layout('components.layouts.app')]
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <!-- Customer Acquisition -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Customer Acquisition vs Churn</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Customer Acquisition vs Churn') }}</h3>
             <div class="relative h-64 w-full">
                 <canvas id="customerChart"></canvas>
             </div>
@@ -239,7 +252,7 @@ new #[Layout('components.layouts.app')]
 
         <!-- Top Growing Categories -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Top Growing Categories</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Top Growing Categories') }}</h3>
             <div class="space-y-4">
                 <!-- 1. Fast Food -->
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -248,13 +261,13 @@ new #[Layout('components.layouts.app')]
                             <i class="fas fa-hamburger"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Fast Food</h4>
-                            <p class="text-xs text-gray-500">1,240 Sales</p>
+                            <h4 class="font-semibold text-gray-800">{{ __('Fast Food') }}</h4>
+                            <p class="text-xs text-gray-500">1,240 {{ __('Sales') }}</p>
                         </div>
                     </div>
                     <div class="text-right">
                         <span class="block text-green-600 font-bold">+18%</span>
-                        <span class="text-xs text-gray-400">Growth</span>
+                        <span class="text-xs text-gray-400">{{ __('Growth') }}</span>
                     </div>
                 </div>
 
@@ -265,13 +278,13 @@ new #[Layout('components.layouts.app')]
                             <i class="fas fa-coffee"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Beverages</h4>
-                            <p class="text-xs text-gray-500">3,500 Sales</p>
+                            <h4 class="font-semibold text-gray-800">{{ __('Beverages') }}</h4>
+                            <p class="text-xs text-gray-500">3,500 {{ __('Sales') }}</p>
                         </div>
                     </div>
                     <div class="text-right">
                         <span class="block text-green-600 font-bold">+12%</span>
-                        <span class="text-xs text-gray-400">Growth</span>
+                        <span class="text-xs text-gray-400">{{ __('Growth') }}</span>
                     </div>
                 </div>
 
@@ -282,30 +295,30 @@ new #[Layout('components.layouts.app')]
                             <i class="fas fa-carrot"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Fresh Food</h4>
-                            <p class="text-xs text-gray-500">890 Sales</p>
+                            <h4 class="font-semibold text-gray-800">{{ __('Fresh Food') }}</h4>
+                            <p class="text-xs text-gray-500">890 {{ __('Sales') }}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="block text-green-600 font-bold">+8%</span>
-                        <span class="text-xs text-gray-400">Growth</span>
+                        <span class="block text-green-600 font-bold">+8.5%</span>
+                        <span class="text-xs text-gray-400">{{ __('Growth') }}</span>
                     </div>
                 </div>
 
                 <!-- 4. Electronics -->
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 mr-3">
-                            <i class="fas fa-plug"></i>
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mr-3">
+                            <i class="fas fa-tv"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Electronics</h4>
-                            <p class="text-xs text-gray-500">450 Sales</p>
+                            <h4 class="font-semibold text-gray-800">{{ __('Electronics') }}</h4>
+                            <p class="text-xs text-gray-500">450 {{ __('Sales') }}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="block text-green-600 font-bold">+15%</span>
-                        <span class="text-xs text-gray-400">Growth</span>
+                        <span class="block text-green-600 font-bold">+5.2%</span>
+                        <span class="text-xs text-gray-400">{{ __('Growth') }}</span>
                     </div>
                 </div>
 
@@ -316,59 +329,59 @@ new #[Layout('components.layouts.app')]
                             <i class="fas fa-tshirt"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Apparel</h4>
-                            <p class="text-xs text-gray-500">1,120 Sales</p>
+                            <h4 class="font-semibold text-gray-800">{{ __('Apparel') }}</h4>
+                            <p class="text-xs text-gray-500">1,120 {{ __('Sales') }}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="block text-green-600 font-bold">+9%</span>
-                        <span class="text-xs text-gray-400">Growth</span>
+                        <span class="block text-green-600 font-bold">+4.8%</span>
+                        <span class="text-xs text-gray-400">{{ __('Growth') }}</span>
                     </div>
                 </div>
 
                 <!-- 6. Home & Garden -->
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mr-3">
-                            <i class="fas fa-home"></i>
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
+                            <i class="fas fa-couch"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Home & Garden</h4>
-                            <p class="text-xs text-gray-500">780 Sales</p>
+                            <h4 class="font-semibold text-gray-800">{{ __('Home & Garden') }}</h4>
+                            <p class="text-xs text-gray-500">670 {{ __('Sales') }}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="block text-green-600 font-bold">+6%</span>
-                        <span class="text-xs text-gray-400">Growth</span>
+                        <span class="block text-red-500 font-bold">-1.2%</span>
+                        <span class="text-xs text-gray-400">{{ __('Growth') }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Detailed History Table -->
+    <!-- Detailed Table -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">Growth History</h3>
-            <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View Full Report</button>
+            <h3 class="text-lg font-bold text-gray-800">{{ __('Growth History') }}</h3>
+            <button class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">{{ __('View Full Report') }}</button>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                        <th class="px-6 py-3 font-medium">Period</th>
-                        <th class="px-6 py-3 font-medium">Revenue</th>
-                        <th class="px-6 py-3 font-medium">Growth Rate</th>
-                        <th class="px-6 py-3 font-medium">New Customers</th>
-                        <th class="px-6 py-3 font-medium">Avg Order Value</th>
-                        <th class="px-6 py-3 font-medium">Status</th>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
+                        <th class="px-6 py-4">{{ __('Period') }}</th>
+                        <th class="px-6 py-4 text-right">{{ __('Revenue') }}</th>
+                        <th class="px-6 py-4 text-right">{{ __('Growth Rate') }}</th>
+                        <th class="px-6 py-4 text-right">{{ __('New Customers') }}</th>
+                        <th class="px-6 py-4 text-right">{{ __('Avg. Order Value') }}</th>
+                        <th class="px-6 py-4 text-center">{{ __('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @foreach($growthHistory as $history)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $history['period'] }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-600">${{ number_format($history['revenue'], 2) }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">Rp. {{ number_format($history['revenue'], 2) }}</td>
                         <td class="px-6 py-4 text-sm">
                             <span class="{{ $history['growth_rate'] >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium">
                                 <i class="fas fa-{{ $history['growth_rate'] >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
@@ -376,7 +389,7 @@ new #[Layout('components.layouts.app')]
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ number_format($history['customers']) }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-600">${{ number_format($history['avg_order'], 2) }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">Rp. {{ number_format($history['avg_order'], 2) }}</td>
                         <td class="px-6 py-4">
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium
                                 {{ $history['status'] === 'Excellent' ? 'bg-green-100 text-green-800' :

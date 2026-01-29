@@ -41,122 +41,122 @@
             <!-- Nav Links -->
             <div class="flex-1 overflow-y-auto py-4">
                 <nav class="px-2 space-y-1">
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-2">Main</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-2">{{ __('Main') }}</p>
                     <a wire:navigate href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('dashboard') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-home w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Dashboard</span>
+                        <span class="font-medium">{{ __('Dashboard') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('pos.visual') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('pos.visual') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-shopping-cart w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Visual POS</span>
+                        <span class="font-medium">{{ __('Visual POS') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('pos.minimarket') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('pos.minimarket') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-barcode w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Mini Market POS</span>
+                        <span class="font-medium">{{ __('Mini Market POS') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('pos.terminal') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('pos.terminal') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-desktop w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">POS Terminal</span>
+                        <span class="font-medium">{{ __('POS Terminal') }}</span>
                     </a>
 
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Inventory</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">{{ __('Inventory') }}</p>
                     <a wire:navigate href="{{ route('inventory.products') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('inventory.products') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-box w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Products</span>
+                        <span class="font-medium">{{ __('Products') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('inventory.categories') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('inventory.categories') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-tags w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Categories</span>
+                        <span class="font-medium">{{ __('Categories') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('inventory.stock') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('inventory.stock') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-warehouse w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Stock</span>
+                        <span class="font-medium">{{ __('Stock') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('inventory.emojis') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('inventory.emojis') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-icons w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Icons</span>
+                        <span class="font-medium">{{ __('Icons') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('inventory.colors') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('inventory.colors') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-palette w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Colors</span>
+                        <span class="font-medium">{{ __('Colors') }}</span>
                     </a>
 
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Sales</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">{{ __('Sales') }}</p>
                     <a wire:navigate href="{{ route('sales.sales') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('sales.sales') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-receipt w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Transactions</span>
+                        <span class="font-medium">{{ __('Transactions') }}</span>
                     </a>
 
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">People</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">{{ __('People') }}</p>
                     <a wire:navigate href="{{ route('people.customers') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('people.customers') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-users w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Customers</span>
+                        <span class="font-medium">{{ __('Customers') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('people.employees') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('people.employees') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-user-tie w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Employees</span>
+                        <span class="font-medium">{{ __('Employees') }}</span>
                     </a>
 
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Analytics</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">{{ __('Analytics') }}</p>
                     <a wire:navigate href="{{ route('analytics.overview') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.overview') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-chart-line w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Overview</span>
+                        <span class="font-medium">{{ __('Overview') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('analytics.growth') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.growth') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-chart-area w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Growth</span>
+                        <span class="font-medium">{{ __('Growth') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('analytics.profit-loss') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.profit-loss') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-file-invoice-dollar w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">P & L</span>
+                        <span class="font-medium">{{ __('P & L') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('analytics.cash-flow') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.cash-flow') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-money-bill-wave w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Cash Flow</span>
+                        <span class="font-medium">{{ __('Cash Flow') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('analytics.tax-report') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.tax-report') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-university w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Tax Report</span>
+                        <span class="font-medium">{{ __('Tax Report') }}</span>
                     </a>
 
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Super Admin</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">{{ __('Super Admin') }}</p>
                     <a wire:navigate href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-shield-alt w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Admin Panel</span>
+                        <span class="font-medium">{{ __('Admin Panel') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-user-shield w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Users</span>
+                        <span class="font-medium">{{ __('Users') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('admin.roles') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.roles') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-user-tag w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Roles</span>
+                        <span class="font-medium">{{ __('Roles') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('admin.branches') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.branches') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-store w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Branches</span>
+                        <span class="font-medium">{{ __('Branches') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('admin.audit-logs') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.audit-logs') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-history w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Audit Logs</span>
+                        <span class="font-medium">{{ __('Audit Logs') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('admin.system-health') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.system-health') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-heartbeat w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">System Health</span>
+                        <span class="font-medium">{{ __('System Health') }}</span>
                     </a>
 
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Management</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">{{ __('Management') }}</p>
                     <a wire:navigate href="{{ route('reports.sales') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('reports.*') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-chart-bar w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Reports</span>
+                        <span class="font-medium">{{ __('Reports') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('settings.taxes') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('settings.taxes') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-percent w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Taxes</span>
+                        <span class="font-medium">{{ __('Taxes') }}</span>
                     </a>
                     <a wire:navigate href="{{ route('settings.profile') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('settings.profile') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-cog w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">Settings</span>
+                        <span class="font-medium">{{ __('Settings') }}</span>
                     </a>
                 </nav>
             </div>
@@ -175,13 +175,13 @@
                     <!-- Logout Button -->
                     <form method="POST" action="{{ route('logout') }}" x-data x-on:submit.prevent="
                         Swal.fire({
-                            title: 'Logout?',
-                            text: 'Are you sure you want to logout?',
+                            title: '{{ __('Logout?') }}',
+                            text: '{{ __('Are you sure you want to logout?') }}',
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonColor: '#4f46e5',
                             cancelButtonColor: '#ef4444',
-                            confirmButtonText: 'Yes, logout!'
+                            confirmButtonText: '{{ __('Yes, logout!') }}'
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 $el.submit();
@@ -209,7 +209,7 @@
                     <button onclick="toggleSidebar()" class="text-gray-500 focus:outline-none mr-4">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">{{ $header ?? 'Dashboard' }}</h1>
+                    <h1 class="text-2xl font-semibold text-gray-800">{{ $header ?? __('Dashboard') }}</h1>
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -217,7 +217,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <i class="fas fa-search text-gray-400"></i>
                         </span>
-                        <input type="text" class="w-64 py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="Search...">
+                        <input type="text" class="w-64 py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="{{ __('Search...') }}">
                     </div>
 
                     <button class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors">
@@ -225,9 +225,34 @@
                         <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
                     </button>
 
+                    <!-- Language Switcher -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none p-2">
+                            <i class="fas fa-globe text-xl"></i>
+                            <span class="text-sm font-medium">{{ app()->getLocale() == 'id' ? 'ID' : 'EN' }}</span>
+                        </button>
+                        <div x-show="open"
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5"
+                             style="display: none;">
+                            <a wire:navigate href="{{ route('lang.switch', 'en') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'en' ? 'bg-gray-50' : '' }}">
+                                <span class="mr-2">🇺🇸</span> English
+                            </a>
+                            <a wire:navigate href="{{ route('lang.switch', 'id') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'id' ? 'bg-gray-50' : '' }}">
+                                <span class="mr-2">🇮🇩</span> Indonesia
+                            </a>
+                        </div>
+                    </div>
+
                     <a wire:navigate href="{{ route('pos.visual') }}" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                         <i class="fas fa-cash-register mr-2"></i>
-                        Open POS
+                        {{ __('Open POS') }}
                     </a>
                 </div>
             </header>

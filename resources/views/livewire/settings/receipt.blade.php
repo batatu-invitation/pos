@@ -4,7 +4,7 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 
-new 
+new
 #[Layout('components.layouts.app')]
 #[Title('Receipt Settings - Modern POS')]
 class extends Component
@@ -38,45 +38,45 @@ class extends Component
 
 <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Settings</h2>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('Settings') }}</h2>
     </div>
-    
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div class="flex border-b border-gray-200 overflow-x-auto">
-            <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">General</a>
-            <a href="{{ route('settings.payment') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Payment Methods</a>
-            <button class="px-6 py-3 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm whitespace-nowrap">Receipt</button>
-            <a href="{{ route('settings.notifications') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Notifications</a>
-            <a href="{{ route('settings.integrations') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Integrations</a>
-            <a href="{{ route('settings.api-keys') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">API Keys</a>
-            <a href="{{ route('settings.backup') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Backup</a>
+            <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('General') }}</a>
+            <a href="{{ route('settings.payment') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('Payment Methods') }}</a>
+            <button class="px-6 py-3 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm whitespace-nowrap">{{ __('Receipt') }}</button>
+            <a href="{{ route('settings.notifications') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('Notifications') }}</a>
+            <a href="{{ route('settings.integrations') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('Integrations') }}</a>
+            <a href="{{ route('settings.api-keys') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('API Keys') }}</a>
+            <a href="{{ route('settings.backup') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('Backup') }}</a>
         </div>
-        
+
         <div class="p-6">
             @if (session()->has('message'))
                 <div class="mb-4 p-4 text-green-700 bg-green-100 rounded-lg">
-                    {{ session('message') }}
+                    {{ __(session('message')) }}
                 </div>
             @endif
 
             <form wire:submit="save" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Receipt Header</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Receipt Header') }}</label>
                     <textarea wire:model="header" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-indigo-500 focus:border-indigo-500" rows="3"></textarea>
                 </div>
-                
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Receipt Footer</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Receipt Footer') }}</label>
                     <textarea wire:model="footer" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-indigo-500 focus:border-indigo-500" rows="3"></textarea>
                 </div>
 
                  <div class="flex items-center">
                     <input id="show-logo" type="checkbox" wire:model="showLogo" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                    <label for="show-logo" class="ml-2 block text-sm text-gray-900">Show Logo on Receipt</label>
+                    <label for="show-logo" class="ml-2 block text-sm text-gray-900">{{ __('Show Logo on Receipt') }}</label>
                 </div>
 
                 <div class="pt-4 flex justify-end">
-                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">Save Changes</button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">{{ __('Save Changes') }}</button>
                 </div>
             </form>
         </div>
@@ -85,18 +85,18 @@ class extends Component
     <!-- Print History Section (to satisfy 10+ entries requirement) -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="p-6 border-b border-gray-200">
-            <h3 class="text-lg font-bold text-gray-800">Recent Print Jobs</h3>
-            <p class="text-sm text-gray-500">History of recently printed receipts</p>
+            <h3 class="text-lg font-bold text-gray-800">{{ __('Recent Print Jobs') }}</h3>
+            <p class="text-sm text-gray-500">{{ __('History of recently printed receipts') }}</p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                     <tr>
-                        <th class="px-6 py-3 font-medium">Receipt ID</th>
-                        <th class="px-6 py-3 font-medium">Date & Time</th>
-                        <th class="px-6 py-3 font-medium">Cashier</th>
-                        <th class="px-6 py-3 font-medium">Amount</th>
-                        <th class="px-6 py-3 font-medium">Status</th>
+                        <th class="px-6 py-3 font-medium">{{ __('Receipt ID') }}</th>
+                        <th class="px-6 py-3 font-medium">{{ __('Date & Time') }}</th>
+                        <th class="px-6 py-3 font-medium">{{ __('Cashier') }}</th>
+                        <th class="px-6 py-3 font-medium">{{ __('Amount') }}</th>
+                        <th class="px-6 py-3 font-medium">{{ __('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -108,7 +108,7 @@ class extends Component
                             <td class="px-6 py-3">{{ $job['amount'] }}</td>
                             <td class="px-6 py-3">
                                 <span class="px-2 py-1 text-xs font-medium rounded-full {{ $job['status'] === 'Printed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                    {{ $job['status'] }}
+                                    {{ __($job['status']) }}
                                 </span>
                             </td>
                         </tr>
