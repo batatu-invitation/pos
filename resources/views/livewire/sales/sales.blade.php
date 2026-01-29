@@ -14,6 +14,8 @@ class extends Component
 
     public $dateFilter = '';
     public $statusFilter = 'All Statuses';
+    public $selectedSale = null;
+    public $showViewModal = false;
 
     public function with()
     {
@@ -40,6 +42,30 @@ class extends Component
     public function updatedStatusFilter()
     {
         $this->resetPage();
+    }
+
+    public function viewSale($id)
+    {
+        $this->selectedSale = Sale::with(['items', 'customer', 'user'])->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->selectedSale = null;
+    }
+
+    public function resendEmail($id)
+    {
+        // Placeholder for email sending logic
+        // Mail::to($sale->customer->email)->send(new ReceiptMail($sale));
+        $this->dispatch('notify', 'Receipt email has been resent to the customer.');
+    }
+
+    public function continueSale($id)
+    {
+        return redirect()->route('pos.visual', ['restore' => $id]);
     }
 }; ?>
 
@@ -99,7 +125,16 @@ class extends Component
                             <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColor }}">{{ ucfirst($transaction->status) }}</span>
                         </td>
                         <td class="px-6 py-4">
-                            <button class="text-indigo-600 hover:text-indigo-900"><i class="fas fa-eye"></i></button>
+                            <div class="flex items-center space-x-3">
+                                <button wire:click="viewSale('{{ $transaction->id }}')" class="text-indigo-600 hover:text-indigo-900" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                @if($transaction->status === 'held')
+                                <button wire:click="continueSale('{{ $transaction->id }}')" class="text-green-600 hover:text-green-900" title="Continue Sale">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty
@@ -114,4 +149,122 @@ class extends Component
             {{ $transactions->links() }}
         </div>
     </div>
+
+    <!-- View Sale Modal -->
+    @if($showViewModal && $selectedSale)
+    <div wire:transition.opacity class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeViewModal"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Transaction Details <span class="text-gray-500 text-sm">#{{ $selectedSale->invoice_number }}</span>
+                        </h3>
+                        <button wire:click="closeViewModal" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Date</p>
+                            <p class="text-gray-900">{{ $selectedSale->created_at->format('M d, Y h:i A') }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Status</p>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                {{ match($selectedSale->status) {
+                                    'completed' => 'bg-green-100 text-green-800',
+                                    'refunded' => 'bg-red-100 text-red-800',
+                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    default => 'bg-gray-100 text-gray-800'
+                                } }}">
+                                {{ ucfirst($selectedSale->status) }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Customer</p>
+                            <p class="text-gray-900">{{ $selectedSale->customer ? $selectedSale->customer->name : 'Walk-in Customer' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Payment Method</p>
+                            <p class="text-gray-900 capitalize">{{ $selectedSale->payment_method }}</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 py-4">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                                    <th class="text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                                    <th class="text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @foreach($selectedSale->items as $item)
+                                <tr>
+                                    <td class="py-2 text-sm text-gray-900">{{ $item->product_name }}</td>
+                                    <td class="py-2 text-right text-sm text-gray-900">{{ $item->quantity }}</td>
+                                    <td class="py-2 text-right text-sm text-gray-900">Rp {{ number_format($item->price, 2) }}</td>
+                                    <td class="py-2 text-right text-sm text-gray-900">Rp {{ number_format($item->total_price, 2) }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-medium text-gray-900">Rp {{ number_format($selectedSale->subtotal, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Tax</span>
+                            <span class="font-medium text-gray-900">Rp {{ number_format($selectedSale->tax, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Discount</span>
+                            <span class="font-medium text-gray-900">- Rp {{ number_format($selectedSale->discount, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-bold">
+                            <span class="text-gray-900">Total</span>
+                            <span class="text-indigo-600">Rp {{ number_format($selectedSale->total_amount, 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button onclick="printReceipt('{{ route('pos.receipt.print', $selectedSale->id) }}')"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm">
+                        <i class="fas fa-print mr-2"></i> Print Receipt
+                    </button>
+                    <button type="button" wire:click="resendEmail('{{ $selectedSale->id }}')"
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm">
+                        <i class="fas fa-envelope mr-2"></i> Resend Email
+                    </button>
+                    <button type="button" wire:click="closeViewModal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <script>
+        function printReceipt(url) {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            // Clean up after 1 minute to allow time for loading and printing
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 60000);
+        }
+    </script>
 </div>

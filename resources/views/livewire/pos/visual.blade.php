@@ -60,8 +60,35 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
     public function mount()
     {
-        // Check for held order restoration
-        if (session()->has('restored_order')) {
+        // Check for held order restoration from query parameter
+        if (request()->has('restore')) {
+            $sale = Sale::with(['items', 'customer'])->find(request()->get('restore'));
+
+            if ($sale && $sale->status === 'held') {
+                $this->cart = [];
+                foreach ($sale->items as $item) {
+                    $this->cart[$item->product_id] = [
+                        'id' => $item->product_id,
+                        'name' => $item->product_name,
+                        'price' => $item->price,
+                        'quantity' => $item->quantity,
+                        'image' => $item->product->image ?? null,
+                        'stock' => $item->product->stock ?? 0
+                    ];
+                }
+                $this->selectedCustomerId = $sale->customer_id;
+                $this->selectedCustomerName = $sale->customer ? $sale->customer->name : 'Walk-in Customer';
+                $this->note = $sale->notes ?? '';
+                $this->discount = $sale->discount ?? 0;
+                // Shipping is not in the create method, but if it was added to model, we could restore it.
+                // Assuming shipping is 0 for now as it wasn't in the create method visible in search results.
+                $this->shipping = 0;
+
+                $this->dispatch('notify', 'Held order restored successfully!');
+            }
+        }
+        // Check for held order restoration from session
+        elseif (session()->has('restored_order')) {
             $data = session('restored_order');
             $this->cart = $data['cart'];
             $this->selectedCustomerId = $data['customer_id'];
