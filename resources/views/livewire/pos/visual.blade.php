@@ -451,29 +451,9 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         <i class="fas fa-barcode text-gray-500 cursor-pointer"></i>
                     </span>
                 </div>
-
+                <livewire:components.device-toolbar />
                 <div class="hidden md:flex space-x-2 overflow-x-auto no-scrollbar">
-                    <div class="flex items-center space-x-1 mr-2 border-r border-gray-200 pr-2">
-                        <button onclick="toggleFullscreen()"
-                            class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100"
-                            title="{{ __('Toggle Fullscreen') }}">
-                            <i class="fas fa-expand text-lg"></i>
-                        </button>
-                        <button onclick="connectDevice('printer')" id="btn-printer"
-                            class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group"
-                            title="{{ __('Connect Printer') }}">
-                            <i class="fas fa-print text-lg"></i>
-                            <span id="status-printer"
-                                class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
-                        </button>
-                        <button onclick="connectDevice('scanner')" id="btn-scanner"
-                            class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-gray-100 group"
-                            title="{{ __('Connect Scanner') }}">
-                            <i class="fas fa-barcode text-lg"></i>
-                            <span id="status-scanner"
-                                class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
-                        </button>
-                    </div>
+
                     <button wire:click="filterCategory(null)"
                         class="px-4 py-2 {{ is_null($categoryFilter) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }} rounded-lg text-sm font-medium whitespace-nowrap shadow-sm transition-colors">{{ __('All Items') }}</button>
                     <div class="flex flex-nowrap space-x-2 overflow-x-auto no-scrollbar md:max-w-[440px]">
@@ -1099,9 +1079,9 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                             </div>
 
                             <div class="space-y-3">
-                                <a href="{{ route('pos.receipt.print', $lastSale->id) }}" target="_blank" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-colors flex items-center justify-center">
+                                <button onclick="printReceipt('{{ route('pos.receipt.print', $lastSale->id) }}')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-colors flex items-center justify-center">
                                     <i class="fas fa-print mr-2"></i> {{ __('Print Receipt (PDF)') }}
-                                </a>
+                                </button>
                                 <button class="w-full py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors flex items-center justify-center">
                                     <i class="fas fa-envelope mr-2"></i> {{ __('Email Receipt') }}
                                 </button>
@@ -1120,7 +1100,18 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         </div>
     </div>
     @endif
-
+  <script>
+        function printReceipt(url) {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            // Clean up after 1 minute to allow time for loading and printing
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 60000);
+        }
+    </script>
     <script>
         function confirmPayment() {
             Swal.fire({

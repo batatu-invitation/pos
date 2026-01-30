@@ -1,35 +1,115 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Receipt {{ $sale->invoice_number }}</title>
     <style>
+        @media print {
+            @page {
+                margin: 0;
+                size: auto;
+            }
+            body {
+                margin: 0;
+                padding: 5mm;
+            }
+            /* Hide browser default header/footer */
+            header, footer {
+                display: none;
+            }
+        }
+        
+        @page {
+            margin: 0;
+        }
+
         body {
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
-            margin: 0;
+            margin: 5mm;
             padding: 0;
         }
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-        .text-right { text-align: right; }
-        .font-bold { font-weight: bold; }
-        .uppercase { text-transform: uppercase; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mt-4 { margin-top: 1rem; }
-        .border-dashed { border-bottom: 1px dashed #000; margin: 10px 0; }
-        .flex { display: table; width: 100%; }
-        .justify-between { display: table; width: 100%; }
-        .row { display: table-row; }
-        .cell { display: table-cell; }
-        .w-full { width: 100%; }
-        .text-xs { font-size: 10px; }
-        .text-sm { font-size: 12px; }
-        .text-xl { font-size: 16px; }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .border-dashed {
+            border-bottom: 1px dashed #000;
+            margin: 10px 0;
+        }
+
+        .flex {
+            display: table;
+            width: 100%;
+        }
+
+        .justify-between {
+            display: table;
+            width: 100%;
+        }
+
+        .row {
+            display: table-row;
+        }
+
+        .cell {
+            display: table-cell;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .text-xs {
+            font-size: 10px;
+        }
+
+        .text-sm {
+            font-size: 12px;
+        }
+
+        .text-xl {
+            font-size: 16px;
+        }
     </style>
 </head>
+
 <body>
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
     <div class="text-center mb-4">
         <h2 class="text-xl font-bold uppercase">POS Pro Store</h2>
         <p class="text-xs">123 Business Street, City, Country</p>
@@ -52,14 +132,14 @@
     <div class="border-dashed"></div>
 
     <table class="w-full text-xs">
-        @foreach($sale->items as $item)
-        <tr>
-            <td class="text-left" colspan="2">{{ $item->product_name }}</td>
-        </tr>
-        <tr>
-            <td class="text-left">{{ $item->quantity }} x Rp. {{ number_format($item->price, 2) }}</td>
-            <td class="text-right">Rp. {{ number_format($item->total_price, 2) }}</td>
-        </tr>
+        @foreach ($sale->items as $item)
+            <tr>
+                <td class="text-left" colspan="2">{{ $item->product_name }}</td>
+            </tr>
+            <tr>
+                <td class="text-left">{{ $item->quantity }} x Rp. {{ number_format($item->price, 2) }}</td>
+                <td class="text-right">Rp. {{ number_format($item->total_price, 2) }}</td>
+            </tr>
         @endforeach
     </table>
 
@@ -93,4 +173,5 @@
         </div>
     </div>
 </body>
+
 </html>

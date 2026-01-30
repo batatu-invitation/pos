@@ -607,5 +607,18 @@
     "Emoji deleted successfully!": "Emoji berhasil dihapus!",
     "You cannot edit global emojis.": "Anda tidak dapat mengedit emoji global.",
     "You cannot delete global emojis.": "Anda tidak dapat menghapus emoji global.",
-    "Unnamed": "Tanpa Nama"
+    "Unnamed": "Tanpa Nama",
+    "Receipt": "Struk",
+    "Invoice No": "No. Invoice",
+    "Date": "Tanggal",
+    "Cashier": "Kasir",
+    "Customer": "Pelanggan",
+    "Subtotal": "Subtotal",
+    "Tax": "Pajak",
+    "Discount": "Diskon",
+    "TOTAL": "TOTAL",
+    "Pay": "Bayar",
+    "Change": "Kembali",
+    "Thank You": "Terima Kasih",
+    "Items purchased cannot be exchanged or returned.": "Barang yang dibeli tidak dapat ditukar atau dikembalikan."
 }
