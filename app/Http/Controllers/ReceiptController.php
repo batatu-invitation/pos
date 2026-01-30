@@ -27,7 +27,7 @@ class ReceiptController extends Controller
 
                 // 3. Daftar komprehensif merk & tipe printer (Urutan Prioritas)
                 $searchTerms = [
-                    // EPSON Series
+                    // --- EPSON SERIES ---
                     'EPSON_L3250',
                     'EPSON_L3110',
                     'EPSON_L121',
@@ -37,27 +37,101 @@ class ReceiptController extends Controller
                     'TM-T88',
                     'TM-U220',
                     'TM-P20',
-                    // XPRINTER & China Brands
+                    'TM-T20',
+                    'TM-T70',
+                    'TM-U295',
+                    'TM-U590',
+                    'EU-T332C',
+                    'FX-890',
+
+                    // --- XPRINTER SERIES ---
                     'XP-N160',
                     'XP-58',
                     'XP-Q800',
                     'XPRINTER',
-                    'POS-80',
-                    'POS-58',
+                    'XP-365B',
+                    'XP-80C',
+                    'XP-90',
+                    'XP-Q20011',
+                    'F-900',
+
+                    // --- ZJIANG & EXCELVAN ---
                     'ZJ-58',
-                    'RPP02N',
-                    'GP-58',
-                    'GP-80',
-                    'RP-80',
-                    // Other Brands
-                    'CANON',
+                    'ZJ-5870',
+                    'ZJ-5890',
+                    'ZJ-8220',
+                    'ZJ-8250',
+                    'NT-58H',
+                    'HOP-E200',
+                    'HOP-E58',
+                    'HOP-E801',
+                    'EXCELVAN',
+
+                    // --- BIXOLON & STAR ---
                     'BIXOLON',
+                    'SRP-350',
                     'STAR_MCP',
-                    'CITIZEN',
-                    // Fallback keywords
+                    'BSC10',
+                    'TSP100',
+                    'TSP-650',
+                    'TUP-592',
+
+                    // --- RONGTA & GAINSCHA ---
+                    'RP326US',
+                    'RP58-U',
+                    'RP80USE',
+                    'GP-2120',
+                    'GP-5890',
+                    'GP-U80300',
+                    'GP-U80160',
+
+                    // --- LIST TAMBAHAN (BRAND LAIN) ---
+                    '3NSTAR_RPT-008',
+                    'APPPOS80AM',
+                    'AURES_ODP',
+                    'BEMATECH',
+                    'BIRCH_PRP',
+                    'BLACK_COPPER',
+                    'CHD_TH-305N',
+                    'CITIZEN_CBM',
+                    'CITIZEN_CT-S310',
+                    'DAPPER_GEYI',
+                    'DARUMA_DR800',
+                    'DR-MP200',
+                    'EPOS_TEP',
+                    'ELGIN_I9',
+                    'EVERYCOM_EC-58',
+                    'HOIN_HOP',
+                    'ITHACA_ITHERM',
+                    'HASAR_HTP',
+                    'METAPACE',
+                    'NEXA_PX700',
+                    'NYEAR_NP100',
+                    'OKI_RT322',
+                    'ORIENT_BTP',
+                    'PARTNER_TECH',
+                    'POSLIGNE_ODP',
+                    'QPOS_Q58M',
+                    'SAM4S_GIANT',
+                    'SENOR_TP-100',
+                    'SEWOO_SLK',
+                    'SEYPOS_PRP',
+                    'SNBC_BTP',
+                    'SOLUX_SX',
+                    'SICAR_POS-80',
+                    'SILICON_SP',
+                    'SPRT_SP-POS',
+                    'TVS_RP45',
+                    'VENUS_V248T',
+                    'XEUMIOR_SM-8330',
+
+                    // --- COMMON & FALLBACK ---
+                    'CANON',
                     'THERMAL',
                     'RECEIPT',
-                    'USB_PRINTER'
+                    'USB_PRINTER',
+                    'POS-80',
+                    'POS-58'
                 ];
 
                 $targetPrinter = null;
