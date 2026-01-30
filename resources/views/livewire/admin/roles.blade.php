@@ -7,8 +7,8 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
 new
-#[Layout('components.layouts.app', ['header' => __('Roles & Permissions')])]
-#[Title(__('Roles & Permissions - Modern POS'))]
+#[Layout('components.layouts.app', ['header' => 'Roles & Permissions'])]
+#[Title('Roles & Permissions - Modern POS')]
 class extends Component
 {
     public $roleName = '';

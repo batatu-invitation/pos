@@ -9,7 +9,7 @@ use Livewire\WithPagination;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
-new #[Layout('components.layouts.app')] #[Title(__('User Management'))] class extends Component {
+new #[Layout('components.layouts.app')] #[Title('User Management')] class extends Component {
     use WithPagination;
 
     public $first_name = '';
