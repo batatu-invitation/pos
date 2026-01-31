@@ -15,6 +15,7 @@ class Sale extends Model
         'user_id',
         'customer_id',
         'subtotal',
+        'tax_id',
         'tax',
         'discount',
         'total_amount',
@@ -25,6 +26,25 @@ class Sale extends Model
         'notes',
         'tenant_id',
     ];
+
+    protected $casts = [
+        'subtotal' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'cash_received' => 'decimal:2',
+        'change_amount' => 'decimal:2',
+    ];
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function tax()
+    {
+        return $this->belongsTo(Tax::class);
+    }
 
     public function items()
     {

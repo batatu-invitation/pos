@@ -1,116 +1,231 @@
 <?php
 
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 
-new
-#[Layout('components.layouts.app')]
+new #[Layout('components.layouts.app')]
 #[Title('Analytics Overview - Modern POS')]
 class extends Component
 {
+    public $dateRange = '30_days';
+    public $totalSales = 0;
+    public $totalOrders = 0;
+    public $newCustomers = 0;
+    public $avgTransaction = 0;
     public $topProducts = [];
-
     public $recentActivities = [];
+    public $chartData = [];
+
+    // Comparison percentages (vs last period)
+    public $salesGrowth = 0;
+    public $ordersGrowth = 0;
+    public $customersGrowth = 0;
+    public $avgTransactionGrowth = 0;
 
     public function mount()
     {
-        $this->topProducts = [
-            ['name' => __('Wireless Mouse'), 'sales' => 124, 'revenue' => 2480.00],
-            ['name' => __('Mechanical Keyboard'), 'sales' => 85, 'revenue' => 8500.00],
-            ['name' => __('USB-C Cable (2m)'), 'sales' => 200, 'revenue' => 2000.00],
-            ['name' => __('27" 4K Monitor'), 'sales' => 15, 'revenue' => 5250.00],
-            ['name' => __('Ergonomic Chair'), 'sales' => 22, 'revenue' => 6600.00],
-            ['name' => __('Laptop Stand'), 'sales' => 45, 'revenue' => 1350.00],
-            ['name' => __('Webcam 1080p'), 'sales' => 30, 'revenue' => 1800.00],
-            ['name' => __('Noise Cancelling Headphones'), 'sales' => 18, 'revenue' => 3600.00],
-            ['name' => __('Wireless Charger'), 'sales' => 60, 'revenue' => 1500.00],
-            ['name' => __('Bluetooth Speaker'), 'sales' => 40, 'revenue' => 2400.00],
-            ['name' => __('Gaming Mouse Pad'), 'sales' => 75, 'revenue' => 1125.00],
-            ['name' => __('External SSD 1TB'), 'sales' => 25, 'revenue' => 3000.00],
-        ];
+        $this->loadData();
+    }
 
-        $this->recentActivities = [
-            ['action' => __('New Order #ORD-001'), 'user' => __('Walk-in Customer'), 'time' => __('2 mins ago'), 'amount' => 45.00, 'status' => __('Completed'), 'type' => 'success', 'details' => __('Purchased 2x Wireless Mouse')],
-            ['action' => __('Stock Update'), 'user' => __('System'), 'time' => __('15 mins ago'), 'amount' => null, 'status' => __('Processed'), 'type' => 'info', 'details' => __('Added 50 units of USB-C Cable')],
-            ['action' => __('Refund Processed'), 'user' => __('Admin'), 'time' => __('1 hour ago'), 'amount' => -15.00, 'status' => __('Refunded'), 'type' => 'warning', 'details' => __('Returned faulty keyboard')],
-            ['action' => __('New Customer'), 'user' => 'Jane Smith', 'time' => __('2 hours ago'), 'amount' => null, 'status' => __('Registered'), 'type' => 'success', 'details' => __('Customer account created via web')],
-            ['action' => __('Payment Failed'), 'user' => __('Online Order'), 'time' => __('3 hours ago'), 'amount' => 120.00, 'status' => __('Failed'), 'type' => 'danger', 'details' => __('Card declined: Insufficient funds')],
-            ['action' => __('Shift Closed'), 'user' => 'John Doe', 'time' => __('4 hours ago'), 'amount' => 1250.00, 'status' => __('Closed'), 'type' => 'info', 'details' => __('Register #1 closed successfully')],
-            ['action' => __('New Order #ORD-002'), 'user' => 'Mike Johnson', 'time' => __('4.5 hours ago'), 'amount' => 210.00, 'status' => __('Completed'), 'type' => 'success', 'details' => __('Purchased 1x Monitor')],
-            ['action' => __('Inventory Alert'), 'user' => __('System'), 'time' => __('5 hours ago'), 'amount' => null, 'status' => __('Low Stock'), 'type' => 'warning', 'details' => __('Wireless Mouse stock below 5')],
-            ['action' => __('Settings Updated'), 'user' => __('Super Admin'), 'time' => __('6 hours ago'), 'amount' => null, 'status' => __('Updated'), 'type' => 'info', 'details' => __('Changed tax rate to 10%')],
-            ['action' => __('New Order #ORD-003'), 'user' => 'Sarah Williams', 'time' => __('7 hours ago'), 'amount' => 55.00, 'status' => __('Completed'), 'type' => 'success', 'details' => __('Purchased 1x Webcam')],
-            ['action' => __('Login Attempt'), 'user' => __('Unknown'), 'time' => __('8 hours ago'), 'amount' => null, 'status' => __('Blocked'), 'type' => 'danger', 'details' => __('Failed login attempt from IP 192.168.1.1')],
-            ['action' => __('Backup Created'), 'user' => __('System'), 'time' => __('10 hours ago'), 'amount' => null, 'status' => __('Success'), 'type' => 'success', 'details' => __('Daily database backup completed')],
+    public function updatedDateRange()
+    {
+        $this->loadData();
+        $this->dispatch('update-chart', data: $this->chartData);
+    }
+
+    public function loadData()
+    {
+        // Define dates
+        $endDate = Carbon::now();
+        $startDate = match($this->dateRange) {
+            '7_days' => Carbon::now()->subDays(7),
+            '30_days' => Carbon::now()->subDays(30),
+            'this_month' => Carbon::now()->startOfMonth(),
+            'last_month' => Carbon::now()->subMonth()->startOfMonth(),
+            'this_year' => Carbon::now()->startOfYear(),
+            default => Carbon::now()->subDays(30),
+        };
+
+        // Previous period for comparison
+        $daysDiff = $startDate->diffInDays($endDate);
+        // Ensure strictly positive diff for calculation, default to 1 day if 0
+        $daysDiff = $daysDiff > 0 ? $daysDiff : 1;
+
+        $prevEndDate = $startDate->copy()->subDay();
+        $prevStartDate = $prevEndDate->copy()->subDays($daysDiff);
+
+        // 1. Total Sales & Orders
+        $currentSalesQuery = Sale::whereBetween('created_at', [$startDate, $endDate])->where('status', 'completed');
+        $this->totalSales = $currentSalesQuery->sum('total_amount');
+        $this->totalOrders = $currentSalesQuery->count();
+
+        $prevSalesQuery = Sale::whereBetween('created_at', [$prevStartDate, $prevEndDate])->where('status', 'completed');
+        $prevTotalSales = $prevSalesQuery->sum('total_amount');
+        $prevTotalOrders = $prevSalesQuery->count();
+
+        $this->salesGrowth = $this->calculateGrowth($this->totalSales, $prevTotalSales);
+        $this->ordersGrowth = $this->calculateGrowth($this->totalOrders, $prevTotalOrders);
+
+        // 2. New Customers
+        $this->newCustomers = Customer::whereBetween('created_at', [$startDate, $endDate])->count();
+        $prevNewCustomers = Customer::whereBetween('created_at', [$prevStartDate, $prevEndDate])->count();
+        $this->customersGrowth = $this->calculateGrowth($this->newCustomers, $prevNewCustomers);
+
+        // 3. Avg Transaction
+        $this->avgTransaction = $this->totalOrders > 0 ? $this->totalSales / $this->totalOrders : 0;
+        $prevAvgTransaction = $prevTotalOrders > 0 ? $prevTotalSales / $prevTotalOrders : 0;
+        $this->avgTransactionGrowth = $this->calculateGrowth($this->avgTransaction, $prevAvgTransaction);
+
+        // 4. Top Products
+        $this->topProducts = SaleItem::select('product_name as name', DB::raw('SUM(quantity) as sales'), DB::raw('SUM(total_price) as revenue'))
+            ->whereHas('sale', function($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [$startDate, $endDate])
+                  ->completed();
+            })
+            ->groupBy('product_name')
+            ->orderByDesc('revenue')
+            ->take(5)
+            ->get()
+            ->toArray();
+
+        // 5. Recent Activities (Merging Sales and Customers)
+        $recentSales = Sale::with('user', 'customer')->latest()->take(5)->get()->map(function($sale) {
+            return [
+                'action' => 'New Order #' . $sale->invoice_number,
+                'user' => $sale->customer ? $sale->customer->name : 'Walk-in Customer',
+                'time' => $sale->created_at->diffForHumans(),
+                'amount' => $sale->total_amount,
+                'status' => ucfirst($sale->status),
+                'type' => 'success',
+                'details' => 'Order processed by ' . ($sale->user ? $sale->user->name : 'System'),
+                'created_at' => $sale->created_at
+            ];
+        });
+
+        $recentCustomers = Customer::latest()->take(5)->get()->map(function($customer) {
+            return [
+                'action' => 'New Customer',
+                'user' => $customer->name,
+                'time' => $customer->created_at->diffForHumans(),
+                'amount' => null,
+                'status' => 'Registered',
+                'type' => 'info',
+                'details' => 'Customer added to system',
+                'created_at' => $customer->created_at
+            ];
+        });
+
+        $this->recentActivities = $recentSales->merge($recentCustomers)
+            ->sortByDesc('created_at')
+            ->take(10)
+            ->values()
+            ->toArray();
+
+        // 6. Chart Data
+        $chartQuery = Sale::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total_amount) as total'))
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', 'completed')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Fill missing dates
+        $period = CarbonPeriod::create($startDate, $endDate);
+        $labels = [];
+        $data = [];
+
+        foreach($period as $date) {
+            $formattedDate = $date->format('Y-m-d');
+            $labels[] = $date->format('D, d M');
+            $record = $chartQuery->firstWhere('date', $formattedDate);
+            $data[] = $record ? $record->total : 0;
+        }
+
+        $this->chartData = [
+            'labels' => $labels,
+            'data' => $data
         ];
+    }
+
+    private function calculateGrowth($current, $previous)
+    {
+        if ($previous == 0) return $current > 0 ? 100 : 0;
+        return (($current - $previous) / $previous) * 100;
     }
 }; ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6"
      x-data="{
-         initCharts() {
-            if (document.getElementById('revenueChart')) {
-                const ctx = document.getElementById('revenueChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['{{ __('Mon') }}', '{{ __('Tue') }}', '{{ __('Wed') }}', '{{ __('Thu') }}', '{{ __('Fri') }}', '{{ __('Sat') }}', '{{ __('Sun') }}'],
-                        datasets: [{
-                            label: '{{ __('Revenue') }}',
-                            data: [1200, 1900, 1500, 2500, 2200, 3000, 2800],
-                            borderColor: '#4f46e5',
-                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                         responsive: true,
-                         maintainAspectRatio: false,
-                         plugins: {
-                             legend: {
-                                 display: false
+         chart: null,
+         init() {
+             this.$nextTick(() => {
+                 this.renderChart(@json($chartData));
+             });
+         },
+         renderChart(data) {
+             if (!data) return;
+
+             const ctx = this.$refs.revenueChart;
+             if (!ctx) return;
+
+             if (this.chart) {
+                 this.chart.destroy();
+             }
+
+             this.chart = new Chart(ctx, {
+                 type: 'line',
+                 data: {
+                     labels: data.labels,
+                     datasets: [{
+                         label: '{{ __('Revenue') }}',
+                         data: data.data,
+                         borderColor: '#4f46e5',
+                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                         tension: 0.4,
+                         fill: true
+                     }]
+                 },
+                 options: {
+                     responsive: true,
+                     maintainAspectRatio: false,
+                     plugins: {
+                         legend: {
+                             display: false
+                         }
+                     },
+                     scales: {
+                         y: {
+                             beginAtZero: true,
+                             grid: {
+                                 borderDash: [2, 4],
+                                 color: '#f3f4f6'
+                             },
+                             ticks: {
+                                 callback: function(value) {
+                                     return 'Rp ' + value.toLocaleString();
+                                 }
                              }
                          },
-                         scales: {
-                             y: {
-                                 beginAtZero: true,
-                                 grid: {
-                                     borderDash: [2, 4],
-                                     color: '#f3f4f6'
-                                 }
-                             },
-                             x: {
-                                 grid: {
-                                     display: false
-                                 }
+                         x: {
+                             grid: {
+                                 display: false
                              }
                          }
                      }
-                 });
-             }
+                 }
+             });
          }
      }"
-     x-init="initCharts(); Livewire.hook('morph.updated', () => { initCharts(); });">
+     @update-chart.window="renderChart($event.detail.data)">
 
-    <!-- Header -->
-    <header class="flex items-center justify-between mb-8">
-        <div class="flex items-center">
-            <h1 class="text-2xl font-semibold text-gray-800">{{ __('Business Intelligence') }}</h1>
-        </div>
 
-        <div class="flex items-center space-x-4">
-            <button class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                <i class="fas fa-bell text-xl"></i>
-                <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
-            </button>
-            <a href="{{ route('pos.visual') }}" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                <i class="fas fa-cash-register mr-2"></i>
-                {{ __('Open POS') }}
-            </a>
-        </div>
-    </header>
 
     <!-- Header Actions -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
@@ -121,12 +236,12 @@ class extends Component
         <div class="flex items-center space-x-3">
             <div class="relative">
                 <i class="fas fa-calendar absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-                <select class="pl-8 pr-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option>{{ __('Last 7 Days') }}</option>
-                    <option>{{ __('Last 30 Days') }}</option>
-                    <option>{{ __('This Month') }}</option>
-                    <option>{{ __('Last Month') }}</option>
-                    <option>{{ __('This Year') }}</option>
+                <select wire:model.live="dateRange" class="pl-8 pr-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="7_days">{{ __('Last 7 Days') }}</option>
+                    <option value="30_days">{{ __('Last 30 Days') }}</option>
+                    <option value="this_month">{{ __('This Month') }}</option>
+                    <option value="last_month">{{ __('Last Month') }}</option>
+                    <option value="this_year">{{ __('This Year') }}</option>
                 </select>
             </div>
             <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
@@ -142,15 +257,15 @@ class extends Component
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500">{{ __('Total Sales') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. 24,560</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($totalSales, 2) }}</h3>
                 </div>
                 <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                     <i class="fas fa-dollar-sign text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-green-600 font-medium flex items-center">
-                    <i class="fas fa-arrow-up mr-1"></i> 12.5%
+                <span class="{{ $salesGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                    <i class="fas fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($salesGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
             </div>
@@ -161,15 +276,15 @@ class extends Component
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500">{{ __('Total Orders') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">456</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($totalOrders) }}</h3>
                 </div>
                 <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
                     <i class="fas fa-shopping-bag text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-green-600 font-medium flex items-center">
-                    <i class="fas fa-arrow-up mr-1"></i> 8.2%
+                <span class="{{ $ordersGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                    <i class="fas fa-arrow-{{ $ordersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($ordersGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
             </div>
@@ -180,15 +295,15 @@ class extends Component
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500">{{ __('New Customers') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">125</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($newCustomers) }}</h3>
                 </div>
                 <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
                     <i class="fas fa-users text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-red-600 font-medium flex items-center">
-                    <i class="fas fa-arrow-down mr-1"></i> 2.1%
+                <span class="{{ $customersGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                    <i class="fas fa-arrow-{{ $customersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($customersGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
             </div>
@@ -199,15 +314,15 @@ class extends Component
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500">{{ __('Avg. Transaction') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. 53.80</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($avgTransaction, 2) }}</h3>
                 </div>
                 <div class="p-2 bg-orange-50 rounded-lg text-orange-600">
                     <i class="fas fa-receipt text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-green-600 font-medium flex items-center">
-                    <i class="fas fa-arrow-up mr-1"></i> 4.5%
+                <span class="{{ $avgTransactionGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                    <i class="fas fa-arrow-{{ $avgTransactionGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($avgTransactionGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
             </div>
@@ -218,7 +333,7 @@ class extends Component
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
         <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Revenue Analytics') }}</h3>
         <div class="relative h-80 w-full">
-            <canvas id="revenueChart"></canvas>
+            <canvas x-ref="revenueChart"></canvas>
         </div>
     </div>
 
@@ -301,7 +416,7 @@ class extends Component
                                 {{ $activity['type'] === 'success' ? 'bg-green-100 text-green-800' :
                                    ($activity['type'] === 'warning' ? 'bg-yellow-100 text-yellow-800' :
                                    ($activity['type'] === 'danger' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800')) }}">
-                                {{ $activity['type'] }}
+                                {{ $activity['status'] }}
                             </span>
                         </td>
                     </tr>

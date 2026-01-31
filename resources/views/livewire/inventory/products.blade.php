@@ -22,6 +22,8 @@ class extends Component
     public $sku = '';
     public $category_id = '';
     public $price = '';
+    public $cost = '';
+    public $margin = '';
     public $stock = '';
     public $status = 'Active';
     public $icon = '';
@@ -47,7 +49,7 @@ class extends Component
 
     public function create()
     {
-        $this->reset(['name', 'sku', 'category_id', 'price', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
+        $this->reset(['name', 'sku', 'category_id', 'price', 'cost', 'margin', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
         $this->icon = '🍔'; // Default
         $this->status = 'Active';
         $this->dispatch('open-modal', 'product-modal');
@@ -61,6 +63,8 @@ class extends Component
         $this->sku = $product->sku;
         $this->category_id = $product->category_id;
         $this->price = number_format($product->price, 0, '', '.');
+        $this->cost = number_format($product->cost, 0, '', '.');
+        $this->margin = $product->margin;
         $this->stock = $product->stock;
         $this->status = $product->status;
         $this->icon = $product->icon;
@@ -70,6 +74,29 @@ class extends Component
         $this->dispatch('open-modal', 'product-modal');
     }
 
+    public function updatedPrice($value)
+    {
+        $this->calculateMargin();
+    }
+
+    public function updatedCost($value)
+    {
+        $this->calculateMargin();
+    }
+
+    public function calculateMargin()
+    {
+        $price = (float) str_replace('.', '', $this->price);
+        $cost = (float) str_replace('.', '', $this->cost);
+
+        if ($price > 0) {
+            // Margin formula: ((Price - Cost) / Price) * 100
+            $this->margin = number_format((($price - $cost) / $price) * 100, 2);
+        } else {
+            $this->margin = 0;
+        }
+    }
+
     public function save()
     {
         $this->validate([
@@ -77,6 +104,7 @@ class extends Component
             'sku' => 'required|unique:products,sku,' . $this->editingProductId,
             'category_id' => 'required|exists:categories,id',
             'price' => 'required',
+            'cost' => 'required',
             'stock' => 'required|integer|min:0',
             'status' => 'required',
             'icon' => 'nullable',
@@ -84,12 +112,19 @@ class extends Component
         ]);
 
         $price = str_replace('.', '', $this->price);
+        $cost = str_replace('.', '', $this->cost);
+
+        // Ensure margin is calculated before saving
+        $this->calculateMargin();
 
         $data = [
             'name' => $this->name,
             'sku' => $this->sku,
             'category_id' => $this->category_id,
             'price' => $price,
+            'cost' => $cost,
+            'margin' => $this->margin,
+            'margin' => $this->margin,
             'stock' => $this->stock,
             'status' => $this->status,
             'icon' => $this->icon,
@@ -125,7 +160,7 @@ class extends Component
         }
 
         $this->dispatch('close-modal', 'product-modal');
-        $this->reset(['name', 'sku', 'category_id', 'price', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
+        $this->reset(['name', 'sku', 'category_id', 'price', 'cost', 'margin', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
         $this->dispatch('notify', $message);
     }
 
@@ -314,7 +349,7 @@ class extends Component
                     </div>
                 </div>
 
-                <!-- Price & Stock -->
+                <!-- Price & Cost -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <x-input-label for="price" :value="__('Price (IDR)')" />
@@ -328,6 +363,22 @@ class extends Component
                         />
                         <x-input-error :messages="$errors->get('price')" class="mt-2" />
                     </div>
+                    <div>
+                        <x-input-label for="cost" :value="__('Cost (IDR)')" />
+                        <x-text-input
+                            wire:model="cost"
+                            x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')"
+                            id="cost"
+                            class="block mt-1 w-full"
+                            type="text"
+                            placeholder="0"
+                        />
+                        <x-input-error :messages="$errors->get('cost')" class="mt-2" />
+                    </div>
+                </div>
+
+                <!-- Margin & Stock -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <x-input-label for="stock" :value="__('Stock')" />
                         <x-text-input wire:model="stock" id="stock" class="block mt-1 w-full" type="number" placeholder="0" />

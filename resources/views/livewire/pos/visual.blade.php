@@ -23,7 +23,8 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     public $selectedCustomerName = '';
     public $customerSearch = '';
     public $showCustomerSearch = false;
-    public $taxRate = 0.1;
+    public $selectedTaxId = null;
+    public $taxRate = 0;
 
     // Order Details
     public $note = '';
@@ -129,14 +130,20 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 ->get();
         }
 
-        $taxRate = Tax::where('user_id', auth()->id())->where('is_active', true)->first();
-        // dd($taxRate);
-        $this->taxRate = $taxRate->rate ?? 0;
+        $taxes = Tax::where('user_id', auth()->id())->where('is_active', true)->get();
+
+        if (!$this->selectedTaxId && $taxes->isNotEmpty()) {
+            $this->selectedTaxId = $taxes->first()->id;
+        }
+
+        $selectedTax = $taxes->firstWhere('id', $this->selectedTaxId);
+        $this->taxRate = $selectedTax ? $selectedTax->rate : 0;
 
         return [
             'products' => $productsQuery->where('stock', '>', 0)->latest()->paginate(15),
             'categories' => Category::all(),
             'customers' => $customers,
+            'taxes' => $taxes,
         ];
     }
 
@@ -221,12 +228,11 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
     public function getTaxProperty()
     {
-        $taxRate = Tax::where('user_id', auth()->id())->where('is_active', true)->sum('rate') ?: 0;
         $subtotal = (float) $this->subtotal;
         $discount = (float) $this->discount;
 
         $taxableAmount = max(0, $subtotal - $discount);
-        return $taxableAmount * ($taxRate / 100);
+        return $taxableAmount * ($this->taxRate / 100);
     }
 
     public function getTotalProperty()
@@ -273,6 +279,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 'user_id' => auth()->id(),
                 'customer_id' => $this->selectedCustomerId,
                 'subtotal' => $this->subtotal,
+                'tax_id' => $this->selectedTaxId,
                 'tax' => $this->tax,
                 'discount' => $this->discount,
                 'total_amount' => $this->total,
@@ -322,6 +329,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
         $this->selectedCustomerId = $sale->customer_id;
         $this->selectedCustomerName = $sale->customer ? $sale->customer->name : __('Walk-in Customer');
+        $this->selectedTaxId = $sale->tax_id;
         $this->note = $sale->notes;
         $this->discount = $sale->discount;
         // Shipping is not in Sale model yet, assuming 0 for restored orders unless we add it
@@ -372,6 +380,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 'user_id' => auth()->id(),
                 'customer_id' => $this->selectedCustomerId,
                 'subtotal' => $this->subtotal,
+                'tax_id' => $this->selectedTaxId,
                 'tax' => $this->tax,
                 'discount' => $this->discount,
                 'total_amount' => $this->total,
@@ -622,8 +631,19 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         <span>-Rp. {{ number_format($this->discount, 0, ',', '.') }}</span>
                     </div>
                 @endif
-                <div class="flex justify-between text-staxm text-gray-600">
-                    <span>{{ __('Tax') }}({{ number_format($this->taxRate, 0) }}%)</span>
+                <div class="flex justify-between items-center text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <span class="mr-2">{{ __('Tax') }}</span>
+                        @if($taxes->count() > 1)
+                            <select wire:model.live="selectedTaxId" class="text-xs border-gray-300 rounded p-1 pr-6 py-0 focus:ring-indigo-500 focus:border-indigo-500">
+                                @foreach($taxes as $t)
+                                    <option value="{{ $t->id }}">{{ $t->name }} ({{ number_format($t->rate, 0) }}%)</option>
+                                @endforeach
+                            </select>
+                        @else
+                             <span>({{ number_format($this->taxRate, 0) }}%)</span>
+                        @endif
+                    </div>
                     <span>Rp. {{ number_format($this->tax, 0, ',', '.') }}</span>
                 </div>
                 @if ($this->shipping > 0)
