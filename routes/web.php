@@ -37,6 +37,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         Volt::route('/analytics/overview', 'analytics.overview')->name('analytics.overview');
         Volt::route('/analytics/profit-loss', 'analytics.profit-loss')->name('analytics.profit-loss');
         Volt::route('/analytics/cash-flow', 'analytics.cash-flow')->name('analytics.cash-flow');
+        Volt::route('/analytics/balance-sheet', 'analytics.balance-sheet')->name('analytics.balance-sheet');
         Volt::route('/analytics/tax-report', 'analytics.tax-report')->name('analytics.tax-report');
         Volt::route('/inventory/products', 'inventory.products')->name('inventory.products');
         Volt::route('/inventory/categories', 'inventory.categories')->name('inventory.categories');

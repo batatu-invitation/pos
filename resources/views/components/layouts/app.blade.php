@@ -153,6 +153,11 @@
                             class="fas fa-money-bill-wave w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Cash Flow') }}</span>
                     </a>
+                    <a wire:navigate href="{{ route('analytics.balance-sheet') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.balance-sheet') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-balance-scale w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Balance Sheet') }}</span>
+                    </a>
                     <a wire:navigate href="{{ route('analytics.tax-report') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.tax-report') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-university w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>

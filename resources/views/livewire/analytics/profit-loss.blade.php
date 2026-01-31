@@ -40,24 +40,26 @@ new #[Layout('components.layouts.app')]
         $prevStart = $start->copy()->subDays($days);
         $prevEnd = $end->copy()->subDays($days);
 
-        // --- Revenue (Sales by Category) ---
+        // --- Cashier Sales ---
         $this->revenueItems = [];
-        $categories = Category::lazy();
 
-        foreach ($categories as $category) {
-            $amount = SaleItem::whereHas('product', function ($q) use ($category) {
-                    $q->where('category_id', $category->id);
-                })
-                ->whereHas('sale', function ($q) use ($start, $end) {
-                    $q->whereBetween('created_at', [$start, $end])
-                      ->where('status', 'completed');
-                })
-                ->sum('total_price');
+        $salesBySeller = Sale::query()
+            ->join('users', 'sales.user_id', '=', 'users.id')
+            ->whereBetween('sales.created_at', [$start, $end])
+            ->where('sales.status', 'completed')
+            ->select(
+                'users.first_name',
+                'users.last_name',
+                DB::raw('SUM(sales.subtotal) as total_sales')
+            )
+            ->groupBy('users.id', 'users.first_name', 'users.last_name')
+            ->get();
 
-            if ($amount > 0) {
+        foreach ($salesBySeller as $sellerSale) {
+            if ($sellerSale->total_sales > 0) {
                 $this->revenueItems[] = [
-                    'name' => $category->name,
-                    'amount' => $amount
+                    'name' => $sellerSale->first_name . ' ' . $sellerSale->last_name,
+                    'amount' => $sellerSale->total_sales
                 ];
             }
         }
@@ -91,11 +93,13 @@ new #[Layout('components.layouts.app')]
 
         // Revenue Growth
         $currentRevenue = $this->getTotalRevenue();
-        $prevItemRevenue = SaleItem::whereHas('sale', function ($q) use ($prevStart, $prevEnd) {
-            $q->whereBetween('created_at', [$prevStart, $prevEnd])->where('status', 'completed');
-        })->sum('total_price');
+        $prevItemRevenue = Sale::whereBetween('created_at', [$prevStart, $prevEnd])
+            ->where('status', 'completed')
+            ->sum('subtotal');
+
         $prevDiscounts = Sale::whereBetween('created_at', [$prevStart, $prevEnd])
-            ->where('status', 'completed')->sum('discount');
+            ->where('status', 'completed')
+            ->sum('discount');
 
         $prevOtherIncome = Transaction::where('type', 'income')
             ->whereBetween('date', [$prevStart->format('Y-m-d'), $prevEnd->format('Y-m-d')])
@@ -242,7 +246,7 @@ new #[Layout('components.layouts.app')]
         <div class="p-6">
             <!-- Revenue Section -->
             <div class="mb-8">
-                <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Revenue') }}</h3>
+                <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Cashier Sales') }}</h3>
                 <div class="space-y-3">
                     @foreach($revenueItems as $item)
                     <div class="flex justify-between items-center py-2 border-b border-gray-50">

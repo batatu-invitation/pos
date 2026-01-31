@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Sale;
+use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -9,65 +13,80 @@ new
 #[Title('Cash Flow - Modern POS')]
 class extends Component
 {
-    public $operatingActivities = [
-        ['name' => 'Net Income', 'amount' => 16750.00, 'type' => 'positive'],
-        ['name' => 'Depreciation & Amortization', 'amount' => 1200.00, 'type' => 'positive'],
-        ['name' => 'Increase in Accounts Receivable', 'amount' => 2500.00, 'type' => 'negative'],
-        ['name' => 'Decrease in Inventory', 'amount' => 1500.00, 'type' => 'positive'],
-        ['name' => 'Increase in Accounts Payable', 'amount' => 3000.00, 'type' => 'positive'],
-        ['name' => 'Decrease in Prepaid Expenses', 'amount' => 500.00, 'type' => 'positive'],
-        ['name' => 'Increase in Accrued Liabilities', 'amount' => 800.00, 'type' => 'positive'],
-        ['name' => 'Deferred Income Tax', 'amount' => 300.00, 'type' => 'positive'],
-        ['name' => 'Other Operating Activities', 'amount' => 200.00, 'type' => 'negative'],
-        ['name' => 'Loss on Sale of Assets', 'amount' => 150.00, 'type' => 'positive'],
-        ['name' => 'Interest Received', 'amount' => 450.00, 'type' => 'positive'],
-        ['name' => 'Tax Refund Received', 'amount' => 1200.00, 'type' => 'positive'],
-    ];
-
-    public $investingActivities = [
-        ['name' => 'Purchase of Equipment', 'amount' => 5000.00, 'type' => 'negative'],
-        ['name' => 'Sale of Equipment', 'amount' => 1200.00, 'type' => 'positive'],
-        ['name' => 'Purchase of Investment Securities', 'amount' => 2000.00, 'type' => 'negative'],
-        ['name' => 'Sale of Investment Securities', 'amount' => 3000.00, 'type' => 'positive'],
-        ['name' => 'Loans Made to Others', 'amount' => 1500.00, 'type' => 'negative'],
-        ['name' => 'Collections on Loans', 'amount' => 500.00, 'type' => 'positive'],
-        ['name' => 'Purchase of Intangible Assets', 'amount' => 1000.00, 'type' => 'negative'],
-        ['name' => 'Sale of Land', 'amount' => 8000.00, 'type' => 'positive'],
-        ['name' => 'Capital Expenditures', 'amount' => 3500.00, 'type' => 'negative'],
-        ['name' => 'Acquisition of Business', 'amount' => 10000.00, 'type' => 'negative'],
-        ['name' => 'Sale of Subsidiary', 'amount' => 12000.00, 'type' => 'positive'],
-        ['name' => 'Purchase of Patent', 'amount' => 2500.00, 'type' => 'negative'],
-    ];
-
-    public $financingActivities = [
-        ['name' => 'Repayment of Loans', 'amount' => 2000.00, 'type' => 'negative'],
-        ['name' => 'Proceeds from Long-term Debt', 'amount' => 5000.00, 'type' => 'positive'],
-        ['name' => 'Proceeds from Issuance of Stock', 'amount' => 10000.00, 'type' => 'positive'],
-        ['name' => 'Payment of Dividends', 'amount' => 1500.00, 'type' => 'negative'],
-        ['name' => 'Repurchase of Stock', 'amount' => 2000.00, 'type' => 'negative'],
-        ['name' => 'Payment of Capital Lease Obligations', 'amount' => 800.00, 'type' => 'negative'],
-        ['name' => 'Proceeds from Short-term Debt', 'amount' => 3000.00, 'type' => 'positive'],
-        ['name' => 'Repayment of Short-term Debt', 'amount' => 1500.00, 'type' => 'negative'],
-        ['name' => 'Owner\'s Drawings', 'amount' => 1000.00, 'type' => 'negative'],
-        ['name' => 'Capital Contributions', 'amount' => 5000.00, 'type' => 'positive'],
-    ];
+    public $operatingActivities = [];
+    public $investingActivities = [];
+    public $financingActivities = [];
+    public $startDate;
+    public $endDate;
 
     public function mount()
     {
-        $this->operatingActivities = array_map(function ($item) {
-            $item['name'] = __($item['name']);
-            return $item;
-        }, $this->operatingActivities);
+        $this->startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $this->loadData();
+    }
 
-        $this->investingActivities = array_map(function ($item) {
-            $item['name'] = __($item['name']);
-            return $item;
-        }, $this->investingActivities);
+    public function loadData()
+    {
+        $start = Carbon::parse($this->startDate)->startOfDay();
+        $end = Carbon::parse($this->endDate)->endOfDay();
 
-        $this->financingActivities = array_map(function ($item) {
-            $item['name'] = __($item['name']);
-            return $item;
-        }, $this->financingActivities);
+        // --- Operating Activities ---
+        $this->operatingActivities = [];
+
+        // 1. Cash from Sales (Inflow)
+        // We use total_amount as that represents the actual cash/payment obligation
+        $cashFromSales = Sale::whereBetween('created_at', [$start, $end])
+            ->where('status', 'completed')
+            ->sum('total_amount');
+
+        if ($cashFromSales > 0) {
+            $this->operatingActivities[] = [
+                'name' => __('Cash Receipts from Customers'),
+                'amount' => $cashFromSales,
+                'type' => 'positive'
+            ];
+        }
+
+        // 2. Other Income (Inflow)
+        $otherIncome = Transaction::where('type', 'income')
+            ->whereBetween('date', [$this->startDate, $this->endDate])
+            ->where('status', 'completed')
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->get();
+
+        foreach ($otherIncome as $income) {
+            $this->operatingActivities[] = [
+                'name' => $income->category ?? __('Other Income'),
+                'amount' => $income->total,
+                'type' => 'positive'
+            ];
+        }
+
+        // 3. Operational Expenses (Outflow)
+        $expenses = Transaction::where('type', 'expense')
+            ->whereBetween('date', [$this->startDate, $this->endDate])
+            ->where('status', 'completed')
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->get();
+
+        foreach ($expenses as $expense) {
+            $this->operatingActivities[] = [
+                'name' => $expense->category ?? __('Other Expense'),
+                'amount' => $expense->total,
+                'type' => 'negative'
+            ];
+        }
+
+        // --- Investing Activities ---
+        // Currently no dedicated model for assets/investments, so we leave empty or placeholder
+        $this->investingActivities = [];
+
+        // --- Financing Activities ---
+        // Currently no dedicated model for loans/equity, so we leave empty or placeholder
+        $this->financingActivities = [];
     }
 
     public function calculateTotal($activities)
@@ -117,17 +136,16 @@ class extends Component
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Period') }}</label>
-                            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
-                                <option>{{ __('This Month') }}</option>
-                                <option>{{ __('Last Month') }}</option>
-                                <option>{{ __('This Quarter') }}</option>
-                                <option>{{ __('This Year') }}</option>
-                            </select>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Start Date') }}</label>
+                            <input type="date" wire:model="startDate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('End Date') }}</label>
+                            <input type="date" wire:model="endDate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                         </div>
                         <div class="relative self-end">
-                            <button class="px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                                {{ __('Update') }}
+                            <button wire:click="loadData" class="px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                                {{ __('Apply') }}
                             </button>
                         </div>
                     </div>
@@ -143,7 +161,7 @@ class extends Component
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h2 class="text-lg font-bold text-gray-800">{{ __('Cash Flow Statement') }}</h2>
-                    <span class="text-sm text-gray-500">Jan 1, 2024 - Jan 31, 2024</span>
+                    <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}</span>
                 </div>
 
                 <div class="p-6">
@@ -155,7 +173,7 @@ class extends Component
                             <div class="flex justify-between items-center py-2 border-b border-gray-50">
                                 <span class="text-gray-700">{{ $activity['name'] }}</span>
                                 <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
+                                    {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 0, ',', '.') }}{{ $activity['type'] === 'negative' ? ')' : '' }}
                                 </span>
                             </div>
                             @endforeach
@@ -164,7 +182,7 @@ class extends Component
                                 <span class="font-bold text-indigo-900">{{ __('Net Cash from Operating Activities') }}</span>
                                 @php $totalOperating = $this->calculateTotal($operatingActivities); @endphp
                                 <span class="font-bold {{ $totalOperating < 0 ? 'text-red-700' : 'text-indigo-900' }}">
-                                    {{ $totalOperating < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalOperating), 2) }}{{ $totalOperating < 0 ? ')' : '' }}
+                                    {{ $totalOperating < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalOperating), 0, ',', '.') }}{{ $totalOperating < 0 ? ')' : '' }}
                                 </span>
                             </div>
                         </div>
@@ -174,20 +192,24 @@ class extends Component
                     <div class="mb-8">
                         <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Investing Activities') }}</h3>
                         <div class="space-y-3">
-                            @foreach($investingActivities as $activity)
-                            <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                                <span class="text-gray-700">{{ $activity['name'] }}</span>
-                                <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
-                                </span>
-                            </div>
-                            @endforeach
+                            @if(count($investingActivities) > 0)
+                                @foreach($investingActivities as $activity)
+                                <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                    <span class="text-gray-700">{{ $activity['name'] }}</span>
+                                    <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
+                                        {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 0, ',', '.') }}{{ $activity['type'] === 'negative' ? ')' : '' }}
+                                    </span>
+                                </div>
+                                @endforeach
+                            @else
+                                <div class="text-gray-400 text-sm italic">{{ __('No investing activities recorded.') }}</div>
+                            @endif
 
                             <div class="flex justify-between items-center py-3 bg-indigo-50 px-4 rounded-lg mt-2">
                                 <span class="font-bold text-indigo-900">{{ __('Net Cash from Investing Activities') }}</span>
                                 @php $totalInvesting = $this->calculateTotal($investingActivities); @endphp
                                 <span class="font-bold {{ $totalInvesting < 0 ? 'text-red-700' : 'text-indigo-900' }}">
-                                    {{ $totalInvesting < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalInvesting), 2) }}{{ $totalInvesting < 0 ? ')' : '' }}
+                                    {{ $totalInvesting < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalInvesting), 0, ',', '.') }}{{ $totalInvesting < 0 ? ')' : '' }}
                                 </span>
                             </div>
                         </div>
@@ -197,20 +219,24 @@ class extends Component
                     <div class="mb-8">
                         <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Financing Activities') }}</h3>
                         <div class="space-y-3">
-                            @foreach($financingActivities as $activity)
-                            <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                                <span class="text-gray-700">{{ $activity['name'] }}</span>
-                                <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 2) }}{{ $activity['type'] === 'negative' ? ')' : '' }}
-                                </span>
-                            </div>
-                            @endforeach
+                            @if(count($financingActivities) > 0)
+                                @foreach($financingActivities as $activity)
+                                <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                    <span class="text-gray-700">{{ $activity['name'] }}</span>
+                                    <span class="font-medium {{ $activity['type'] === 'negative' ? 'text-red-600' : 'text-green-600' }}">
+                                        {{ $activity['type'] === 'negative' ? '(' : '' }}Rp. {{ number_format($activity['amount'], 0, ',', '.') }}{{ $activity['type'] === 'negative' ? ')' : '' }}
+                                    </span>
+                                </div>
+                                @endforeach
+                            @else
+                                <div class="text-gray-400 text-sm italic">{{ __('No financing activities recorded.') }}</div>
+                            @endif
 
                             <div class="flex justify-between items-center py-3 bg-indigo-50 px-4 rounded-lg mt-2">
                                 <span class="font-bold text-indigo-900">{{ __('Net Cash from Financing Activities') }}</span>
                                 @php $totalFinancing = $this->calculateTotal($financingActivities); @endphp
                                 <span class="font-bold {{ $totalFinancing < 0 ? 'text-red-700' : 'text-indigo-900' }}">
-                                    {{ $totalFinancing < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalFinancing), 2) }}{{ $totalFinancing < 0 ? ')' : '' }}
+                                    {{ $totalFinancing < 0 ? '(' : '' }}Rp. {{ number_format(abs($totalFinancing), 0, ',', '.') }}{{ $totalFinancing < 0 ? ')' : '' }}
                                 </span>
                             </div>
                         </div>
@@ -222,7 +248,7 @@ class extends Component
                             <span class="text-lg font-bold">{{ __('Net Increase (Decrease) in Cash') }}</span>
                             @php $netCash = $totalOperating + $totalInvesting + $totalFinancing; @endphp
                             <span class="text-xl font-bold {{ $netCash < 0 ? 'text-red-400' : 'text-green-400' }}">
-                                {{ $netCash < 0 ? '(' : '' }}Rp. {{ number_format(abs($netCash), 2) }}{{ $netCash < 0 ? ')' : '' }}
+                                {{ $netCash < 0 ? '(' : '' }}Rp. {{ number_format(abs($netCash), 0, ',', '.') }}{{ $netCash < 0 ? ')' : '' }}
                             </span>
                         </div>
                     </div>
