@@ -1,5 +1,12 @@
 <?php
 
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -9,38 +16,148 @@ new #[Layout('components.layouts.app')]
     class extends Component
 {
     public $revenueItems = [];
-
     public $expenseItems = [];
+    public $startDate;
+    public $endDate;
+    public $revenueGrowth = 0;
+    public $expenseGrowth = 0;
+    public $netProfitMargin = 0;
 
     public function mount()
     {
-        $this->revenueItems = [
-            ['name' => __('Food Sales'), 'amount' => 32500.00],
-            ['name' => __('Beverage Sales'), 'amount' => 12800.00],
-            ['name' => __('Merchandise'), 'amount' => 1200.00],
-            ['name' => __('Catering Services'), 'amount' => 500.00],
-            ['name' => __('Delivery Fees'), 'amount' => 850.00],
-            ['name' => __('Gift Card Sales'), 'amount' => 450.00],
-            ['name' => __('Event Hosting'), 'amount' => 1500.00],
-            ['name' => __('Vending Machine'), 'amount' => 300.00],
-            ['name' => __('Loyalty Program'), 'amount' => -200.00], // Discount/Cost
-            ['name' => __('Misc Income'), 'amount' => 150.00],
-        ];
+        $this->startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $this->loadData();
+    }
 
-        $this->expenseItems = [
-            ['name' => __('Cost of Goods Sold'), 'amount' => 18500.00],
-            ['name' => __('Salaries & Wages'), 'amount' => 12000.00],
-            ['name' => __('Rent & Utilities'), 'amount' => 4500.00],
-            ['name' => __('Marketing & Ads'), 'amount' => 1200.00],
-            ['name' => __('Equipment Maintenance'), 'amount' => 850.00],
-            ['name' => __('Software Subscriptions'), 'amount' => 350.00],
-            ['name' => __('Insurance'), 'amount' => 600.00],
-            ['name' => __('Office Supplies'), 'amount' => 250.00],
-            ['name' => __('Legal & Professional'), 'amount' => 500.00],
-            ['name' => __('Travel & Transport'), 'amount' => 450.00],
-            ['name' => __('Taxes & Licenses'), 'amount' => 800.00],
-            ['name' => __('Bank Fees'), 'amount' => 120.00],
-        ];
+    public function loadData()
+    {
+        $start = Carbon::parse($this->startDate)->startOfDay();
+        $end = Carbon::parse($this->endDate)->endOfDay();
+
+        // Previous Period Calculation
+        $days = $start->diffInDays($end) + 1;
+        $prevStart = $start->copy()->subDays($days);
+        $prevEnd = $end->copy()->subDays($days);
+
+        // --- Revenue (Sales by Category) ---
+        $this->revenueItems = [];
+        $categories = Category::lazy();
+
+        foreach ($categories as $category) {
+            $amount = SaleItem::whereHas('product', function ($q) use ($category) {
+                    $q->where('category_id', $category->id);
+                })
+                ->whereHas('sale', function ($q) use ($start, $end) {
+                    $q->whereBetween('created_at', [$start, $end])
+                      ->where('status', 'completed');
+                })
+                ->sum('total_price');
+
+            if ($amount > 0) {
+                $this->revenueItems[] = [
+                    'name' => $category->name,
+                    'amount' => $amount
+                ];
+            }
+        }
+
+        // Discounts (Negative Revenue)
+        $discounts = Sale::whereBetween('created_at', [$start, $end])
+            ->where('status', 'completed')
+            ->sum('discount');
+
+        if ($discounts > 0) {
+            $this->revenueItems[] = [
+                'name' => __('Discounts & Promotions'),
+                'amount' => -$discounts
+            ];
+        }
+
+        // Other Income (Transactions)
+        $otherIncome = Transaction::where('type', 'income')
+            ->whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+            ->where('status', 'completed')
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->get();
+
+        foreach ($otherIncome as $income) {
+            $this->revenueItems[] = [
+                'name' => $income->category ?? __('Other Income'),
+                'amount' => $income->total
+            ];
+        }
+
+        // Revenue Growth
+        $currentRevenue = $this->getTotalRevenue();
+        $prevItemRevenue = SaleItem::whereHas('sale', function ($q) use ($prevStart, $prevEnd) {
+            $q->whereBetween('created_at', [$prevStart, $prevEnd])->where('status', 'completed');
+        })->sum('total_price');
+        $prevDiscounts = Sale::whereBetween('created_at', [$prevStart, $prevEnd])
+            ->where('status', 'completed')->sum('discount');
+
+        $prevOtherIncome = Transaction::where('type', 'income')
+            ->whereBetween('date', [$prevStart->format('Y-m-d'), $prevEnd->format('Y-m-d')])
+            ->where('status', 'completed')
+            ->sum('amount');
+
+        $prevRevenue = ($prevItemRevenue - $prevDiscounts) + $prevOtherIncome;
+
+        $this->revenueGrowth = $prevRevenue != 0 ? (($currentRevenue - $prevRevenue) / abs($prevRevenue)) * 100 : ($currentRevenue > 0 ? 100 : 0);
+
+        // --- Expenses ---
+        $this->expenseItems = [];
+
+        // Cost of Goods Sold (COGS)
+        $cogs = SaleItem::join('products', 'sale_items.product_id', '=', 'products.id')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->whereBetween('sales.created_at', [$start, $end])
+            ->where('sales.status', 'completed')
+            ->sum(DB::raw('sale_items.quantity * products.cost'));
+
+        if ($cogs > 0) {
+            $this->expenseItems[] = [
+                'name' => __('Cost of Goods Sold'),
+                'amount' => $cogs
+            ];
+        }
+
+        // Operating Expenses (Transactions)
+        $operatingExpenses = Transaction::where('type', 'expense')
+            ->whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+            ->where('status', 'completed')
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->get();
+
+        foreach ($operatingExpenses as $expense) {
+            $this->expenseItems[] = [
+                'name' => $expense->category ?? __('Other Expense'),
+                'amount' => $expense->total
+            ];
+        }
+
+        // Expense Growth
+        $currentExpenses = $this->getTotalExpenses();
+        $prevCOGS = SaleItem::join('products', 'sale_items.product_id', '=', 'products.id')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->whereBetween('sales.created_at', [$prevStart, $prevEnd])
+            ->where('sales.status', 'completed')
+            ->sum(DB::raw('sale_items.quantity * products.cost'));
+
+        $prevOperatingExpenses = Transaction::where('type', 'expense')
+            ->whereBetween('date', [$prevStart->format('Y-m-d'), $prevEnd->format('Y-m-d')])
+            ->where('status', 'completed')
+            ->sum('amount');
+
+        $prevExpenses = $prevCOGS + $prevOperatingExpenses;
+
+        $this->expenseGrowth = $prevExpenses != 0 ? (($currentExpenses - $prevExpenses) / abs($prevExpenses)) * 100 : ($currentExpenses > 0 ? 100 : 0);
+
+        // Net Profit Margin
+        $netProfit = $currentRevenue - $currentExpenses;
+        $this->netProfitMargin = $currentRevenue != 0 ? ($netProfit / $currentRevenue) * 100 : 0;
     }
 
     public function getTotalRevenue()
@@ -94,23 +211,23 @@ new #[Layout('components.layouts.app')]
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <p class="text-sm font-medium text-gray-500">{{ __('Total Revenue') }}</p>
-            <h3 class="text-3xl font-bold text-green-600 mt-2">Rp. {{ number_format($this->getTotalRevenue(), 2) }}</h3>
-            <p class="text-xs text-green-500 mt-1 flex items-center">
-                <i class="fas fa-arrow-up mr-1"></i> 12.5% {{ __('vs last period') }}
+            <h3 class="text-3xl font-bold text-green-600 mt-2">Rp. {{ number_format($this->getTotalRevenue(), 0, ',', '.') }}</h3>
+            <p class="text-xs {{ $revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} mt-1 flex items-center">
+                <i class="fas fa-{{ $revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i> {{ number_format(abs($revenueGrowth), 1, ',', '.') }}% {{ __('vs last period') }}
             </p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <p class="text-sm font-medium text-gray-500">{{ __('Total Expenses') }}</p>
-            <h3 class="text-3xl font-bold text-red-600 mt-2">Rp. {{ number_format($this->getTotalExpenses(), 2) }}</h3>
-            <p class="text-xs text-red-500 mt-1 flex items-center">
-                <i class="fas fa-arrow-up mr-1"></i> 5.2% {{ __('vs last period') }}
+            <h3 class="text-3xl font-bold text-red-600 mt-2">Rp. {{ number_format($this->getTotalExpenses(), 0, ',', '.') }}</h3>
+            <p class="text-xs {{ $expenseGrowth <= 0 ? 'text-green-500' : 'text-red-500' }} mt-1 flex items-center">
+                <i class="fas fa-{{ $expenseGrowth > 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i> {{ number_format(abs($expenseGrowth), 1, ',', '.') }}% {{ __('vs last period') }}
             </p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <p class="text-sm font-medium text-gray-500">{{ __('Net Profit') }}</p>
-            <h3 class="text-3xl font-bold text-indigo-600 mt-2">Rp. {{ number_format($this->getNetProfit(), 2) }}</h3>
+            <h3 class="text-3xl font-bold text-indigo-600 mt-2">Rp. {{ number_format($this->getNetProfit(), 0, ',', '.') }}</h3>
             <p class="text-xs text-green-500 mt-1 flex items-center">
-                <i class="fas fa-arrow-up mr-1"></i> 8.3% {{ __('Net Margin') }}
+                <i class="fas fa-chart-line mr-1"></i> {{ number_format($netProfitMargin, 1, ',', '.') }}% {{ __('Net Margin') }}
             </p>
         </div>
     </div>
@@ -119,7 +236,7 @@ new #[Layout('components.layouts.app')]
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <h2 class="text-lg font-bold text-gray-800">{{ __('Income Statement') }}</h2>
-            <span class="text-sm text-gray-500">Jan 1, 2024 - Jan 31, 2024</span>
+            <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}</span>
         </div>
 
         <div class="p-6">
@@ -130,12 +247,12 @@ new #[Layout('components.layouts.app')]
                     @foreach($revenueItems as $item)
                     <div class="flex justify-between items-center py-2 border-b border-gray-50">
                         <span class="text-gray-700">{{ $item['name'] }}</span>
-                        <span class="font-medium text-gray-900">Rp. {{ number_format($item['amount'], 2) }}</span>
+                        <span class="font-medium text-gray-900">Rp. {{ number_format($item['amount'], 0, ',', '.') }}</span>
                     </div>
                     @endforeach
                     <div class="flex justify-between items-center py-3 bg-green-50 px-4 rounded-lg mt-4">
                         <span class="font-bold text-green-800">{{ __('Total Revenue') }}</span>
-                        <span class="font-bold text-green-800">Rp. {{ number_format($this->getTotalRevenue(), 2) }}</span>
+                        <span class="font-bold text-green-800">Rp. {{ number_format($this->getTotalRevenue(), 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>
@@ -147,12 +264,12 @@ new #[Layout('components.layouts.app')]
                     @foreach($expenseItems as $item)
                     <div class="flex justify-between items-center py-2 border-b border-gray-50">
                         <span class="text-gray-700">{{ $item['name'] }}</span>
-                        <span class="font-medium text-gray-900">Rp. {{ number_format($item['amount'], 2) }}</span>
+                        <span class="font-medium text-gray-900">Rp. {{ number_format($item['amount'], 0, ',', '.') }}</span>
                     </div>
                     @endforeach
                     <div class="flex justify-between items-center py-3 bg-red-50 px-4 rounded-lg mt-4">
                         <span class="font-bold text-red-800">{{ __('Total Expenses') }}</span>
-                        <span class="font-bold text-red-800">Rp. {{ number_format($this->getTotalExpenses(), 2) }}</span>
+                        <span class="font-bold text-red-800">Rp. {{ number_format($this->getTotalExpenses(), 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>
@@ -160,7 +277,7 @@ new #[Layout('components.layouts.app')]
             <!-- Net Profit -->
             <div class="flex justify-between items-center py-4 bg-gray-900 text-white px-6 rounded-xl shadow-lg">
                 <span class="text-lg font-bold">{{ __('Net Profit') }}</span>
-                <span class="text-2xl font-bold">Rp. {{ number_format($this->getNetProfit(), 2) }}</span>
+                <span class="text-2xl font-bold">Rp. {{ number_format($this->getNetProfit(), 0, ',', '.') }}</span>
             </div>
         </div>
     </div>

@@ -205,7 +205,7 @@ new #[Layout('components.layouts.app')] #[Title('User Management')] class extend
                             </td>
                             <td class="px-6 py-4 text-gray-500">{{ $user->created_at->diffForHumans() }}</td>
                             <td class="px-6 py-4 text-right space-x-2">
-                                <button wire:click="edit({{ $user->id }})"
+                                <button wire:click="edit('{{ $user->id }}')"
                                     class="text-gray-400 hover:text-indigo-600 transition-colors"><i
                                         class="fas fa-edit"></i></button>
                                 <button type="button"
@@ -214,7 +214,7 @@ new #[Layout('components.layouts.app')] #[Title('User Management')] class extend
                                 text: '{{ __('Are you sure you want to delete this user?') }}',
                                 icon: 'warning',
                                 method: 'delete',
-                                params: [{{ $user->id }}],
+                                params: ['{{ $user->id }}'],
                                 componentId: '{{ $this->getId() }}'
                             })"
                                     class="text-gray-400 hover:text-red-600 transition-colors">

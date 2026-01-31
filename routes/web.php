@@ -21,6 +21,8 @@ foreach (config('tenancy.central_domains') as $domain) {
         // Admin Routes
         Volt::route('/admin/dashboard', 'admin.dashboard')->name('admin.dashboard');
         Volt::route('/admin/users', 'admin.users')->name('admin.users');
+        Volt::route('/admin/suppliers', 'admin.suppliers')->name('admin.suppliers');
+        Volt::route('/finance/transactions', 'finance.transactions')->name('finance.transactions');
         Volt::route('/admin/roles', 'admin.roles')->name('admin.roles');
         Volt::route('/admin/branches', 'admin.branches')->name('admin.branches');
         Volt::route('/admin/audit-logs', 'admin.audit-logs')->name('admin.audit-logs');

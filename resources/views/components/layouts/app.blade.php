@@ -102,6 +102,11 @@
                         <i class="fas fa-palette w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Colors') }}</span>
                     </a>
+                    <a wire:navigate href="{{ route('admin.suppliers') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('admin.suppliers') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-truck w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Suppliers') }}</span>
+                    </a>
 
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Sales') }}</p>
@@ -152,6 +157,14 @@
                         class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.tax-report') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-university w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Tax Report') }}</span>
+                    </a>
+
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
+                        {{ __('Finance') }}</p>
+                    <a wire:navigate href="{{ route('finance.transactions') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('finance.transactions') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-coins w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Income & Expense') }}</span>
                     </a>
 
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
