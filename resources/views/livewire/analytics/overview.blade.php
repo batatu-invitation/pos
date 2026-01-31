@@ -9,18 +9,20 @@ use Carbon\CarbonPeriod;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\WithPagination;
 
 new #[Layout('components.layouts.app')]
 #[Title('Analytics Overview - Modern POS')]
 class extends Component
 {
+    use WithPagination;
+
     public $dateRange = '30_days';
     public $totalSales = 0;
     public $totalOrders = 0;
     public $newCustomers = 0;
     public $avgTransaction = 0;
     public $topProducts = [];
-    public $recentActivities = [];
     public $chartData = [];
 
     // Comparison percentages (vs last period)
@@ -44,22 +46,47 @@ class extends Component
     {
         // Define dates
         $endDate = Carbon::now();
-        $startDate = match($this->dateRange) {
-            '7_days' => Carbon::now()->subDays(7),
-            '30_days' => Carbon::now()->subDays(30),
-            'this_month' => Carbon::now()->startOfMonth(),
-            'last_month' => Carbon::now()->subMonth()->startOfMonth(),
-            'this_year' => Carbon::now()->startOfYear(),
-            default => Carbon::now()->subDays(30),
-        };
 
-        // Previous period for comparison
-        $daysDiff = $startDate->diffInDays($endDate);
-        // Ensure strictly positive diff for calculation, default to 1 day if 0
-        $daysDiff = $daysDiff > 0 ? $daysDiff : 1;
+        switch ($this->dateRange) {
+            case '7_days':
+                $startDate = Carbon::now()->subDays(7);
+                $prevEndDate = $startDate->copy()->subDay();
+                $prevStartDate = $prevEndDate->copy()->subDays(7);
+                break;
 
-        $prevEndDate = $startDate->copy()->subDay();
-        $prevStartDate = $prevEndDate->copy()->subDays($daysDiff);
+            case '30_days':
+                $startDate = Carbon::now()->subDays(30);
+                $prevEndDate = $startDate->copy()->subDay();
+                $prevStartDate = $prevEndDate->copy()->subDays(30);
+                break;
+
+            case 'this_month':
+                $startDate = Carbon::now()->startOfMonth();
+                // Compare with same period last month
+                $prevStartDate = Carbon::now()->subMonth()->startOfMonth();
+                $prevEndDate = Carbon::now()->subMonth(); // Same day of last month
+                break;
+
+            case 'last_month':
+                $startDate = Carbon::now()->subMonth()->startOfMonth();
+                $endDate = Carbon::now()->subMonth()->endOfMonth();
+                // Compare with month before last
+                $prevStartDate = Carbon::now()->subMonths(2)->startOfMonth();
+                $prevEndDate = Carbon::now()->subMonths(2)->endOfMonth();
+                break;
+
+            case 'this_year':
+                $startDate = Carbon::now()->startOfYear();
+                // Compare with same period last year
+                $prevStartDate = Carbon::now()->subYear()->startOfYear();
+                $prevEndDate = Carbon::now()->subYear(); // Same day of last year
+                break;
+
+            default:
+                $startDate = Carbon::now()->subDays(30);
+                $prevEndDate = $startDate->copy()->subDay();
+                $prevStartDate = $prevEndDate->copy()->subDays(30);
+        }
 
         // 1. Total Sales & Orders
         $currentSalesQuery = Sale::whereBetween('created_at', [$startDate, $endDate])->where('status', 'completed');
@@ -95,39 +122,6 @@ class extends Component
             ->get()
             ->toArray();
 
-        // 5. Recent Activities (Merging Sales and Customers)
-        $recentSales = Sale::with('user', 'customer')->latest()->take(5)->get()->map(function($sale) {
-            return [
-                'action' => 'New Order #' . $sale->invoice_number,
-                'user' => $sale->customer ? $sale->customer->name : 'Walk-in Customer',
-                'time' => $sale->created_at->diffForHumans(),
-                'amount' => $sale->total_amount,
-                'status' => ucfirst($sale->status),
-                'type' => 'success',
-                'details' => 'Order processed by ' . ($sale->user ? $sale->user->name : 'System'),
-                'created_at' => $sale->created_at
-            ];
-        });
-
-        $recentCustomers = Customer::latest()->take(5)->get()->map(function($customer) {
-            return [
-                'action' => 'New Customer',
-                'user' => $customer->name,
-                'time' => $customer->created_at->diffForHumans(),
-                'amount' => null,
-                'status' => 'Registered',
-                'type' => 'info',
-                'details' => 'Customer added to system',
-                'created_at' => $customer->created_at
-            ];
-        });
-
-        $this->recentActivities = $recentSales->merge($recentCustomers)
-            ->sortByDesc('created_at')
-            ->take(10)
-            ->values()
-            ->toArray();
-
         // 6. Chart Data
         $chartQuery = Sale::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total_amount) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -159,6 +153,57 @@ class extends Component
         if ($previous == 0) return $current > 0 ? 100 : 0;
         return (($current - $previous) / $previous) * 100;
     }
+
+    public function with()
+    {
+        return [
+            'recentActivities' => $this->getRecentActivities(),
+        ];
+    }
+
+    public function getRecentActivities()
+    {
+        $sales = Sale::query()->select('id', 'created_at', DB::raw("'sale' as type"));
+        $customers = Customer::query()->select('id', 'created_at', DB::raw("'customer' as type"));
+
+        $query = $sales->union($customers)->orderBy('created_at', 'desc');
+
+        $paginated = $query->paginate(10);
+
+        $transformed = $paginated->getCollection()->map(function ($item) {
+             if ($item->type === 'sale') {
+                 $sale = Sale::with('user', 'customer')->find($item->id);
+                 if (!$sale) return null; // Handle deleted or missing
+                 return [
+                    'action' => 'New Order #' . $sale->invoice_number,
+                    'user' => $sale->customer ? $sale->customer->name : 'Walk-in Customer',
+                    'time' => $sale->created_at->diffForHumans(),
+                    'amount' => $sale->total_amount,
+                    'status' => ucfirst($sale->status),
+                    'type' => 'success',
+                    'details' => 'Order processed by ' . ($sale->user ? $sale->user->name : 'System'),
+                    'created_at' => $sale->created_at
+                 ];
+             } else {
+                 $customer = Customer::find($item->id);
+                 if (!$customer) return null;
+                 return [
+                    'action' => 'New Customer',
+                    'user' => $customer->name,
+                    'time' => $customer->created_at->diffForHumans(),
+                    'amount' => null,
+                    'status' => 'Registered',
+                    'type' => 'info',
+                    'details' => 'Customer added to system',
+                    'created_at' => $customer->created_at
+                 ];
+             }
+        })->filter()->values();
+
+        $paginated->setCollection($transformed);
+
+        return $paginated;
+    }
 }; ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6"
@@ -166,7 +211,9 @@ class extends Component
          chart: null,
          init() {
              this.$nextTick(() => {
-                 this.renderChart(@json($chartData));
+                 if (this.$el.dataset.chart) {
+                    this.renderChart(JSON.parse(this.$el.dataset.chart));
+                 }
              });
          },
          renderChart(data) {
@@ -223,6 +270,7 @@ class extends Component
              });
          }
      }"
+     data-chart='@json($chartData, JSON_HEX_APOS)'
      @update-chart.window="renderChart($event.detail.data)">
 
 
@@ -257,7 +305,7 @@ class extends Component
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500">{{ __('Total Sales') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($totalSales, 2) }}</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($totalSales, 0, ',', '.') }}</h3>
                 </div>
                 <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                     <i class="fas fa-dollar-sign text-lg"></i>
@@ -314,7 +362,7 @@ class extends Component
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500">{{ __('Avg. Transaction') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($avgTransaction, 2) }}</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($avgTransaction, ) }}</h3>
                 </div>
                 <div class="p-2 bg-orange-50 rounded-lg text-orange-600">
                     <i class="fas fa-receipt text-lg"></i>
@@ -330,7 +378,7 @@ class extends Component
     </div>
 
     <!-- Main Chart -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8" wire:ignore>
         <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Revenue Analytics') }}</h3>
         <div class="relative h-80 w-full">
             <canvas x-ref="revenueChart"></canvas>
@@ -361,7 +409,7 @@ class extends Component
                                 <span class="font-medium text-gray-800">{{ $product['name'] }}</span>
                             </td>
                             <td class="px-6 py-3 text-right text-gray-600">{{ $product['sales'] }}</td>
-                            <td class="px-6 py-3 text-right font-medium text-gray-900">Rp. {{ number_format($product['revenue'], 2) }}</td>
+                            <td class="px-6 py-3 text-right font-medium text-gray-900">Rp. {{ number_format($product['revenue'], 0 , ',', '.' ) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -409,7 +457,7 @@ class extends Component
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $activity['user'] }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $activity['time'] }}</td>
                         <td class="px-6 py-4 text-sm text-right font-medium {{ $activity['amount'] && $activity['amount'] < 0 ? 'text-red-600' : 'text-gray-900' }}">
-                            {{ $activity['amount'] ? ($activity['amount'] < 0 ? '-Rp. ' . number_format(abs($activity['amount']), 2) : 'Rp. ' . number_format($activity['amount'], 2)) : '-' }}
+                            {{ $activity['amount'] ? ($activity['amount'] < 0 ? '-Rp. ' . number_format(abs($activity['amount']), ) : 'Rp. ' . number_format($activity['amount'], 0 , ',', '.' )) : '-' }}
                         </td>
                         <td class="px-6 py-4">
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium capitalize
@@ -423,6 +471,9 @@ class extends Component
                     @endforeach
                 </tbody>
             </table>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100">
+            {{ $recentActivities->links() }}
         </div>
     </div>
 </div>
