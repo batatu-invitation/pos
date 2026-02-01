@@ -283,6 +283,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
         DB::transaction(function () {
             $user = auth()->user();
+            // dd($user);
 
             $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
 
