@@ -285,7 +285,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             $user = auth()->user();
             // dd($user);
 
-            $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+            // $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
 
             $sale = Sale::create([
                 'invoice_number' => 'HOLD-' . strtoupper(uniqid()),
