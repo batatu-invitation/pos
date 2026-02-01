@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('sales', function (Blueprint $table) {
-            $table->foreignUuid('tax_id')->nullable()->after('customer_id')->constrained('taxes')->nullOnDelete();
+        Schema::table('categories', function (Blueprint $table) {
+            if (!Schema::hasColumn('categories', 'input_id')) {
+                $table->foreignUuid('input_id')->nullable()->after('user_id')->constrained('users')->nullOnDelete();
+            }
         });
     }
 
@@ -21,9 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('sales', function (Blueprint $table) {
-            $table->dropForeign(['tax_id']);
-            $table->dropColumn('tax_id');
+        Schema::table('categories', function (Blueprint $table) {
+            //
         });
     }
 };

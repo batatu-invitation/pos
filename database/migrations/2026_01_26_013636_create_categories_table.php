@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('color')->nullable();
             $table->text('description')->nullable();
             $table->string('tenant_id')->nullable();
-            $table->foreignUuid('user_id')->nullable();
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });
