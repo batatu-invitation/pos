@@ -389,9 +389,11 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         }
 
         $sale = DB::transaction(function () {
+            $user = auth()->user();
             $sale = Sale::create([
                 'invoice_number' => 'INV-' . strtoupper(uniqid()),
-                'user_id' => auth()->id(),
+                'user_id' => $user->created_by ? $user->created_by : $user->id,
+                'input_id' => $user->id,
                 'customer_id' => $this->selectedCustomerId,
                 'subtotal' => $this->subtotal,
                 'tax_id' => $this->selectedTaxId,
