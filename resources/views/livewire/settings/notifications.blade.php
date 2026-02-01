@@ -3,18 +3,19 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\ApplicationSetting;
 
-new 
+new
 #[Layout('components.layouts.app')]
 #[Title('Notification Settings - Modern POS')]
 class extends Component
 {
-    public $newOrderAlert = true;
-    public $dailySalesSummary = true;
-    public $lowStockWarning = true;
-    public $emailChannel = true;
-    public $smsChannel = false;
-    public $pushChannel = true;
+    public $newOrderAlert;
+    public $dailySalesSummary;
+    public $lowStockWarning;
+    public $emailChannel;
+    public $smsChannel;
+    public $pushChannel;
 
     // Data for "Notification History" to satisfy 10+ entries requirement
     public $notificationHistory = [
@@ -32,8 +33,26 @@ class extends Component
         ['id' => 12, 'type' => 'Security', 'message' => 'Failed login attempt: admin', 'date' => '2023-10-20 10:15 PM', 'status' => 'Read'],
     ];
 
+    public function mount()
+    {
+        $settings = ApplicationSetting::pluck('value', 'key');
+        $this->newOrderAlert = filter_var($settings['notify_new_order'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $this->dailySalesSummary = filter_var($settings['notify_daily_sales'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $this->lowStockWarning = filter_var($settings['notify_low_stock'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $this->emailChannel = filter_var($settings['notify_channel_email'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $this->smsChannel = filter_var($settings['notify_channel_sms'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $this->pushChannel = filter_var($settings['notify_channel_push'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    }
+
     public function save()
     {
+        ApplicationSetting::updateOrCreate(['key' => 'notify_new_order'], ['value' => $this->newOrderAlert]);
+        ApplicationSetting::updateOrCreate(['key' => 'notify_daily_sales'], ['value' => $this->dailySalesSummary]);
+        ApplicationSetting::updateOrCreate(['key' => 'notify_low_stock'], ['value' => $this->lowStockWarning]);
+        ApplicationSetting::updateOrCreate(['key' => 'notify_channel_email'], ['value' => $this->emailChannel]);
+        ApplicationSetting::updateOrCreate(['key' => 'notify_channel_sms'], ['value' => $this->smsChannel]);
+        ApplicationSetting::updateOrCreate(['key' => 'notify_channel_push'], ['value' => $this->pushChannel]);
+
         session()->flash('message', 'Notification preferences saved successfully.');
     }
 }; ?>
@@ -42,7 +61,7 @@ class extends Component
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Alert Settings</h2>
     </div>
-    
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div class="flex border-b border-gray-200 overflow-x-auto">
             <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">General</a>
@@ -53,7 +72,7 @@ class extends Component
             <a href="{{ route('settings.api-keys') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">API Keys</a>
             <a href="{{ route('settings.backup') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Backup</a>
         </div>
-        
+
         <div class="p-6">
             @if (session()->has('message'))
                 <div class="mb-4 p-4 text-green-700 bg-green-100 rounded-lg">
@@ -152,9 +171,9 @@ class extends Component
                     @foreach($notificationHistory as $notif)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-3">
-                                <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                    {{ $notif['type'] === 'System' ? 'bg-blue-100 text-blue-700' : 
-                                       ($notif['type'] === 'Inventory' ? 'bg-yellow-100 text-yellow-700' : 
+                                <span class="px-2 py-1 text-xs font-medium rounded-full
+                                    {{ $notif['type'] === 'System' ? 'bg-blue-100 text-blue-700' :
+                                       ($notif['type'] === 'Inventory' ? 'bg-yellow-100 text-yellow-700' :
                                        ($notif['type'] === 'Sales' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700')) }}">
                                     {{ $notif['type'] }}
                                 </span>

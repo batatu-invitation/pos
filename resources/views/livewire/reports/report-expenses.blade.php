@@ -3,26 +3,56 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\Transaction;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\ExpensesExport;
+use Carbon\Carbon;
 
 new
 #[Layout('components.layouts.app')]
 #[Title('Expenses Report - Modern POS')]
 class extends Component
 {
-    public $expenses = [
-        ['date' => 'Oct 24, 2023', 'description' => 'Shop Rent', 'category' => 'Rent', 'amount' => 2000.00, 'status' => 'Paid'],
-        ['date' => 'Oct 20, 2023', 'description' => 'Electricity Bill', 'category' => 'Utilities', 'amount' => 350.00, 'status' => 'Paid'],
-        ['date' => 'Oct 18, 2023', 'description' => 'Internet Subscription', 'category' => 'Utilities', 'amount' => 80.00, 'status' => 'Paid'],
-        ['date' => 'Oct 15, 2023', 'description' => 'Office Supplies', 'category' => 'Supplies', 'amount' => 120.50, 'status' => 'Paid'],
-        ['date' => 'Oct 12, 2023', 'description' => 'Cleaning Services', 'category' => 'Maintenance', 'amount' => 150.00, 'status' => 'Pending'],
-        ['date' => 'Oct 10, 2023', 'description' => 'Marketing Campaign', 'category' => 'Advertising', 'amount' => 500.00, 'status' => 'Paid'],
-        ['date' => 'Oct 08, 2023', 'description' => 'Water Bill', 'category' => 'Utilities', 'amount' => 45.00, 'status' => 'Paid'],
-        ['date' => 'Oct 05, 2023', 'description' => 'Staff Lunch', 'category' => 'Meals', 'amount' => 85.00, 'status' => 'Paid'],
-        ['date' => 'Oct 03, 2023', 'description' => 'Equipment Repair', 'category' => 'Maintenance', 'amount' => 250.00, 'status' => 'Paid'],
-        ['date' => 'Oct 01, 2023', 'description' => 'Software License', 'category' => 'Software', 'amount' => 100.00, 'status' => 'Paid'],
-        ['date' => 'Sep 28, 2023', 'description' => 'New Furniture', 'category' => 'Assets', 'amount' => 1200.00, 'status' => 'Paid'],
-        ['date' => 'Sep 25, 2023', 'description' => 'Transport', 'category' => 'Travel', 'amount' => 60.00, 'status' => 'Paid'],
-    ];
+    public $startDate;
+    public $endDate;
+
+    public function mount()
+    {
+        $this->startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+    }
+
+    public function getExpensesProperty()
+    {
+        return Transaction::where('type', 'expense')
+            ->whereDate('date', '>=', $this->startDate)
+            ->whereDate('date', '<=', $this->endDate)
+            ->latest('date')
+            ->get();
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new ExpensesExport($this->startDate, $this->endDate), 'expenses.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $expenses = $this->expenses;
+        $totalAmount = $expenses->sum('amount');
+        
+        $pdf = Pdf::loadView('pdf.expenses', [
+            'expenses' => $expenses,
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate,
+            'totalAmount' => $totalAmount
+        ]);
+        
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'expenses.pdf');
+    }
 }; ?>
 
 <div class="flex h-screen overflow-hidden bg-gray-50 text-gray-800">
@@ -39,18 +69,6 @@ class extends Component
             </div>
             
             <div class="flex items-center space-x-4">
-                <div class="relative hidden md:block">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </span>
-                    <input type="text" class="w-64 py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="Search...">
-                </div>
-                
-                <button class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
-                </button>
-                
                 <a href="{{ route('pos.visual') }}" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                     <i class="fas fa-cash-register mr-2"></i>
                     Open POS
@@ -60,11 +78,31 @@ class extends Component
 
         <!-- Main Content Area -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
-             <div class="flex items-center justify-between mb-6">
+             <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
                 <h2 class="text-2xl font-bold text-gray-800">Expenses Report</h2>
-                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                    <i class="fas fa-plus mr-2"></i> Add Expense
-                </button>
+                
+                <div class="flex items-center gap-2">
+                    <input wire:model.live="startDate" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <span class="text-gray-500">-</span>
+                    <input wire:model.live="endDate" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    
+                    <div class="flex gap-2 ml-2" x-data="{ open: false }">
+                        <div class="relative">
+                            <button @click="open = !open" @click.away="open = false" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-700 transition-colors">
+                                <i class="fas fa-file-export"></i> Export
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                                <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                                </button>
+                                <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -80,23 +118,28 @@ class extends Component
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @foreach($expenses as $expense)
+                            @forelse($this->expenses as $expense)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4">{{ $expense['date'] }}</td>
-                                <td class="px-6 py-4 font-medium text-gray-800">{{ $expense['description'] }}</td>
-                                <td class="px-6 py-4">{{ $expense['category'] }}</td>
-                                <td class="px-6 py-4 font-bold text-gray-800">${{ number_format($expense['amount'], 2) }}</td>
+                                <td class="px-6 py-4">{{ $expense->date->format('d/m/Y') }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-800">{{ $expense->description }}</td>
+                                <td class="px-6 py-4">{{ $expense->category }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ number_format($expense->amount, 2) }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $expense['status'] === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                        {{ $expense['status'] }}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $expense->status === 'paid' || $expense->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        {{ ucfirst($expense->status) }}
                                     </span>
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">No expenses found for the selected period.</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </main>
+
     </div>
 </div>

@@ -6,12 +6,14 @@ use App\Traits\LogsActivityGeneric;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Tax extends Model
 {
-    use HasUuids, SoftDeletes, LogsActivityGeneric;
+    use HasUuids, SoftDeletes, LogsActivityGeneric, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'rate',
         'is_active',

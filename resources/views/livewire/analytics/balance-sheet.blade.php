@@ -129,6 +129,35 @@ class extends Component
 
         $this->totalEquity = $retainedEarnings;
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new BalanceSheetExport(
+            $this->assets,
+            $this->liabilities,
+            $this->equity,
+            $this->totalAssets,
+            $this->totalLiabilities,
+            $this->totalEquity,
+            $this->date
+        ), 'balance-sheet.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $pdf = Pdf::loadView('pdf.balance-sheet', [
+            'assets' => $this->assets,
+            'liabilities' => $this->liabilities,
+            'equity' => $this->equity,
+            'totalAssets' => $this->totalAssets,
+            'totalLiabilities' => $this->totalLiabilities,
+            'totalEquity' => $this->totalEquity,
+            'date' => $this->date
+        ]);
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'balance-sheet.pdf');
+    }
 }; ?>
 
 <div class="p-6">
@@ -143,6 +172,20 @@ class extends Component
             <button wire:click="loadData" class="px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                 {{ __('Apply') }}
             </button>
+            <div x-data="{ open: false }" class="relative ml-2">
+                <button @click="open = !open" @click.away="open = false" class="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center shadow-sm">
+                    <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                    </button>
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -169,7 +212,7 @@ class extends Component
                     @empty
                         <p class="text-sm text-gray-500 italic mb-4">{{ __('No assets recorded.') }}</p>
                     @endforelse
-                    
+
                     <div class="pt-4 mt-4 border-t border-gray-100 flex justify-between items-center">
                         <span class="font-bold text-gray-800">{{ __('Total Assets') }}</span>
                         <span class="font-bold text-indigo-600">Rp. {{ number_format($totalAssets, 0, ',', '.') }}</span>

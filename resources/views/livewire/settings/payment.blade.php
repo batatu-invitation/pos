@@ -1,8 +1,9 @@
-<?php
+s<?php
 
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\ApplicationSetting;
 
 new #[Layout('components.layouts.app')]
     #[Title('Payment Settings - Modern POS')]

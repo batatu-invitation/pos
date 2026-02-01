@@ -5,6 +5,9 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use App\Models\Sale;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SalesExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new #[Layout('components.layouts.app')]
 #[Title('Transactions - Modern POS')]
@@ -67,11 +70,51 @@ class extends Component
     {
         return redirect()->route('pos.visual', ['restore' => $id]);
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new SalesExport($this->dateFilter, $this->statusFilter), 'sales-transactions.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $query = Sale::with(['customer', 'user'])->latest();
+
+        if ($this->dateFilter) {
+            $query->whereDate('created_at', $this->dateFilter);
+        }
+
+        if ($this->statusFilter && $this->statusFilter !== 'All Statuses') {
+            $query->where('status', strtolower($this->statusFilter));
+        }
+
+        $sales = $query->get();
+
+        $pdf = Pdf::loadView('pdf.sales-report', compact('sales'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'sales-transactions.pdf');
+    }
 }; ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Transactions</h2>
+        <div class="flex items-center space-x-4">
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" @click.away="open = false" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5" style="display: none;">
+                    <button wire:click="exportExcel" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel mr-2 text-green-600"></i> Export Excel
+                    </button>
+                    <button wire:click="exportPdf" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf mr-2 text-red-600"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

@@ -10,13 +10,14 @@ foreach (config('tenancy.central_domains') as $domain) {
             return view('welcome');
         });
     });
-    Route::middleware('auth')->group(function () {
+    Route::middleware(['auth', 'check.setup'])->group(function () {
         Route::get('lang/{locale}', function ($locale) {
             if (in_array($locale, ['en', 'id'])) {
                 session(['locale' => $locale]);
             }
             return redirect()->back();
         })->name('lang.switch');
+        Route::get('/setup', App\Livewire\Setup::class)->name('setup');
         Volt::route('/dashboard', 'dashboard')->name('dashboard');
         // Admin Routes
         Volt::route('/admin/dashboard', 'admin.dashboard')->name('admin.dashboard');

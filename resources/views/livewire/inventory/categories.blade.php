@@ -8,6 +8,9 @@ use App\Models\Emoji;
 use App\Models\Color;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CategoriesExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kategori - Modern POS')] class extends Component {
     use WithPagination;
@@ -35,6 +38,20 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
             'emojis' => Emoji::all(),
             'colors' => Color::all(),
         ];
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new CategoriesExport, 'categories.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $categories = Category::latest()->get();
+        $pdf = Pdf::loadView('pdf.categories', compact('categories'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'categories.pdf');
     }
 
     public function create()
@@ -96,10 +113,54 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800"></h2>
-        <button wire:click="create"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i> {{ __('Add Category') }}
-        </button>
+        <div class="flex space-x-2">
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                </button>
+                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
+                    <button @click="
+                        Swal.fire({
+                            title: 'Export Excel?',
+                            text: 'Do you want to export the categories to Excel?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, export!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $wire.exportExcel();
+                            }
+                        })
+                    " class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel mr-2 text-green-600"></i> Excel
+                    </button>
+                    <button @click="
+                        Swal.fire({
+                            title: '{{ __('Export PDF?') }}',
+                            text: '{{ __('Do you want to export the categories to PDF?') }}',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: '{{ __('Yes, export!') }}',
+                            cancelButtonText: '{{ __('Cancel') }}'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $wire.exportPdf();
+                            }
+                        })
+                    " class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf mr-2 text-red-600"></i> PDF
+                    </button>
+                </div>
+            </div>
+            <button wire:click="create"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i> {{ __('Add Category') }}
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

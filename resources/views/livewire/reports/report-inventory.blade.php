@@ -3,26 +3,47 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\Product;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\InventoryValuationExport;
 
 new
 #[Layout('components.layouts.app')]
 #[Title('Inventory Report - Modern POS')]
 class extends Component
 {
-    public $inventoryItems = [
-        ['name' => 'Double Burger', 'category' => 'Food', 'in' => 150, 'out' => 30, 'current' => 120],
-        ['name' => 'Cola Zero', 'category' => 'Drinks', 'in' => 100, 'out' => 50, 'current' => 50],
-        ['name' => 'French Fries', 'category' => 'Food', 'in' => 200, 'out' => 80, 'current' => 120],
-        ['name' => 'Chicken Nuggets', 'category' => 'Food', 'in' => 180, 'out' => 60, 'current' => 120],
-        ['name' => 'Ice Cream', 'category' => 'Dessert', 'in' => 80, 'out' => 20, 'current' => 60],
-        ['name' => 'Water Bottle', 'category' => 'Drinks', 'in' => 300, 'out' => 120, 'current' => 180],
-        ['name' => 'Orange Juice', 'category' => 'Drinks', 'in' => 120, 'out' => 40, 'current' => 80],
-        ['name' => 'Cheeseburger', 'category' => 'Food', 'in' => 160, 'out' => 70, 'current' => 90],
-        ['name' => 'Salad', 'category' => 'Food', 'in' => 50, 'out' => 15, 'current' => 35],
-        ['name' => 'Coffee', 'category' => 'Drinks', 'in' => 250, 'out' => 150, 'current' => 100],
-        ['name' => 'Tea', 'category' => 'Drinks', 'in' => 150, 'out' => 60, 'current' => 90],
-        ['name' => 'Muffin', 'category' => 'Dessert', 'in' => 100, 'out' => 45, 'current' => 55],
-    ];
+    public function getProductsProperty()
+    {
+        return Product::with('category')->get();
+    }
+
+    public function getTotalCostValueProperty()
+    {
+        return $this->products->sum(fn($p) => $p->stock * $p->cost);
+    }
+
+    public function getTotalSalesValueProperty()
+    {
+        return $this->products->sum(fn($p) => $p->stock * $p->price);
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new InventoryValuationExport, 'inventory-valuation.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $products = $this->products;
+        $totalCostValue = $this->totalCostValue;
+        $totalSalesValue = $this->totalSalesValue;
+
+        $pdf = Pdf::loadView('pdf.inventory-valuation', compact('products', 'totalCostValue', 'totalSalesValue'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'inventory-valuation.pdf');
+    }
 }; ?>
 
 <div class="flex h-screen overflow-hidden bg-gray-50 text-gray-800">
@@ -35,22 +56,10 @@ class extends Component
                 <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 focus:outline-none mr-4 md:hidden">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <h1 class="text-2xl font-semibold text-gray-800">Inventory Report</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">Inventory Valuation Report</h1>
             </div>
             
             <div class="flex items-center space-x-4">
-                <div class="relative hidden md:block">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </span>
-                    <input type="text" class="w-64 py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="Search...">
-                </div>
-                
-                <button class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
-                </button>
-                
                 <a href="{{ route('pos.visual') }}" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                     <i class="fas fa-cash-register mr-2"></i>
                     Open POS
@@ -61,25 +70,42 @@ class extends Component
         <!-- Main Content Area -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
              <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Inventory Report</h2>
-                <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-print mr-2"></i> Print
-                </button>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Inventory Valuation</h2>
+                    <p class="text-sm text-gray-500 mt-1">Total Stock Value (Cost): <span class="font-bold text-gray-800">{{ number_format($this->totalCostValue, 2) }}</span></p>
+                </div>
+                
+                <div class="flex gap-2" x-data="{ open: false }">
+                    <div class="relative">
+                        <button @click="open = !open" @click.away="open = false" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-700 transition-colors">
+                            <i class="fas fa-file-export"></i> Export
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                            <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                            </button>
+                            <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <p class="text-sm text-gray-500">Total Items</p>
-                    <h3 class="text-2xl font-bold text-gray-800">1,250</h3>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ $this->products->count() }}</h3>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p class="text-sm text-gray-500">Total Value</p>
-                    <h3 class="text-2xl font-bold text-gray-800">$45,350.00</h3>
+                    <p class="text-sm text-gray-500">Total Sales Value</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ number_format($this->totalSalesValue, 2) }}</h3>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p class="text-sm text-gray-500">Low Stock Items</p>
-                    <h3 class="text-2xl font-bold text-red-600">12</h3>
+                    <p class="text-sm text-gray-500">Total Cost Value</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ number_format($this->totalCostValue, 2) }}</h3>
                 </div>
             </div>
 
@@ -90,22 +116,33 @@ class extends Component
                             <tr>
                                 <th class="px-6 py-4">Product Name</th>
                                 <th class="px-6 py-4">Category</th>
-                                <th class="px-6 py-4">Stock In</th>
-                                <th class="px-6 py-4">Stock Out</th>
-                                <th class="px-6 py-4">Current Stock</th>
+                                <th class="px-6 py-4 text-right">Stock</th>
+                                <th class="px-6 py-4 text-right">Cost Price</th>
+                                <th class="px-6 py-4 text-right">Selling Price</th>
+                                <th class="px-6 py-4 text-right">Total Cost Value</th>
+                                <th class="px-6 py-4 text-right">Total Sales Value</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @foreach($inventoryItems as $item)
+                            @foreach($this->products as $product)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-gray-800">{{ $item['name'] }}</td>
-                                <td class="px-6 py-4">{{ $item['category'] }}</td>
-                                <td class="px-6 py-4 text-green-600">+{{ $item['in'] }}</td>
-                                <td class="px-6 py-4 text-red-600">-{{ $item['out'] }}</td>
-                                <td class="px-6 py-4 font-bold">{{ $item['current'] }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-800">{{ $product->name }}</td>
+                                <td class="px-6 py-4">{{ $product->category->name ?? 'Uncategorized' }}</td>
+                                <td class="px-6 py-4 text-right font-bold {{ $product->stock <= 10 ? 'text-red-600' : 'text-gray-800' }}">{{ $product->stock }}</td>
+                                <td class="px-6 py-4 text-right">{{ number_format($product->cost, 2) }}</td>
+                                <td class="px-6 py-4 text-right">{{ number_format($product->price, 2) }}</td>
+                                <td class="px-6 py-4 text-right font-medium">{{ number_format($product->stock * $product->cost, 2) }}</td>
+                                <td class="px-6 py-4 text-right font-medium">{{ number_format($product->stock * $product->price, 2) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="bg-gray-50 font-bold">
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-right">Totals:</td>
+                                <td class="px-6 py-4 text-right">{{ number_format($this->totalCostValue, 2) }}</td>
+                                <td class="px-6 py-4 text-right">{{ number_format($this->totalSalesValue, 2) }}</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>

@@ -171,7 +171,7 @@
                         <i class="fas fa-coins w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Income & Expense') }}</span>
                     </a>
-
+                    @role('Super Admin')
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Super Admin') }}</p>
                     <a wire:navigate href="{{ route('admin.dashboard') }}"
@@ -205,6 +205,7 @@
                         <i class="fas fa-heartbeat w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('System Health') }}</span>
                     </a>
+                    @endrole
 
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Management') }}</p>
@@ -213,6 +214,45 @@
                         <i class="fas fa-chart-bar w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Reports') }}</span>
                     </a>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
+                        {{ __('Configuration') }}</p>
+                    <a wire:navigate href="{{ route('settings.general') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('settings.general') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-cogs w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('General') }}</span>
+                    </a>
+                    <a wire:navigate href="{{ route('settings.receipt') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('settings.receipt') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-receipt w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Receipt') }}</span>
+                    </a>
+                    @role('Super Admin')
+                    <a wire:navigate href="{{ route('settings.payment') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('settings.payment') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-credit-card w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Payment Methods') }}</span>
+                    </a>
+                    <a wire:navigate href="{{ route('settings.notifications') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('settings.notifications') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-bell w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Notifications') }}</span>
+                    </a>
+                    <a wire:navigate href="{{ route('settings.integrations') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('settings.integrations') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-plug w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Integrations') }}</span>
+                    </a>
+                    <a wire:navigate href="{{ route('settings.api-keys') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('settings.api-keys') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-key w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('API Keys') }}</span>
+                    </a>
+                    <a wire:navigate href="{{ route('settings.backup') }}"
+                        class="flex items-center px-4 py-3 {{ request()->routeIs('settings.backup') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
+                        <i class="fas fa-database w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('Backups') }}</span>
+                    </a>
+                    @endrole
                     <a wire:navigate href="{{ route('settings.taxes') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('settings.taxes') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-percent w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
@@ -220,8 +260,8 @@
                     </a>
                     <a wire:navigate href="{{ route('settings.profile') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('settings.profile') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
-                        <i class="fas fa-cog w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
-                        <span class="font-medium">{{ __('Settings') }}</span>
+                        <i class="fas fa-user-cog w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
+                        <span class="font-medium">{{ __('My Profile') }}</span>
                     </a>
                 </nav>
             </div>

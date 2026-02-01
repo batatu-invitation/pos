@@ -17,7 +17,11 @@ $login = function () {
 
     Session::regenerate();
 
-    $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+    if (!session()->has('locale')) {
+            session(['locale' => 'id']);
+    }
+
+    $this->redirectIntended(default: route('dashboard', absolute: false));
 };
 
 ?>
@@ -27,7 +31,7 @@ $login = function () {
     <div class="hidden lg:flex w-1/2 bg-indigo-900 justify-center items-center relative overflow-hidden">
         <div class="absolute inset-0 bg-indigo-900/90 z-10"></div>
         <img src="https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="POS Background" class="absolute inset-0 w-full h-full object-cover">
-        
+
         <div class="relative z-20 text-white text-center p-12">
             <div class="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm">
                 <i class="fas fa-cash-register text-3xl"></i>
@@ -93,7 +97,7 @@ $login = function () {
 
             <div class="mt-8 text-center">
                 <p class="text-sm text-gray-600">
-                    Don't have an account? 
+                    Don't have an account?
                     <a href="{{ route('register') }}" class="font-medium text-primary hover:text-indigo-500" wire:navigate>Create an account</a>
                 </p>
             </div>

@@ -123,20 +123,61 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
             $this->dispatch('notify', __('Employee deleted successfully!'));
         }
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new EmployeesExport, 'employees.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        if (auth()->user()->hasRole('Super Admin')) {
+            $employees = User::with('roles')
+                ->where('id', '!=', auth()->id())
+                ->latest()
+                ->get();
+        } else {
+            $employees = User::where('created_by', auth()->id())
+                ->with('roles')
+                ->latest()
+                ->get();
+        }
+
+        $pdf = Pdf::loadView('pdf.employees', compact('employees'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'employees.pdf');
+    }
 };
 ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+<main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex items-center justify-between mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">{{ __('Employees') }}</h2>
-            <p class="mt-1 text-sm text-gray-600">{{ __('Manage your team members and their access.') }}</p>
+        <h2 class="text-2xl font-bold text-gray-800">Employees</h2>
+
+        <div class="flex gap-2" x-data="{ open: false }">
+            <div class="relative">
+                <button @click="open = !open" @click.away="open = false" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-700 transition-colors">
+                    <i class="fas fa-file-export"></i> Export
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                    </button>
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+
+            <button wire:click="createEmployee" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                <i class="fas fa-plus mr-2"></i> Add Employee
+            </button>
         </div>
-        <button wire:click="createEmployee"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-            <i class="fas fa-plus mr-2"></i> {{ __('Add Employee') }}
-        </button>
     </div>
+
+    <!-- Employee Stats -->
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">

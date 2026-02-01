@@ -5,7 +5,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use App\Models\Product;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ProductsExport;
+use App\Exports\StockExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\WithPagination;
 
@@ -62,12 +62,18 @@ class extends Component
 
     public function exportExcel()
     {
-        return Excel::download(new ProductsExport, 'stock_inventory.xlsx');
+        return Excel::download(new StockExport($this->search), 'stock_inventory.xlsx');
     }
 
     public function exportPdf()
     {
-        $products = Product::all()->map(fn($product) => $this->sanitizeProduct($product));
+        $products = Product::query()
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%'.$this->search.'%')->orWhere('sku', 'like', '%'.$this->search.'%'))
+            ->orderByRaw('CASE WHEN stock <= 10 THEN 0 ELSE 1 END')
+            ->orderBy('name')
+            ->get()
+            ->map(fn($product) => $this->sanitizeProduct($product));
+
         $pdf = Pdf::loadView('pdf.inventory', compact('products'));
         $time = now()->format('H:i:s-d-m-Y');
         return response()->streamDownload(function () use ($pdf) {

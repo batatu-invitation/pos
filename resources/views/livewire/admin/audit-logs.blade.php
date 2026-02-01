@@ -5,6 +5,9 @@ use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
 use Spatie\Activitylog\Models\Activity;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AuditLogsExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new
 #[Layout('components.layouts.app', ['header' => 'Audit Logs'])]
@@ -21,6 +24,38 @@ class extends Component
     {
         $this->selectedLog = Activity::with(['causer', 'subject'])->find($id);
         $this->dispatch('open-modal', 'audit-detail-modal');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new AuditLogsExport($this->search, $this->actionFilter), 'audit-logs.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $query = Activity::with(['causer', 'subject'])->latest();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('description', 'like', '%' . $this->search . '%')
+                  ->orWhere('event', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if ($this->actionFilter && $this->actionFilter !== 'All Actions') {
+            $filter = strtolower($this->actionFilter);
+            if ($filter === 'update') $filter = 'updated';
+            if ($filter === 'create') $filter = 'created';
+            if ($filter === 'delete') $filter = 'deleted';
+
+            $query->where('event', $filter);
+        }
+
+        $logs = $query->get();
+        $pdf = Pdf::loadView('pdf.audit-logs', compact('logs'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'audit-logs.pdf');
     }
 
     public function with()
@@ -81,9 +116,19 @@ class extends Component
             <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm">
                 <i class="fas fa-filter mr-2"></i> {{ __('Filter') }}
             </button>
-            <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm">
-                <i class="fas fa-download mr-2"></i> {{ __('Export') }}
-            </button>
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm">
+                    <i class="fas fa-download mr-2"></i> {{ __('Export') }}
+                </button>
+                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
+                    <button wire:click="exportExcel" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel mr-2 text-green-600"></i> Excel
+                    </button>
+                    <button wire:click="exportPdf" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf mr-2 text-red-600"></i> PDF
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

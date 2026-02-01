@@ -3,40 +3,72 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\Sale;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SalesExport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 new
 #[Layout('components.layouts.app')]
 #[Title('Sales Report - Modern POS')]
 class extends Component
 {
-    public $transactions = [];
-
-    public function mount()
+    public function with()
     {
-        $this->transactions = [
-            ['id' => '#ORD-001', 'date' => '2023-10-24 10:30 AM', 'customer' => __('Walk-in Customer'), 'total' => 45.00, 'status' => 'Completed'],
-            ['id' => '#ORD-002', 'date' => '2023-10-24 11:15 AM', 'customer' => 'John Doe', 'total' => 120.50, 'status' => 'Completed'],
-            ['id' => '#ORD-003', 'date' => '2023-10-24 12:45 PM', 'customer' => 'Jane Smith', 'total' => 32.00, 'status' => 'Completed'],
-            ['id' => '#ORD-004', 'date' => '2023-10-24 01:20 PM', 'customer' => __('Walk-in Customer'), 'total' => 15.00, 'status' => 'Refunded'],
-            ['id' => '#ORD-005', 'date' => '2023-10-24 02:00 PM', 'customer' => 'Mike Johnson', 'total' => 210.00, 'status' => 'Completed'],
-            ['id' => '#ORD-006', 'date' => '2023-10-24 02:45 PM', 'customer' => 'Sarah Williams', 'total' => 55.00, 'status' => 'Completed'],
-            ['id' => '#ORD-007', 'date' => '2023-10-24 03:10 PM', 'customer' => __('Walk-in Customer'), 'total' => 12.50, 'status' => 'Completed'],
-            ['id' => '#ORD-008', 'date' => '2023-10-24 04:30 PM', 'customer' => 'David Brown', 'total' => 89.90, 'status' => 'Completed'],
-            ['id' => '#ORD-009', 'date' => '2023-10-24 05:15 PM', 'customer' => 'Emily Davis', 'total' => 42.00, 'status' => 'Pending'],
-            ['id' => '#ORD-010', 'date' => '2023-10-24 06:00 PM', 'customer' => __('Walk-in Customer'), 'total' => 28.00, 'status' => 'Completed'],
-            ['id' => '#ORD-011', 'date' => '2023-10-24 06:45 PM', 'customer' => 'Michael Wilson', 'total' => 150.00, 'status' => 'Completed'],
-            ['id' => '#ORD-012', 'date' => '2023-10-24 07:30 PM', 'customer' => 'Jessica Taylor', 'total' => 65.50, 'status' => 'Completed'],
+        $salesQuery = Sale::query()->with(['customer']);
+        
+        $totalRevenue = Sale::where('status', 'completed')->sum('total_amount');
+        $totalOrders = Sale::count();
+        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+
+        // Chart Data (Last 7 Days)
+        $dates = collect(range(6, 0))->map(function($days) {
+            return Carbon::now()->subDays($days)->format('Y-m-d');
+        });
+        
+        $chartData = $dates->map(function($date) {
+            return Sale::where('status', 'completed')
+                ->whereDate('created_at', $date)
+                ->sum('total_amount');
+        });
+        
+        $chartLabels = $dates->map(function($date) {
+            return Carbon::parse($date)->format('D');
+        });
+
+        return [
+            'sales' => $salesQuery->latest()->paginate(10),
+            'totalRevenue' => $totalRevenue,
+            'totalOrders' => $totalOrders,
+            'avgOrderValue' => $avgOrderValue,
+            'chartLabels' => $chartLabels,
+            'chartData' => $chartData,
         ];
     }
 
     public function getStatusColor($status)
     {
-        return match($status) {
-            'Completed' => 'bg-green-100 text-green-800',
-            'Refunded' => 'bg-red-100 text-red-800',
-            'Pending' => 'bg-yellow-100 text-yellow-800',
+        return match(strtolower($status)) {
+            'completed' => 'bg-green-100 text-green-800',
+            'refunded' => 'bg-red-100 text-red-800',
+            'pending' => 'bg-yellow-100 text-yellow-800',
             default => 'bg-gray-100 text-gray-800',
         };
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new SalesExport, 'sales-report.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $sales = Sale::with(['customer', 'user'])->latest()->get();
+        $pdf = Pdf::loadView('pdf.sales-report', compact('sales'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'sales-report.pdf');
     }
 }; ?>
 
@@ -44,34 +76,7 @@ class extends Component
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
 
-        <!-- Header -->
-        <header class="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b border-gray-200">
-            <div class="flex items-center">
-                <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 focus:outline-none mr-4 md:hidden">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <h1 class="text-2xl font-semibold text-gray-800">{{ __('Sales Report') }}</h1>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <div class="relative hidden md:block">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </span>
-                    <input type="text" class="w-64 py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors" placeholder="{{ __('Search...') }}">
-                </div>
-
-                <button class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
-                </button>
-
-                <a href="{{ route('pos.visual') }}" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                    <i class="fas fa-cash-register mr-2"></i>
-                    {{ __('Open POS') }}
-                </a>
-            </div>
-        </header>
+        
 
         <!-- Main Content Area -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6" x-data="{
@@ -83,10 +88,10 @@ class extends Component
                 window.myReportChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        labels: @js($chartLabels),
                         datasets: [{
                             label: '{{ __('Sales (Rp.)') }}',
-                            data: [1200, 1900, 3000, 2500, 2200, 3200, 4000],
+                            data: @js($chartData),
                             borderColor: '#4f46e5',
                             backgroundColor: 'rgba(79, 70, 229, 0.1)',
                             tension: 0.4,
@@ -129,10 +134,10 @@ class extends Component
                 </div>
 
                 <div class="flex space-x-3">
-                    <button class="flex items-center px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
+                    <button wire:click="exportPdf" class="flex items-center px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
                         <i class="fas fa-file-pdf mr-2"></i> Export PDF
                     </button>
-                    <button class="flex items-center px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
+                    <button wire:click="exportExcel" class="flex items-center px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
                         <i class="fas fa-file-excel mr-2"></i> Export Excel
                     </button>
                 </div>
@@ -144,57 +149,42 @@ class extends Component
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-sm text-gray-500 mb-1">Total Revenue</p>
-                            <h3 class="text-2xl font-bold text-gray-800">$1,250.00</h3>
+                            <h3 class="text-2xl font-bold text-gray-800">Rp. {{ number_format($totalRevenue, 0, ',', '.') }}</h3>
                         </div>
                         <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                             <i class="fas fa-dollar-sign text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-green-600 mt-2 flex items-center">
-                        <i class="fas fa-arrow-up mr-1"></i>
-                        <span>+12.5%</span>
-                        <span class="text-gray-400 ml-1">vs last period</span>
-                    </p>
                 </div>
 
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                      <div class="flex justify-between items-start">
                         <div>
                             <p class="text-sm text-gray-500 mb-1">Total Orders</p>
-                            <h3 class="text-2xl font-bold text-gray-800">45</h3>
+                            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($totalOrders, 0, ',', '.') }}</h3>
                         </div>
                         <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
                             <i class="fas fa-shopping-bag text-xl"></i>
                         </div>
                     </div>
-                     <p class="text-xs text-green-600 mt-2 flex items-center">
-                        <i class="fas fa-arrow-up mr-1"></i>
-                        <span>+5.2%</span>
-                        <span class="text-gray-400 ml-1">vs last period</span>
-                    </p>
                 </div>
 
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                      <div class="flex justify-between items-start">
                         <div>
                             <p class="text-sm text-gray-500 mb-1">Avg. Order Value</p>
-                            <h3 class="text-2xl font-bold text-gray-800">$27.80</h3>
+                            <h3 class="text-2xl font-bold text-gray-800">Rp. {{ number_format($avgOrderValue, 0, ',', '.') }}</h3>
                         </div>
                         <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
                             <i class="fas fa-chart-line text-xl"></i>
                         </div>
                     </div>
-                     <p class="text-xs text-red-600 mt-2 flex items-center">
-                        <i class="fas fa-arrow-down mr-1"></i>
-                        <span>-2.1%</span>
-                        <span class="text-gray-400 ml-1">vs last period</span>
-                    </p>
                 </div>
             </div>
 
             <!-- Chart Section -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Sales Overview</h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Sales Overview (Last 7 Days)</h3>
                 <div class="relative h-80 w-full">
                     <canvas id="reportChart"></canvas>
                 </div>
@@ -221,21 +211,24 @@ class extends Component
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 text-sm text-gray-600">
-                            @foreach($transactions as $transaction)
+                            @foreach($sales as $sale)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 font-medium text-indigo-600">{{ $transaction['id'] }}</td>
-                                <td class="px-6 py-4">{{ $transaction['date'] }}</td>
-                                <td class="px-6 py-4">{{ $transaction['customer'] }}</td>
-                                <td class="px-6 py-4 font-medium text-gray-900">${{ number_format($transaction['total'], 2) }}</td>
+                                <td class="px-6 py-4 font-medium text-indigo-600">{{ $sale->invoice_number }}</td>
+                                <td class="px-6 py-4">{{ $sale->created_at->format('Y-m-d H:i') }}</td>
+                                <td class="px-6 py-4">{{ $sale->customer ? $sale->customer->name : 'Walk-in Customer' }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-900">Rp. {{ number_format($sale->total_amount, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $this->getStatusColor($transaction['status']) }}">
-                                        {{ $transaction['status'] }}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $this->getStatusColor($sale->status) }}">
+                                        {{ ucfirst($sale->status) }}
                                     </span>
                                 </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200">
+                    {{ $sales->links() }}
                 </div>
             </div>
 

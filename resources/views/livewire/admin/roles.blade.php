@@ -5,6 +5,9 @@ use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\RolesExport;
 
 new
 #[Layout('components.layouts.app', ['header' => 'Roles & Permissions'])]
@@ -36,6 +39,20 @@ class extends Component
             'roles' => Role::withCount('users')->with('permissions')->get(),
             'permissions' => Permission::all(),
         ];
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new RolesExport, 'roles.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $roles = Role::withCount('users')->with('permissions')->get();
+        $pdf = Pdf::loadView('pdf.roles', compact('roles'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'roles.pdf');
     }
 
     // Role Management
@@ -153,19 +170,32 @@ class extends Component
         <!-- Main Content Area -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
 
-            <div class="flex justify-between items-center mb-6">
-                 <div>
-                    <h2 class="text-lg font-medium text-gray-900">{{ __('Manage Access') }}</h2>
-                    <p class="mt-1 text-sm text-gray-600">
-                        {{ __('Control user access and permissions across the system.') }}
-                    </p>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">{{ __('Roles & Permissions') }}</h2>
+                    <p class="text-sm text-gray-500 mt-1">{{ __('Manage system access and security') }}</p>
                 </div>
-                <div class="flex space-x-3">
-                    <button wire:click="createPermission" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-colors">
-                        <i class="fas fa-key mr-2"></i> {{ __('Create Permission') }}
+                <div class="flex flex-wrap gap-2">
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" @click.away="open = false" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                            <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                            <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                        </button>
+                        <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                            <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-excel text-green-600 mr-2"></i> {{ __('Export Excel') }}
+                            </button>
+                            <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-pdf text-red-600 mr-2"></i> {{ __('Export PDF') }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button wire:click="createPermission" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                        <i class="fas fa-key mr-2 text-indigo-500"></i> {{ __('New Permission') }}
                     </button>
-                    <button wire:click="createRole" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm transition-colors">
-                        <i class="fas fa-plus mr-2"></i> {{ __('Create New Role') }}
+                    <button wire:click="createRole" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
+                        <i class="fas fa-user-shield mr-2"></i> {{ __('New Role') }}
                     </button>
                 </div>
             </div>

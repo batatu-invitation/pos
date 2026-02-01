@@ -3,12 +3,22 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\ApplicationSetting;
 
 new 
 #[Layout('components.layouts.app')]
 #[Title('Integrations - Modern POS')]
 class extends Component
 {
+    public $integrations = [
+        'Stripe' => ['connected' => false, 'icon' => 'fab fa-stripe', 'color' => 'indigo', 'description' => 'Accept credit cards, Apple Pay, and Google Pay directly on your POS.'],
+        'Xero' => ['connected' => false, 'icon' => 'fas fa-file-invoice', 'color' => 'blue', 'description' => 'Sync daily sales and invoices automatically with Xero accounting software.'],
+        'Mailchimp' => ['connected' => false, 'icon' => 'fas fa-envelope-open-text', 'color' => 'yellow', 'description' => 'Automatically add new customers to your newsletter lists.'],
+        'Uber Direct' => ['connected' => false, 'icon' => 'fas fa-truck', 'color' => 'green', 'description' => 'Request local delivery drivers for your orders instantly.'],
+        'Shopify' => ['connected' => false, 'icon' => 'fab fa-shopify', 'color' => 'green', 'description' => 'Sync products and inventory with your Shopify online store.'],
+        'Slack' => ['connected' => false, 'icon' => 'fab fa-slack', 'color' => 'purple', 'description' => 'Receive notifications about sales and daily summaries in your Slack channel.'],
+    ];
+
     // Data for "Sync History" to satisfy 10+ entries requirement
     public $syncHistory = [
         ['id' => 'SYNC-1001', 'integration' => 'Stripe', 'action' => 'Payment Sync', 'date' => '2023-10-25 10:00 AM', 'status' => 'Success', 'details' => 'Synced 15 transactions'],
@@ -25,10 +35,40 @@ class extends Component
         ['id' => 'SYNC-1012', 'integration' => 'Uber Direct', 'action' => 'Driver Assignment', 'date' => '2023-10-24 09:30 AM', 'status' => 'Success', 'details' => 'Driver assigned to #10230'],
     ];
 
+    public function mount()
+    {
+        $this->loadSettings();
+    }
+
+    public function loadSettings()
+    {
+        $settings = ApplicationSetting::where('key', 'like', 'integration_%_connected')
+            ->pluck('value', 'key')
+            ->toArray();
+
+        foreach ($this->integrations as $name => &$data) {
+            $key = 'integration_' . strtolower(str_replace(' ', '_', $name)) . '_connected';
+            if (isset($settings[$key])) {
+                $data['connected'] = (bool) $settings[$key];
+            }
+        }
+    }
+
     public function connect($service)
     {
-        // Simulate connection
-        session()->flash('message', "Connecting to {$service}...");
+        $key = 'integration_' . strtolower(str_replace(' ', '_', $service)) . '_connected';
+        $currentStatus = $this->integrations[$service]['connected'];
+        $newStatus = !$currentStatus;
+        
+        $this->integrations[$service]['connected'] = $newStatus;
+        
+        ApplicationSetting::updateOrCreate(
+            ['key' => $key],
+            ['value' => $newStatus]
+        );
+
+        $action = $newStatus ? 'Connected to' : 'Disconnected from';
+        session()->flash('message', "{$action} {$service}.");
     }
 }; ?>
 
@@ -61,57 +101,24 @@ class extends Component
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Stripe -->
+                @foreach($integrations as $name => $data)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
                     <div class="flex items-start justify-between mb-4">
-                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 text-2xl">
-                            <i class="fab fa-stripe"></i>
+                        <div class="w-12 h-12 bg-{{ $data['color'] }}-100 rounded-lg flex items-center justify-center text-{{ $data['color'] }}-600 text-2xl">
+                            <i class="{{ $data['icon'] }}"></i>
                         </div>
-                        <span class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Connected</span>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $data['connected'] ? 'text-green-700 bg-green-100' : 'text-gray-600 bg-gray-100' }}">
+                            {{ $data['connected'] ? 'Connected' : 'Not Connected' }}
+                        </span>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Stripe</h3>
-                    <p class="text-gray-500 text-sm mb-6 flex-1">Accept credit cards, Apple Pay, and Google Pay directly on your POS.</p>
-                    <button class="w-full py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Configure</button>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $name }}</h3>
+                    <p class="text-gray-500 text-sm mb-6 flex-1">{{ $data['description'] }}</p>
+                    <button wire:click="connect('{{ $name }}')" 
+                        class="w-full py-2 rounded-lg text-sm font-medium transition-colors {{ $data['connected'] ? 'border border-gray-300 text-gray-700 hover:bg-gray-50' : 'bg-indigo-600 text-white hover:bg-indigo-700' }}">
+                        {{ $data['connected'] ? 'Configure' : 'Connect' }}
+                    </button>
                 </div>
-
-                <!-- Xero -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-2xl">
-                            <i class="fas fa-file-invoice"></i>
-                        </div>
-                        <span class="px-2 py-1 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full">Not Connected</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Xero</h3>
-                    <p class="text-gray-500 text-sm mb-6 flex-1">Sync daily sales and invoices automatically with Xero accounting software.</p>
-                    <button wire:click="connect('Xero')" class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">Connect</button>
-                </div>
-
-                <!-- Mailchimp -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center text-yellow-600 text-2xl">
-                            <i class="fas fa-envelope-open-text"></i>
-                        </div>
-                        <span class="px-2 py-1 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full">Not Connected</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Mailchimp</h3>
-                    <p class="text-gray-500 text-sm mb-6 flex-1">Automatically add new customers to your newsletter lists.</p>
-                    <button wire:click="connect('Mailchimp')" class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">Connect</button>
-                </div>
-
-                <!-- Uber Direct -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-green-600 text-2xl">
-                            <i class="fas fa-truck"></i>
-                        </div>
-                        <span class="px-2 py-1 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full">Not Connected</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Uber Direct</h3>
-                    <p class="text-gray-500 text-sm mb-6 flex-1">Request local delivery drivers for your orders instantly.</p>
-                    <button wire:click="connect('Uber Direct')" class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">Connect</button>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>

@@ -88,14 +88,50 @@ class extends Component
         Customer::findOrFail($id)->delete();
         $this->dispatch('notify', 'Customer deleted successfully!');
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new CustomersExport($this->search), 'customers.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $customers = Customer::query()
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
+                ->orWhere('email', 'like', '%' . $this->search . '%')
+                ->orWhere('phone', 'like', '%' . $this->search . '%'))
+            ->latest()
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.customers', ['customers' => $customers]);
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'customers.pdf');
+    }
 }; ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Customers</h2>
-        <button wire:click="create" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i> Add Customer
-        </button>
+        <div class="flex space-x-3">
+             <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                    <i class="fas fa-file-export mr-2"></i> Export
+                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 border border-gray-100" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-green-600">
+                        <i class="fas fa-file-excel mr-2"></i> Export to Excel
+                    </button>
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-red-600">
+                        <i class="fas fa-file-pdf mr-2"></i> Export to PDF
+                    </button>
+                </div>
+            </div>
+            <button wire:click="create" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i> Add Customer
+            </button>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

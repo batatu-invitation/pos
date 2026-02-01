@@ -10,6 +10,8 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
         if (!session()->has('locale')) {
             session(['locale' => 'id']);
         }
+
+
     }
     public $topProducts = [['name' => 'Double Burger', 'sales' => 120, 'revenue' => 1200, 'icon' => '🍔'], ['name' => 'French Fries', 'sales' => 85, 'revenue' => 425, 'icon' => '🍟'], ['name' => 'Cola Zero', 'sales' => 70, 'revenue' => 210, 'icon' => '🥤'], ['name' => 'Ice Coffee', 'sales' => 54, 'revenue' => 270, 'icon' => '☕'], ['name' => 'Chicken Nuggets', 'sales' => 45, 'revenue' => 225, 'icon' => '🍗'], ['name' => 'Vanilla Shake', 'sales' => 40, 'revenue' => 200, 'icon' => '🍦'], ['name' => 'Cheese Sandwich', 'sales' => 35, 'revenue' => 175, 'icon' => '🥪'], ['name' => 'Hot Dog', 'sales' => 30, 'revenue' => 150, 'icon' => '🌭'], ['name' => 'Onion Rings', 'sales' => 25, 'revenue' => 125, 'icon' => '🧅'], ['name' => 'Caesar Salad', 'sales' => 20, 'revenue' => 140, 'icon' => '🥗'], ['name' => 'Apple Pie', 'sales' => 15, 'revenue' => 75, 'icon' => '🥧'], ['name' => 'Mineral Water', 'sales' => 10, 'revenue' => 20, 'icon' => '💧']];
 

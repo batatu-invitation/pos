@@ -114,15 +114,49 @@ new #[Layout('components.layouts.app', ['header' => 'Emojis'])] #[Title('Emojis 
         $emoji->delete();
         $this->dispatch('notify', 'Emoji deleted successfully!');
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new EmojisExport, 'emojis.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $emojis = Emoji::where('tenant_id', auth()->id())
+                ->orWhereNull('tenant_id')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+        $pdf = Pdf::loadView('pdf.emojis', compact('emojis'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'emojis.pdf');
+    }
 }; ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800"></h2>
-        <button wire:click="create"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i> Add Emoji
-        </button>
+        <div class="flex gap-2">
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center shadow-sm">
+                    <i class="fas fa-file-export mr-2"></i> Export
+                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                    </button>
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <button wire:click="create"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i> Add Emoji
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">

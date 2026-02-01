@@ -51,7 +51,7 @@
                     <td>{{ $product->name }}</td>
                     <td>{{ $product->sku }}</td>
                     <td>{{ $product->stock }}</td>
-                    <td>{{ number_format($product->price, 2) }}</td>
+                    <td>Rp. {{ number_format($product->price, 0, ',', '.') }}</td>
                     <td>{{ $product->status }}</td>
                 </tr>
             @endforeach

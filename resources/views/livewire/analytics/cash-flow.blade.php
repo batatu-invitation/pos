@@ -7,6 +7,9 @@ use Carbon\Carbon;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CashFlowExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new
 #[Layout('components.layouts.app')]
@@ -101,6 +104,31 @@ class extends Component
         }
         return $total;
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new CashFlowExport(
+            $this->operatingActivities,
+            $this->investingActivities,
+            $this->financingActivities,
+            $this->startDate,
+            $this->endDate
+        ), 'cash-flow.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $pdf = Pdf::loadView('pdf.cash-flow', [
+            'operatingActivities' => $this->operatingActivities,
+            'investingActivities' => $this->investingActivities,
+            'financingActivities' => $this->financingActivities,
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate,
+        ]);
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'cash-flow.pdf');
+    }
 }; ?>
 
 <div class="flex h-screen overflow-hidden bg-gray-50 text-gray-800">
@@ -150,9 +178,20 @@ class extends Component
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-download mr-2"></i> {{ __('Export') }}
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center shadow-sm">
+                            <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                            <i class="fas fa-chevron-down ml-2 text-xs"></i>
                         </button>
+                        <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                            <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                            </button>
+                            <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                            </button>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>

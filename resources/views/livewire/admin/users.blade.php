@@ -8,6 +8,9 @@ use Spatie\Permission\Models\Role;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UsersExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new #[Layout('components.layouts.app')] #[Title('User Management')] class extends Component {
     use WithPagination;
@@ -47,6 +50,29 @@ new #[Layout('components.layouts.app')] #[Title('User Management')] class extend
     public function updatingRoleFilter()
     {
         $this->resetPage();
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new UsersExport($this->search, $this->roleFilter), 'users.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $users = User::query()
+            ->when($this->search, fn($q) => $q->where(function($sub) {
+                $sub->where('first_name', 'like', '%'.$this->search.'%')
+                    ->orWhere('last_name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
+            }))
+            ->when($this->roleFilter && $this->roleFilter !== 'All Roles', fn($q) => $q->role($this->roleFilter))
+            ->latest()
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.users', compact('users'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'users.pdf');
     }
 
     public function create()
@@ -130,10 +156,54 @@ new #[Layout('components.layouts.app')] #[Title('User Management')] class extend
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">{{ __('User Management') }}</h2>
-        <button wire:click="create"
-            class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-            <i class="fas fa-plus mr-2"></i> {{ __('Add New User') }}
-        </button>
+        <div class="flex space-x-2">
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                </button>
+                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
+                    <button @click="
+                        Swal.fire({
+                            title: 'Export Excel?',
+                            text: 'Do you want to export the users to Excel?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, export!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $wire.exportExcel();
+                            }
+                        })
+                    " class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel mr-2 text-green-600"></i> Excel
+                    </button>
+                    <button @click="
+                        Swal.fire({
+                            title: '{{ __('Export PDF?') }}',
+                            text: '{{ __('Do you want to export the users to PDF?') }}',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: '{{ __('Yes, export!') }}',
+                            cancelButtonText: '{{ __('Cancel') }}'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $wire.exportPdf();
+                            }
+                        })
+                    " class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf mr-2 text-red-600"></i> PDF
+                    </button>
+                </div>
+            </div>
+            <button wire:click="create"
+                class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                <i class="fas fa-plus mr-2"></i> {{ __('Add New User') }}
+            </button>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

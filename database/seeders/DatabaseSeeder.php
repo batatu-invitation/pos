@@ -49,11 +49,11 @@ class DatabaseSeeder extends Seeder
 
         $superAdmin->assignRole('Super Admin');
 
-        $this->call([
-            CategorySeeder::class,
-            ProductSeeder::class,
-            EmojiSeeder::class,
-            ColorSeeder::class,
-        ]);
+        // $this->call([
+        //     CategorySeeder::class,
+        //     ProductSeeder::class,
+        //     EmojiSeeder::class,
+        //     ColorSeeder::class,
+        // ]);
     }
 }

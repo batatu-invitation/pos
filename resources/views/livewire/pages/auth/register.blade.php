@@ -48,7 +48,7 @@ $register = function () {
     Auth::login($user);
 
 
-    $this->redirect(route('dashboard', absolute: false), navigate: true);
+    $this->redirect(route('dashboard', absolute: false));
 };
 
 ?>

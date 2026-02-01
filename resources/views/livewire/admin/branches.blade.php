@@ -7,6 +7,9 @@ use App\Models\Tenant;
 use App\Models\Domain;
 use App\Models\User;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\BranchesExport;
 
 new
 #[Layout('components.layouts.app')]
@@ -55,6 +58,20 @@ class extends Component
             'branches' => Tenant::with('domains')->paginate(10),
             'managers' => User::role('Manager')->where('status', 'Active')->get(),
         ];
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new BranchesExport, 'branches.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $branches = Tenant::with('domains')->get();
+        $pdf = Pdf::loadView('pdf.branches', compact('branches'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'branches.pdf');
     }
 
     public function create()
@@ -152,9 +169,27 @@ class extends Component
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">{{ __('Branch Management') }}</h2>
-        <button wire:click="create" class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap">
-            <i class="fas fa-plus mr-2"></i> {{ __('Add New Branch') }}
-        </button>
+
+        <div class="flex gap-2" x-data="{ open: false }">
+            <div class="relative">
+                <button @click="open = !open" @click.away="open = false" class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap gap-2">
+                    <i class="fas fa-file-export"></i> {{ __('Export') }}
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 hover:bg-gray-100">
+                        <i class="fas fa-file-excel text-green-600 mr-2"></i> {{ __('Export Excel') }}
+                    </button>
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> {{ __('Export PDF') }}
+                    </button>
+                </div>
+            </div>
+
+            <button wire:click="create" class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap">
+                <i class="fas fa-plus mr-2"></i> {{ __('Add New Branch') }}
+            </button>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

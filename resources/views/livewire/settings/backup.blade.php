@@ -3,54 +3,95 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use App\Models\ApplicationSetting;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
+use Spatie\Backup\BackupDestination\BackupDestination;
+use Carbon\Carbon;
 
-new 
+new
 #[Layout('components.layouts.app')]
 #[Title('Backup & Restore - Modern POS')]
 class extends Component
 {
-    public $dailyBackup = true;
+    public $dailyBackup;
+    public $backupHistory = [];
 
-    // Data for "Backup History" to satisfy 10+ entries requirement
-    public $backupHistory = [
-        ['date' => 'Oct 24, 2023 00:00 AM', 'size' => '45.2 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 23, 2023 00:00 AM', 'size' => '44.8 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 22, 2023 14:30 PM', 'size' => '44.5 MB', 'type' => 'Manual', 'status' => 'Completed'],
-        ['date' => 'Oct 22, 2023 00:00 AM', 'size' => '44.1 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 21, 2023 00:00 AM', 'size' => '43.9 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 20, 2023 11:15 AM', 'size' => '43.5 MB', 'type' => 'Manual', 'status' => 'Completed'],
-        ['date' => 'Oct 20, 2023 00:00 AM', 'size' => '43.2 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 19, 2023 00:00 AM', 'size' => '42.8 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 18, 2023 00:00 AM', 'size' => '42.5 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 17, 2023 16:45 PM', 'size' => '42.1 MB', 'type' => 'Manual', 'status' => 'Failed'],
-        ['date' => 'Oct 17, 2023 00:00 AM', 'size' => '42.0 MB', 'type' => 'Auto', 'status' => 'Completed'],
-        ['date' => 'Oct 16, 2023 00:00 AM', 'size' => '41.6 MB', 'type' => 'Auto', 'status' => 'Completed'],
-    ];
+    public function mount()
+    {
+        $settings = ApplicationSetting::pluck('value', 'key');
+        $this->dailyBackup = filter_var($settings['backup_daily'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $this->loadBackups();
+    }
+
+    public function loadBackups()
+    {
+        $diskName = config('backup.backup.destination.disks')[0] ?? 'local';
+        $backupName = config('backup.backup.name');
+
+        try {
+            $backupDestination = BackupDestination::create($diskName, $backupName);
+
+            $this->backupHistory = $backupDestination->backups()->map(function ($backup) {
+                return [
+                    'path' => $backup->path(),
+                    'date' => $backup->date()->format('M d, Y h:i A'),
+                    'size' => $this->formatSize($backup->sizeInBytes()),
+                    'type' => 'Manual', // Defaulting to Manual as we can't easily distinguish without metadata
+                    'status' => 'Completed',
+                    'disk' => config('backup.backup.destination.disks')[0] ?? 'local',
+                ];
+            })->sortByDesc('date')->values()->toArray();
+        } catch (\Exception $e) {
+            $this->backupHistory = [];
+        }
+    }
+
+    public function formatSize($size)
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        for ($i = 0; $size > 1024; $i++) {
+            $size /= 1024;
+        }
+        return round($size, 2) . ' ' . $units[$i];
+    }
+
+    public function updatedDailyBackup($value)
+    {
+        ApplicationSetting::updateOrCreate(['key' => 'backup_daily'], ['value' => $value]);
+        session()->flash('message', 'Backup settings updated.');
+    }
 
     public function createBackup()
     {
-        // Simulate backup creation
-        array_unshift($this->backupHistory, [
-            'date' => now()->format('M d, Y h:i A'),
-            'size' => '45.3 MB',
-            'type' => 'Manual',
-            'status' => 'Completed'
-        ]);
-        session()->flash('message', 'Backup created successfully.');
+        try {
+            // Run backup command (only DB to prevent timeout on web request)
+            Artisan::call('backup:run', ['--only-db' => true, '--disable-notifications' => true]);
+
+            $this->loadBackups();
+            session()->flash('message', 'Backup created successfully.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Backup failed: ' . $e->getMessage());
+        }
     }
 
     public function download($index)
     {
-        // Simulate download
-        session()->flash('message', 'Backup download started.');
+        if (isset($this->backupHistory[$index])) {
+            $backup = $this->backupHistory[$index];
+            return Storage::disk($backup['disk'])->download($backup['path']);
+        }
     }
 
     public function delete($index)
     {
-        // Simulate delete
-        unset($this->backupHistory[$index]);
-        $this->backupHistory = array_values($this->backupHistory);
-        session()->flash('message', 'Backup deleted.');
+        if (isset($this->backupHistory[$index])) {
+            $backup = $this->backupHistory[$index];
+            Storage::disk($backup['disk'])->delete($backup['path']);
+
+            $this->loadBackups();
+            session()->flash('message', 'Backup deleted.');
+        }
     }
 }; ?>
 
@@ -58,7 +99,7 @@ class extends Component
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Backup & Restore</h2>
     </div>
-    
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div class="flex border-b border-gray-200 overflow-x-auto">
             <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">General</a>
@@ -69,11 +110,16 @@ class extends Component
             <a href="{{ route('settings.api-keys') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">API Keys</a>
             <button class="px-6 py-3 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm whitespace-nowrap">Backup</button>
         </div>
-        
+
         <div class="p-6">
             @if (session()->has('message'))
                 <div class="mb-4 p-4 text-green-700 bg-green-100 rounded-lg">
                     {{ session('message') }}
+                </div>
+            @endif
+            @if (session()->has('error'))
+                <div class="mb-4 p-4 text-red-700 bg-red-100 rounded-lg">
+                    {{ session('error') }}
                 </div>
             @endif
 
@@ -82,8 +128,11 @@ class extends Component
                     <h3 class="text-lg font-bold text-gray-800">Manage Backups</h3>
                     <p class="text-gray-500 text-sm">Manage your data backups and restoration points.</p>
                 </div>
-                <button wire:click="createBackup" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center">
-                    <i class="fas fa-cloud-download-alt mr-2"></i> Create Backup
+                <button wire:click="createBackup" wire:loading.attr="disabled" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center disabled:opacity-50">
+                    <i class="fas fa-cloud-download-alt mr-2" wire:loading.remove></i>
+                    <i class="fas fa-spinner fa-spin mr-2" wire:loading></i>
+                    <span wire:loading.remove>Create Backup</span>
+                    <span wire:loading>Creating...</span>
                 </button>
             </div>
 
@@ -96,7 +145,7 @@ class extends Component
                         <p class="text-xs text-gray-500">Automatically backup data to the cloud every day at midnight.</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model="dailyBackup" class="sr-only peer">
+                        <input type="checkbox" wire:model.live="dailyBackup" class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
@@ -115,7 +164,7 @@ class extends Component
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($backupHistory as $index => $backup)
+                        @forelse($backupHistory as $index => $backup)
                             <tr class="bg-white border-b hover:bg-gray-50">
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ $backup['date'] }}</td>
                                 <td class="px-6 py-4">{{ $backup['size'] }}</td>
@@ -131,10 +180,14 @@ class extends Component
                                 </td>
                                 <td class="px-6 py-4 text-right space-x-2">
                                     <button wire:click="download({{ $index }})" class="text-indigo-600 hover:text-indigo-900"><i class="fas fa-download"></i></button>
-                                    <button wire:click="delete({{ $index }})" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    <button wire:click="delete({{ $index }})" wire:confirm="Are you sure you want to delete this backup?" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">No backups found.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

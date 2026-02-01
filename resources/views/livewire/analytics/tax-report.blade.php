@@ -7,6 +7,9 @@ use App\Models\Sale;
 use App\Models\Tax;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TaxReportExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new
 #[Layout('components.layouts.app')]
@@ -92,6 +95,23 @@ class extends Component
     {
         return array_sum(array_column($this->taxDetails, 'tax'));
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new TaxReportExport($this->taxDetails), 'tax-report.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $pdf = Pdf::loadView('pdf.tax-report', [
+            'details' => $this->taxDetails,
+            'start' => $this->startDate,
+            'end' => $this->endDate
+        ]);
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'tax-report.pdf');
+    }
 }; ?>
 
 <div class="flex h-screen overflow-hidden bg-gray-50 text-gray-800">
@@ -141,9 +161,19 @@ class extends Component
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
                             <i class="fas fa-download mr-2"></i> {{ __('Export') }}
                         </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
+                            <button wire:click="exportExcel" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-excel mr-2 text-green-600"></i> Excel
+                            </button>
+                            <button wire:click="exportPdf" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-file-pdf mr-2 text-red-600"></i> PDF
+                            </button>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>

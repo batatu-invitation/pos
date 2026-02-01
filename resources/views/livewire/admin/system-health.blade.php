@@ -11,7 +11,7 @@ use Carbon\Carbon;
 
 new
 #[Layout('components.layouts.app')]
-#[Title(__('System Health'))]
+#[Title('System Health - Modern POS')]
 class extends Component
 {
     public function with()

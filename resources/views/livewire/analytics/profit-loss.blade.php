@@ -10,6 +10,9 @@ use Carbon\Carbon;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProfitLossExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new #[Layout('components.layouts.app')]
     #[Title('Profit & Loss')]
@@ -178,35 +181,61 @@ new #[Layout('components.layouts.app')]
     {
         return $this->getTotalRevenue() - $this->getTotalExpenses();
     }
+
+    public function exportExcel()
+    {
+        $this->loadData();
+        return Excel::download(new ProfitLossExport(
+            $this->revenueItems,
+            $this->expenseItems,
+            $this->getTotalRevenue(),
+            $this->getTotalExpenses(),
+            $this->getNetProfit(),
+            $this->startDate,
+            $this->endDate
+        ), 'profit-loss.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $this->loadData();
+        $pdf = Pdf::loadView('pdf.profit-loss', [
+            'revenueItems' => $this->revenueItems,
+            'expenseItems' => $this->expenseItems,
+            'totalRevenue' => $this->getTotalRevenue(),
+            'totalExpenses' => $this->getTotalExpenses(),
+            'netProfit' => $this->getNetProfit(),
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate,
+        ]);
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'profit-loss.pdf');
+    }
 }; ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
 
-    <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Start Date') }}</label>
-                    <input type="date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
-                </div>
-                <div class="relative">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('End Date') }}</label>
-                    <input type="date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
-                </div>
-                <div class="relative self-end">
-                    <button class="px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        {{ __('Apply') }}
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('Profit & Loss Statement') }}</h2>
+        <div class="flex gap-2">
+            <input wire:model.live="startDate" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <span class="self-center text-gray-500">-</span>
+            <input wire:model.live="endDate" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+
+            <div x-data="{ open: false }" class="relative ml-2">
+                <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center">
+                    <i class="fas fa-file-export mr-2"></i> Export
+                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                    </button>
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
                     </button>
                 </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-print mr-2"></i> {{ __('Print') }}
-                </button>
-                <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-file-excel mr-2"></i> {{ __('Excel') }}
-                </button>
             </div>
         </div>
     </div>

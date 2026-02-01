@@ -61,14 +61,21 @@ class extends Component
 
     public function exportExcel()
     {
-        return Excel::download(new ProductsExport, 'inventory.xlsx');
+        return Excel::download(new ProductsExport($this->search), 'inventory.xlsx');
     }
 
     public function exportPdf()
     {
-        $products = Product::all()->map(fn($product) => $this->sanitizeProduct($product));
+        $products = Product::query()
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%'.$this->search.'%')->orWhere('sku', 'like', '%'.$this->search.'%'))
+            ->orderBy('name')
+            ->get()
+            ->map(fn($product) => $this->sanitizeProduct($product));
+
         $pdf = Pdf::loadView('pdf.inventory', compact('products'));
-        return $pdf->download('inventory.pdf');
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'inventory.pdf');
     }
 
     public function openStockAdjustment()

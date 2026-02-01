@@ -6,6 +6,9 @@ use Livewire\Volt\Component;
 use App\Models\Transaction;
 use Livewire\WithPagination;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\TransactionsExport;
 
 new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class extends Component {
     use WithPagination;
@@ -61,6 +64,30 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
     public function updatingTypeFilter()
     {
         $this->resetPage();
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new TransactionsExport($this->search, $this->typeFilter), 'transactions.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $transactions = Transaction::query()
+            ->when($this->search, fn($q) => $q->where(function($sub) {
+                $sub->where('description', 'like', '%'.$this->search.'%')
+                    ->orWhere('category', 'like', '%'.$this->search.'%')
+                    ->orWhere('reference_number', 'like', '%'.$this->search.'%');
+            }))
+            ->when($this->typeFilter && $this->typeFilter !== 'All Types', fn($q) => $q->where('type', $this->typeFilter))
+            ->latest('date')
+            ->latest('created_at')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.transactions', compact('transactions'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'transactions.pdf');
     }
 
     public function create()
@@ -130,16 +157,56 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
         $transaction->delete();
         $this->dispatch('notify', __('Transaction deleted successfully!'));
     }
+
+    public function exportExcel()
+    {
+        return Excel::download(new TransactionsExport($this->search, $this->typeFilter), 'transactions.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $transactions = Transaction::query()
+            ->when($this->search, fn($q) => $q->where(function($sub) {
+                $sub->where('description', 'like', '%'.$this->search.'%')
+                    ->orWhere('category', 'like', '%'.$this->search.'%')
+                    ->orWhere('reference_number', 'like', '%'.$this->search.'%');
+            }))
+            ->when($this->typeFilter && $this->typeFilter !== 'All Types', fn($q) => $q->where('type', $this->typeFilter))
+            ->latest('date')
+            ->latest('created_at')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.transactions', compact('transactions'));
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'transactions.pdf');
+    }
 };
 ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">{{ __('Financial Transactions') }}</h2>
-        <button wire:click="create"
-            class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-            <i class="fas fa-plus mr-2"></i> {{ __('Add Transaction') }}
-        </button>
+        <div class="flex gap-2">
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" @click.away="open = false" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors shadow-sm">
+                    <i class="fas fa-file-export"></i> {{ __('Export') }}
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-excel text-green-600 mr-2"></i> {{ __('Export Excel') }}
+                    </button>
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> {{ __('Export PDF') }}
+                    </button>
+                </div>
+            </div>
+            <button wire:click="create"
+                class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                <i class="fas fa-plus mr-2"></i> {{ __('Add Transaction') }}
+            </button>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
