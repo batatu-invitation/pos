@@ -20,5 +20,6 @@ class Category extends Model
         'description',
         'tenant_id',
         'user_id',
+        'input_id',
     ];
 }

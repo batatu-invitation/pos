@@ -11,6 +11,7 @@ use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CategoriesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\ApplicationSetting;
 
 new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kategori - Modern POS')] class extends Component {
     use WithPagination;
@@ -78,12 +79,17 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
     {
         $this->validate();
 
+        $user = auth()->user();
+
+        $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+
         $data = [
             'name' => $this->name,
             'icon' => $this->icon,
             'color' => $this->color,
             'description' => $this->description,
-            'user_id' => auth()->user()->id,
+            'user_id' => $hasSettings ? $user->created_by : $user->id,
+            'input_id' => $user->id,
         ];
 
         if ($this->editingCategoryId) {

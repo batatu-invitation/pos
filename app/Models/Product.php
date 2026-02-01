@@ -24,6 +24,7 @@ class Product extends Model
         'icon',
         'tenant_id',
         'user_id',
+        'input_id'
     ];
 
     public function category()

@@ -11,6 +11,7 @@ use Livewire\WithFileUploads;
 use Livewire\Attributes\On;
 use Buglinjo\LaravelWebp\Webp;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ApplicationSetting;
 
 new #[Layout('components.layouts.app')]
 #[Title('Produk - Modern POS')]
@@ -110,6 +111,10 @@ class extends Component
             'icon' => 'nullable',
             'image' => 'nullable|image|max:2048', // 2MB Max
         ]);
+        $user = auth()->user();
+
+        $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+
 
         $price = str_replace('.', '', $this->price);
         $cost = str_replace('.', '', $this->cost);
@@ -124,11 +129,11 @@ class extends Component
             'price' => $price,
             'cost' => $cost,
             'margin' => $this->margin,
-            'margin' => $this->margin,
             'stock' => $this->stock,
             'status' => $this->status,
             'icon' => $this->icon,
-            'user_id' => auth()->user()->id,
+            'user_id' => $hasSettings ? $user->created_by : $user->id,
+            'input_id' =>  $user->id,
         ];
 
         // Handle Image Upload with WebP Conversion

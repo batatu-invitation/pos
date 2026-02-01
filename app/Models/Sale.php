@@ -25,6 +25,7 @@ class Sale extends Model
         'status',
         'notes',
         'tenant_id',
+        'input_id'
     ];
 
     protected $casts = [

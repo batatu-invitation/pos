@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('sale_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('sale_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('product_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('sale_id')->constrained('sales')->cascadeOnDelete();
+            $table->foreignUuid('product_id')->nullable()->constrained('products')->nullOnDelete();
             $table->string('product_name'); // Snapshot of name
             $table->integer('quantity');
             $table->decimal('price', 10, 2); // Unit price at time of sale

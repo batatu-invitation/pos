@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('invoice_number')->unique();
-            $table->foreignUuid('user_id')->constrained(); // Cashier
-            $table->foreignUuid('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('user_id')->constrained('users')->nullOnDelete(); // Cashier
+            $table->foreignUuid('customer_id')->nullable()->constrained('customers')->nullOnDelete();
             $table->decimal('subtotal', 10, 2);
             $table->decimal('tax', 10, 2)->default(0);
             $table->decimal('discount', 10, 2)->default(0);

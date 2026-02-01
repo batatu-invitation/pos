@@ -12,6 +12,7 @@ use App\Models\Tax;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
+use App\Models\ApplicationSetting;
 
 new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] class extends Component {
     use WithPagination;
@@ -104,7 +105,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             session()->forget('restored_order');
             $this->dispatch('notify', __('Order restored successfully!'));
         } else {
-             $this->selectedCustomerName = __('Walk-in Customer');
+            $this->selectedCustomerName = __('Walk-in Customer');
         }
     }
 
@@ -247,6 +248,10 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
     public function saveNewCustomer()
     {
+        $user = auth()->user();
+
+        $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+
         $this->validate([
             'newCustomer.name' => 'required|string|max:255',
             'newCustomer.email' => 'nullable|email|max:255',
@@ -258,6 +263,8 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             'email' => $this->newCustomer['email'],
             'phone' => $this->newCustomer['phone'],
             'address' => $this->newCustomer['address'],
+            'user_id' => $hasSettings ? $user->created_by : $user->id,
+            'input_id' => $user->id,
         ]);
 
         $this->selectCustomer($customer->id, $customer->name);
@@ -273,10 +280,16 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             return;
         }
 
+
         DB::transaction(function () {
+            $user = auth()->user();
+
+            $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+
             $sale = Sale::create([
                 'invoice_number' => 'HOLD-' . strtoupper(uniqid()),
-                'user_id' => auth()->id(),
+                'user_id' => $hasSettings ? $user->created_by : $user->id,
+                'input_id' => $user->id,
                 'customer_id' => $this->selectedCustomerId,
                 'subtotal' => $this->subtotal,
                 'tax_id' => $this->selectedTaxId,
@@ -497,7 +510,8 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                         <div class="p-3">
                             <h3 class="text-sm font-bold text-gray-800 truncate">{{ $product->name }}</h3>
                             <p class="text-xs text-gray-500 mt-1">
-                                {{ $product->stock > 0 ? $product->stock . ' ' . __('in stock') : __('Out of stock') }}</p>
+                                {{ $product->stock > 0 ? $product->stock . ' ' . __('in stock') : __('Out of stock') }}
+                            </p>
                         </div>
                     </div>
                 @empty
@@ -584,11 +598,9 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div class="flex items-start justify-between pb-3 border-b border-gray-100">
                     <div class="flex items-start space-x-3">
                         @if ($item['image'])
-                            <img src="{{ Storage::url($item['image']) }}" class="w-12 h-12 rounded-lg object-cover"
-                                alt="Item">
+                            <img src="{{ Storage::url($item['image']) }}" class="w-12 h-12 rounded-lg object-cover" alt="Item">
                         @else
-                            <div
-                                class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                            <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
                                 <i class="fas fa-image"></i>
                             </div>
                         @endif
@@ -635,13 +647,14 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <div class="flex items-center">
                         <span class="mr-2">{{ __('Tax') }}</span>
                         @if($taxes->count() > 1)
-                            <select wire:model.live="selectedTaxId" class="text-xs border-gray-300 rounded p-1 pr-6 py-0 focus:ring-indigo-500 focus:border-indigo-500">
+                            <select wire:model.live="selectedTaxId"
+                                class="text-xs border-gray-300 rounded p-1 pr-6 py-0 focus:ring-indigo-500 focus:border-indigo-500">
                                 @foreach($taxes as $t)
                                     <option value="{{ $t->id }}">{{ $t->name }} ({{ number_format($t->rate, 0) }}%)</option>
                                 @endforeach
                             </select>
                         @else
-                             <span>({{ number_format($this->taxRate, 0) }}%)</span>
+                            <span>({{ number_format($this->taxRate, 0) }}%)</span>
                         @endif
                     </div>
                     <span>Rp. {{ number_format($this->tax, 0, ',', '.') }}</span>
@@ -717,13 +730,14 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Shipping Cost') }}</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Shipping Cost') }}
+                        </h3>
                         <div class="mt-2">
                             <div class="relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <span class="text-gray-500 sm:text-sm">Rp. </span>
                                 </div>
-                                <input type="text"  wire:model.live.="shipping" step="0.01"
+                                <input type="text" wire:model.live.="shipping" step="0.01"
                                     class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9  p-4 sm:text-sm border border-gray-300 rounded-md"
                                     placeholder="0.00">
                             </div>
@@ -757,8 +771,8 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <span class="text-gray-500 sm:text-sm">Rp. </span>
                                 </div>
-                                <input type="text" x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '')" wire:model.live.debounce.500ms="discount"
-                                    step="0.01"
+                                <input type="text" x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '')"
+                                    wire:model.live.debounce.500ms="discount" step="0.01"
                                     class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9  p-4 sm:text-sm  border border-gray-300 rounded-md"
                                     placeholder="0.00">
                             </div>
@@ -786,7 +800,8 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">{{ __('New Customer') }}
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                            {{ __('New Customer') }}
                         </h3>
                         <div class="space-y-4">
                             <div>
@@ -846,15 +861,16 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 <div
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">{{ __('Held Orders') }}</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                            {{ __('Held Orders') }}</h3>
                         <div class="overflow-y-auto max-h-96">
                             @forelse($this->heldOrders as $order)
-                                <div
-                                    class="flex items-center justify-between p-4 mb-2 border rounded-lg hover:bg-gray-50">
+                                <div class="flex items-center justify-between p-4 mb-2 border rounded-lg hover:bg-gray-50">
                                     <div>
                                         <p class="font-bold text-gray-800">{{ $order->invoice_number }}</p>
                                         <p class="text-sm text-gray-500">{{ $order->created_at->diffForHumans() }} -
-                                            {{ $order->customer ? $order->customer->name : __('Walk-in') }}</p>
+                                            {{ $order->customer ? $order->customer->name : __('Walk-in') }}
+                                        </p>
                                         <p class="text-xs text-gray-400">Total: Rp.
                                             {{ number_format($order->total_amount, 0, ',', '.') }} | Note: {{ $order->notes }}
                                         </p>
@@ -885,12 +901,14 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
     <!-- Payment Modal -->
     @if ($showPaymentModal)
-        <div wire:transition.opacity class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div wire:transition.opacity class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+            aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
                     wire:click="$set('showPaymentModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
+                <div
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
 
                     <div class="flex flex-col md:flex-row h-[80vh]">
                         <!-- Left: Order Summary -->
@@ -898,7 +916,8 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                             <h2 class="text-xl font-bold text-gray-800 mb-6">{{ __('Order Summary') }}</h2>
 
                             <div class="mb-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-                                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">{{ __('Customer') }}</p>
+                                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">
+                                    {{ __('Customer') }}</p>
                                 <div class="flex items-center text-gray-800 font-medium">
                                     <i class="fas fa-user-circle text-indigo-500 mr-2 text-lg"></i>
                                     {{ $selectedCustomerName }}
@@ -907,13 +926,15 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
                             <div class="flex-1 overflow-y-auto space-y-4 pr-2">
                                 @foreach($cart as $item)
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <p class="font-medium text-gray-800">{{ $item['name'] }}</p>
-                                        <p class="text-sm text-gray-500">{{ $item['quantity'] }} x Rp. {{ number_format($item['price'], 0, ',', '.') }}</p>
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <p class="font-medium text-gray-800">{{ $item['name'] }}</p>
+                                            <p class="text-sm text-gray-500">{{ $item['quantity'] }} x Rp.
+                                                {{ number_format($item['price'], 0, ',', '.') }}</p>
+                                        </div>
+                                        <span class="font-bold text-gray-800">Rp.
+                                            {{ number_format($item['quantity'] * $item['price'], 0, ',', '.') }}</span>
                                     </div>
-                                    <span class="font-bold text-gray-800">Rp. {{ number_format($item['quantity'] * $item['price'], 0, ',', '.') }}</span>
-                                </div>
                                 @endforeach
                             </div>
 
@@ -923,20 +944,20 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                     <span>Rp. {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                                 </div>
                                 @if($discount > 0)
-                                <div class="flex justify-between text-red-500">
-                                    <span>{{ __('Discount') }}</span>
-                                    <span>-Rp. {{ number_format($discount, 0, ',', '.') }}</span>
-                                </div>
+                                    <div class="flex justify-between text-red-500">
+                                        <span>{{ __('Discount') }}</span>
+                                        <span>-Rp. {{ number_format($discount, 0, ',', '.') }}</span>
+                                    </div>
                                 @endif
                                 <div class="flex justify-between text-gray-600">
                                     <span>{{ __('Tax') }}</span>
                                     <span>Rp. {{ number_format($this->tax, 0, ',', '.') }}</span>
                                 </div>
                                 @if($shipping > 0)
-                                <div class="flex justify-between text-gray-600">
-                                    <span>{{ __('Shipping') }}</span>
-                                    <span>Rp. {{ number_format($shipping, 0, ',', '.') }}</span>
-                                </div>
+                                    <div class="flex justify-between text-gray-600">
+                                        <span>{{ __('Shipping') }}</span>
+                                        <span>Rp. {{ number_format($shipping, 0, ',', '.') }}</span>
+                                    </div>
                                 @endif
                                 <div class="flex justify-between text-2xl font-bold text-gray-900 pt-2">
                                     <span>{{ __('Total') }}</span>
@@ -944,21 +965,22 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                                 </div>
                             </div>
 
-                            <button wire:click="$set('showPaymentModal', false)" class="mt-6 text-center text-indigo-600 font-medium hover:text-indigo-800">
+                            <button wire:click="$set('showPaymentModal', false)"
+                                class="mt-6 text-center text-indigo-600 font-medium hover:text-indigo-800">
                                 <i class="fas fa-arrow-left mr-2"></i> {{ __('Back to POS') }}
                             </button>
                         </div>
 
                         <!-- Right: Payment Interface -->
                         <div class="w-full md:w-2/3 p-6 flex flex-col">
-                             <!-- Payment Methods -->
+                            <!-- Payment Methods -->
                             <div class="grid grid-cols-4 gap-4 mb-8 overflow-y-auto max-h-[240px]">
                                 @foreach($paymentMethods as $method)
-                                <button wire:click="selectPaymentMethod('{{ $method['id'] }}')"
+                                    <button wire:click="selectPaymentMethod('{{ $method['id'] }}')"
                                         class="flex flex-col items-center justify-center p-4 rounded-xl border-2 {{ $paymentMethod == $method['id'] ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-indigo-300 hover:bg-gray-50' }} transition-all">
-                                    <i class="fas {{ $method['icon'] }} text-2xl mb-2"></i>
-                                    <span class="font-medium text-center text-sm">{{ $method['name'] }}</span>
-                                </button>
+                                        <i class="fas {{ $method['icon'] }} text-2xl mb-2"></i>
+                                        <span class="font-medium text-center text-sm">{{ $method['name'] }}</span>
+                                    </button>
                                 @endforeach
                             </div>
 
@@ -966,26 +988,36 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                             <div class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
 
                                 <div class="mb-6">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Received Amount') }}</label>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 mb-2">{{ __('Received Amount') }}</label>
                                     <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 text-xl font-bold">Rp.</span>
-                                        <input type="number" step="0.01" wire:model.live="receivedAmount" class="w-full pl-12 pr-4 py-4 text-3xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <span
+                                            class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 text-xl font-bold">Rp.</span>
+                                        <input type="number" step="0.01" wire:model.live="receivedAmount"
+                                            class="w-full pl-12 pr-4 py-4 text-3xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-4 gap-3 mb-6">
-                                    <button wire:click="setReceivedAmount({{ $this->total }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ __('Exact') }}</button>
-                                    <button wire:click="setReceivedAmount({{ ceil($this->total / 1000) * 1000 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 1000) * 1000, 0) }}</button>
-                                    <button wire:click="setReceivedAmount({{ ceil($this->total / 5000) * 5000 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 5000) * 5000, 0) }}</button>
-                                    <button wire:click="setReceivedAmount({{ ceil($this->total / 10000) * 10000 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 10000) * 10000, 0) }}</button>
+                                    <button wire:click="setReceivedAmount({{ $this->total }})"
+                                        class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ __('Exact') }}</button>
+                                    <button wire:click="setReceivedAmount({{ ceil($this->total / 1000) * 1000 }})"
+                                        class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 1000) * 1000, 0) }}</button>
+                                    <button wire:click="setReceivedAmount({{ ceil($this->total / 5000) * 5000 }})"
+                                        class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 5000) * 5000, 0) }}</button>
+                                    <button wire:click="setReceivedAmount({{ ceil($this->total / 10000) * 10000 }})"
+                                        class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ number_format(ceil($this->total / 10000) * 10000, 0) }}</button>
                                 </div>
 
-                                <div class="bg-green-50 rounded-xl p-4 flex justify-between items-center mb-8 border border-green-100">
+                                <div
+                                    class="bg-green-50 rounded-xl p-4 flex justify-between items-center mb-8 border border-green-100">
                                     <span class="text-green-800 font-medium">{{ __('Change Return') }}</span>
-                                    <span class="text-2xl font-bold text-green-700">Rp. {{ number_format($this->change, 0, ',', '.') }}</span>
+                                    <span class="text-2xl font-bold text-green-700">Rp.
+                                        {{ number_format($this->change, 0, ',', '.') }}</span>
                                 </div>
 
-                                <button onclick="confirmPayment()" wire:loading.attr="disabled" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-xl text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                                <button onclick="confirmPayment()" wire:loading.attr="disabled"
+                                    class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-xl text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
                                     <span wire:loading.remove>{{ __('Complete Payment') }}</span>
                                     <span wire:loading>{{ __('Processing...') }}</span>
                                 </button>
@@ -1000,127 +1032,138 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
     <!-- Receipt Modal -->
     @if ($showReceiptModal && $lastSale)
-    <div wire:transition.opacity class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div wire:transition.opacity class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+            aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div class="inline-block align-bottom transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div
+                    class="inline-block align-bottom transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
 
-                <!-- Printable Receipt Section (Hidden on Screen) -->
-                <div id="printable-area" class="hidden print:block bg-white p-4 max-w-[80mm] mx-auto text-black font-mono text-sm text-left">
-                    <div class="text-center mb-4">
-                        <h2 class="text-xl font-bold uppercase">POS Pro Store</h2>
-                        <p class="text-xs">123 Business Street, City, Country</p>
-                        <p class="text-xs">Tel: +1 234 567 890</p>
-                    </div>
-
-                    <div class="border-b-2 border-dashed border-black my-2"></div>
-
-                    <div class="flex justify-between text-xs mb-2">
-                        <span>{{ __('Date') }}: {{ $lastSale->created_at->format('Y-m-d') }}</span>
-                        <span>{{ __('Time') }}: {{ $lastSale->created_at->format('h:i A') }}</span>
-                    </div>
-                    <div class="flex justify-between text-xs mb-2">
-                        <span>{{ __('Order') }}: {{ $lastSale->invoice_number }}</span>
-                        <span>{{ __('Cashier') }}: {{ auth()->user()->name ?? 'Admin' }}</span>
-                    </div>
-
-                    <div class="border-b-2 border-dashed border-black my-2"></div>
-
-                    <div class="flex flex-col gap-1 text-xs">
-                        @foreach($lastSale->items as $item)
-                        <div class="flex justify-between">
-                            <span>{{ $item->quantity }} x {{ $item->product_name }}</span>
-                            <span>Rp. {{ number_format($item->total_price, 0, ',', '.') }}</span>
+                    <!-- Printable Receipt Section (Hidden on Screen) -->
+                    <div id="printable-area"
+                        class="hidden print:block bg-white p-4 max-w-[80mm] mx-auto text-black font-mono text-sm text-left">
+                        <div class="text-center mb-4">
+                            <h2 class="text-xl font-bold uppercase">POS Pro Store</h2>
+                            <p class="text-xs">123 Business Street, City, Country</p>
+                            <p class="text-xs">Tel: +1 234 567 890</p>
                         </div>
-                        @endforeach
-                    </div>
 
-                    <div class="border-b-2 border-dashed border-black my-2"></div>
+                        <div class="border-b-2 border-dashed border-black my-2"></div>
 
-                    <div class="flex justify-between font-bold text-sm">
-                        <span>{{ __('TOTAL') }}</span>
-                        <span>Rp. {{ number_format($lastSale->total_amount, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="flex justify-between text-xs mt-1">
-                        <span>{{ __('CASH') }}</span>
-                        <span>Rp. {{ number_format($lastSale->cash_received, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="flex justify-between text-xs mt-1">
-                        <span>{{ __('CHANGE') }}</span>
-                        <span>Rp. {{ number_format($lastSale->change_amount, 0, ',', '.') }}</span>
-                    </div>
+                        <div class="flex justify-between text-xs mb-2">
+                            <span>{{ __('Date') }}: {{ $lastSale->created_at->format('Y-m-d') }}</span>
+                            <span>{{ __('Time') }}: {{ $lastSale->created_at->format('h:i A') }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs mb-2">
+                            <span>{{ __('Order') }}: {{ $lastSale->invoice_number }}</span>
+                            <span>{{ __('Cashier') }}: {{ auth()->user()->name ?? 'Admin' }}</span>
+                        </div>
 
-                    <div class="border-b-2 border-dashed border-black my-4"></div>
+                        <div class="border-b-2 border-dashed border-black my-2"></div>
 
-                    <div class="text-center text-xs">
-                        <p class="mb-2">{{ __('Thank you for your purchase!') }}</p>
-                        <p>{{ __('Please visit us again.') }}</p>
-                        <div class="mt-4 mx-auto max-w-[150px]">
-                            <!-- Barcode Placeholder -->
-                            <div class="h-8 bg-black"></div>
-                            <p class="text-[10px] mt-1">{{ $lastSale->invoice_number }}</p>
+                        <div class="flex flex-col gap-1 text-xs">
+                            @foreach($lastSale->items as $item)
+                                <div class="flex justify-between">
+                                    <span>{{ $item->quantity }} x {{ $item->product_name }}</span>
+                                    <span>Rp. {{ number_format($item->total_price, 0, ',', '.') }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="border-b-2 border-dashed border-black my-2"></div>
+
+                        <div class="flex justify-between font-bold text-sm">
+                            <span>{{ __('TOTAL') }}</span>
+                            <span>Rp. {{ number_format($lastSale->total_amount, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span>{{ __('CASH') }}</span>
+                            <span>Rp. {{ number_format($lastSale->cash_received, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span>{{ __('CHANGE') }}</span>
+                            <span>Rp. {{ number_format($lastSale->change_amount, 0, ',', '.') }}</span>
+                        </div>
+
+                        <div class="border-b-2 border-dashed border-black my-4"></div>
+
+                        <div class="text-center text-xs">
+                            <p class="mb-2">{{ __('Thank you for your purchase!') }}</p>
+                            <p>{{ __('Please visit us again.') }}</p>
+                            <div class="mt-4 mx-auto max-w-[150px]">
+                                <!-- Barcode Placeholder -->
+                                <div class="h-8 bg-black"></div>
+                                <p class="text-[10px] mt-1">{{ $lastSale->invoice_number }}</p>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Screen UI -->
+                    <div class="print:hidden">
+                        <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-6 text-left">
+                            <div class="bg-green-500 p-8 text-center text-white">
+                                <div
+                                    class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                                    <i class="fas fa-check text-3xl"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold">{{ __('Payment Successful!') }}</h2>
+                                <p class="text-green-100 mt-1">{{ __('Transaction') }} {{ $lastSale->invoice_number }}</p>
+                            </div>
+
+                            <div class="p-8">
+                                <div class="text-center mb-6">
+                                    <p class="text-gray-500 text-sm">{{ __('Total Paid') }}</p>
+                                    <p class="text-3xl font-bold text-gray-900">Rp.
+                                        {{ number_format($lastSale->total_amount, 0, ',', '.') }}</p>
+                                    <p class="text-gray-400 text-xs mt-1">{{ __('Via') }}
+                                        {{ ucfirst($lastSale->payment_method) }}</p>
+                                </div>
+
+                                <div class="border-t border-b border-gray-100 py-4 mb-6 space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">{{ __('Date') }}</span>
+                                        <span
+                                            class="font-medium text-gray-900">{{ $lastSale->created_at->format('M d, Y, h:i A') }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">{{ __('Customer') }}</span>
+                                        <span
+                                            class="font-medium text-gray-900">{{ $lastSale->customer ? $lastSale->customer->name : __('Walk-in Customer') }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">{{ __('Cashier') }}</span>
+                                        <span class="font-medium text-gray-900">{{ auth()->user()->name ?? 'Admin' }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <button onclick="printReceipt('{{ route('pos.receipt.print', $lastSale->id) }}')"
+                                        class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-colors flex items-center justify-center">
+                                        <i class="fas fa-print mr-2"></i> {{ __('Print Receipt (PDF)') }}
+                                    </button>
+                                    <button
+                                        class="w-full py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors flex items-center justify-center">
+                                        <i class="fas fa-envelope mr-2"></i> {{ __('Email Receipt') }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button wire:click="newSale"
+                                class="inline-flex items-center text-white hover:text-gray-200 font-medium">
+                                <i class="fas fa-arrow-left mr-2"></i> {{ __('New Sale') }}
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
-
-                <!-- Screen UI -->
-                <div class="print:hidden">
-                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-6 text-left">
-                        <div class="bg-green-500 p-8 text-center text-white">
-                            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                                <i class="fas fa-check text-3xl"></i>
-                            </div>
-                            <h2 class="text-2xl font-bold">{{ __('Payment Successful!') }}</h2>
-                            <p class="text-green-100 mt-1">{{ __('Transaction') }} {{ $lastSale->invoice_number }}</p>
-                        </div>
-
-                        <div class="p-8">
-                            <div class="text-center mb-6">
-                                <p class="text-gray-500 text-sm">{{ __('Total Paid') }}</p>
-                                <p class="text-3xl font-bold text-gray-900">Rp. {{ number_format($lastSale->total_amount, 0, ',', '.') }}</p>
-                                <p class="text-gray-400 text-xs mt-1">{{ __('Via') }} {{ ucfirst($lastSale->payment_method) }}</p>
-                            </div>
-
-                            <div class="border-t border-b border-gray-100 py-4 mb-6 space-y-2">
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">{{ __('Date') }}</span>
-                                    <span class="font-medium text-gray-900">{{ $lastSale->created_at->format('M d, Y, h:i A') }}</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">{{ __('Customer') }}</span>
-                                    <span class="font-medium text-gray-900">{{ $lastSale->customer ? $lastSale->customer->name : __('Walk-in Customer') }}</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">{{ __('Cashier') }}</span>
-                                    <span class="font-medium text-gray-900">{{ auth()->user()->name ?? 'Admin' }}</span>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <button onclick="printReceipt('{{ route('pos.receipt.print', $lastSale->id) }}')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-colors flex items-center justify-center">
-                                    <i class="fas fa-print mr-2"></i> {{ __('Print Receipt (PDF)') }}
-                                </button>
-                                <button class="w-full py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors flex items-center justify-center">
-                                    <i class="fas fa-envelope mr-2"></i> {{ __('Email Receipt') }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center">
-                        <button wire:click="newSale" class="inline-flex items-center text-white hover:text-gray-200 font-medium">
-                            <i class="fas fa-arrow-left mr-2"></i> {{ __('New Sale') }}
-                        </button>
-                    </div>
-                </div>
-
             </div>
         </div>
-    </div>
     @endif
-  <script>
+    <script>
         function printReceipt(url) {
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';

@@ -11,7 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Duplicate migration file, do nothing to avoid conflict
+        Schema::table('sales', function (Blueprint $table) {
+            if (!Schema::hasColumn('sales', 'input_id')) {
+                $table->foreignUuid('input_id')->nullable()->after('user_id')->constrained('users')->nullOnDelete();
+            }
+        });
     }
 
     /**
@@ -19,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('sales', function (Blueprint $table) {
+            //
+        });
     }
 };
