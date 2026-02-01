@@ -65,4 +65,14 @@ class User extends Authenticatable
     {
         return "{$this->first_name} {$this->last_name}";
     }
+
+    // public function getEffectiveIdAttribute()
+    // {
+    //     // Jika created_by tidak null, gunakan created_by. Jika null, gunakan ID sendiri.
+    //     return $this->created_by ?? $this->id;
+    // }
+    public function getKey()
+{
+    return $this->created_by ?? $this->attributes['id'];
+}
 }

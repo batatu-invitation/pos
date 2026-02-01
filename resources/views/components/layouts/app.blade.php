@@ -58,6 +58,7 @@
                         <i class="fas fa-home w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Dashboard') }}</span>
                     </a>
+                    @role(['Super Admin', 'Manager', 'Cashier'])
                     <a wire:navigate href="{{ route('pos.visual') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('pos.visual') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i
@@ -74,7 +75,8 @@
                         <i class="fas fa-desktop w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('POS Terminal') }}</span>
                     </a>
-
+                    @endrole
+                    @role(['Super Admin', 'Manager', 'Inventory Manager'])
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Inventory') }}</p>
                     <a wire:navigate href="{{ route('inventory.products') }}"
@@ -102,6 +104,7 @@
                         <i class="fas fa-palette w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Colors') }}</span>
                     </a>
+                    @endrole
                     <a wire:navigate href="{{ route('admin.suppliers') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('admin.suppliers') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-truck w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
@@ -158,6 +161,7 @@
                         <i class="fas fa-balance-scale w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Balance Sheet') }}</span>
                     </a>
+                    @role(['Super Admin', 'Manager'])
                     <a wire:navigate href="{{ route('analytics.tax-report') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.tax-report') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-university w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
@@ -171,6 +175,7 @@
                         <i class="fas fa-coins w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Income & Expense') }}</span>
                     </a>
+                    @endif
                     @role('Super Admin')
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Super Admin') }}</p>

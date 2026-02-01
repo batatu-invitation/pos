@@ -25,12 +25,27 @@ class CheckSetupCompletion
         }
 
         // Check if user has specific roles and needs setup
-        // We check if they have 'Super Admin' or 'Manager' role
-        if ($user && ($user->hasRole(['Super Admin', 'Manager']) || in_array($user->role, ['Super Admin', 'Manager', 'super_admin', 'manager']))) {
+        // Sekarang kita HANYA mengecek Manager. Super Admin akan otomatis lewat (skip).
+        if ($user && ($user->hasRole('Manager') || in_array($user->role, ['Manager', 'manager']))) {
+
             $hasSettings = ApplicationSetting::where('user_id', $user->id)->exists();
-            
+
             if (!$hasSettings) {
                 return redirect()->route('setup');
+            }
+        }
+
+        // Tentukan siapa yang TIDAK perlu setup (Pengecualian)
+        $excludedRoles = ['Super Admin', 'Manager'];
+
+        // Cek apakah user login DAN user TIDAK punya role pengecualian tersebut
+        if ($user && !$user->hasAnyRole($excludedRoles)) {
+
+            // Cek apakah setting sudah ada
+            $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+
+            if (!$hasSettings) {
+                return redirect()->route('restrictedaccess');
             }
         }
 

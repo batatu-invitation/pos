@@ -38,4 +38,8 @@ Route::middleware('auth')->group(function () {
         session()->regenerateToken();
         return redirect('/');
     })->name('logout');
+
+    Route::get('restrictedaccess', function () {
+        return view('restrictedaccess');
+    })->name('restrictedaccess');
 });

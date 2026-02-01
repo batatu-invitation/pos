@@ -5,12 +5,14 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use App\Models\ApplicationSetting;
 use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 
 new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')] class extends Component {
     public $storeName;
     public $currency;
     public $phone;
     public $email;
+    public $code_transaction;
     public $streetAddress;
     public $city;
     public $zipCode;
@@ -96,6 +98,7 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
 
         $this->phone = $settings['store_phone'] ?? '+1 234 567 890';
         $this->email = $settings['store_email'] ?? 'support@modernpos.com';
+        $this->code_transaction = $settings['code_transaction'] ?? 'TRX';
         $this->streetAddress = $settings['store_address'] ?? '123 Main St';
         $this->city = $settings['store_city'] ?? 'New York';
         $this->zipCode = $settings['store_zip'] ?? '10001';
@@ -103,6 +106,10 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
 
     public function save()
     {
+        $user = Auth::user();
+
+        $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+
         // Ambil key yang dipilih, misal: "IDR (Rp)"
         $selectedCurrency = $this->currency;
 
@@ -119,13 +126,21 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
             'currency_code' => $currencyCode, // Hasilnya: Rp
             'store_phone' => $this->phone,
             'store_email' => $this->email,
+            'code_transaction' => $this->code_transaction,
             'store_address' => $this->streetAddress,
             'store_city' => $this->city,
             'store_zip' => $this->zipCode,
         ];
 
-        foreach ($settings as $key => $value) {
-            ApplicationSetting::updateOrCreate(['key' => $key, 'user_id' => auth()->id()], ['value' => $value]);
+
+        if ($hasSettings) {
+            foreach ($settings as $key => $value) {
+                ApplicationSetting::updateOrCreate(['key' => $key, 'user_id' => $user->created_by], ['value' => $value]);
+            }
+        } else {
+            foreach ($settings as $key => $value) {
+                ApplicationSetting::updateOrCreate(['key' => $key, 'user_id' => $user->id], ['value' => $value]);
+            }
         }
 
         session()->flash('message', 'Settings saved successfully.');
@@ -139,7 +154,7 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        
+
 
         <div class="p-6">
             <form wire:submit="save" class="space-y-6">
@@ -153,7 +168,8 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Currency') }}</label>
-                            <select wire:model="currency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                            <select wire:model="currency"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                                 @foreach ($currencies as $code => $name)
                                     <option value="{{ $code }}">{{ $code }} - {{ $name }}
                                     </option>
@@ -172,12 +188,19 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Timezone') }}</label>
-                            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                            <select
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                                 @foreach ($timezones as $offset => $name)
                                     <option value="{{ $offset }}">{{ $offset }} - {{ $name }}
                                     </option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 mb-1">{{ __('Code Transaction') }}</label>
+                            <input wire:model="code_transaction" type="text"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                         </div>
                     </div>
                 </div>
@@ -208,11 +231,12 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
 
                 <div class="pt-4 flex justify-end">
                     <button type="submit"
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"><i class="fas fa-save mr-2"></i> {{ __('Save Changes') }}</button>
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"><i
+                            class="fas fa-save mr-2"></i> {{ __('Save Changes') }}</button>
                 </div>
             </form>
         </div>
     </div>
 
-    
+
 </div>

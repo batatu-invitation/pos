@@ -157,30 +157,6 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
         $transaction->delete();
         $this->dispatch('notify', __('Transaction deleted successfully!'));
     }
-
-    public function exportExcel()
-    {
-        return Excel::download(new TransactionsExport($this->search, $this->typeFilter), 'transactions.xlsx');
-    }
-
-    public function exportPdf()
-    {
-        $transactions = Transaction::query()
-            ->when($this->search, fn($q) => $q->where(function($sub) {
-                $sub->where('description', 'like', '%'.$this->search.'%')
-                    ->orWhere('category', 'like', '%'.$this->search.'%')
-                    ->orWhere('reference_number', 'like', '%'.$this->search.'%');
-            }))
-            ->when($this->typeFilter && $this->typeFilter !== 'All Types', fn($q) => $q->where('type', $this->typeFilter))
-            ->latest('date')
-            ->latest('created_at')
-            ->get();
-
-        $pdf = Pdf::loadView('pdf.transactions', compact('transactions'));
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'transactions.pdf');
-    }
 };
 ?>
 
