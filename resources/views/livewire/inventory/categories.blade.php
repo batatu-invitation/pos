@@ -81,7 +81,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 
         $user = auth()->user();
 
-        $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+        // $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
 
         $data = [
             'name' => $this->name,
