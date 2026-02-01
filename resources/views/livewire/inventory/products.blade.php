@@ -113,7 +113,7 @@ class extends Component
         ]);
         $user = auth()->user();
 
-        $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+        // $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
 
 
         $price = str_replace('.', '', $this->price);
