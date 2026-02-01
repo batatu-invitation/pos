@@ -132,7 +132,7 @@ class extends Component
             'stock' => $this->stock,
             'status' => $this->status,
             'icon' => $this->icon,
-            'user_id' => $hasSettings ? $user->created_by : $user->id,
+            'user_id' => $user->created_by ? $user->created_by : $user->id,
             'input_id' =>  $user->id,
         ];
 

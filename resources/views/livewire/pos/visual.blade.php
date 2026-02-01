@@ -263,7 +263,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             'email' => $this->newCustomer['email'],
             'phone' => $this->newCustomer['phone'],
             'address' => $this->newCustomer['address'],
-            'user_id' => $hasSettings ? $user->created_by : $user->id,
+            'user_id' => $user->created_by ? $user->created_by : $user->id,
             'input_id' => $user->id,
         ]);
 
@@ -288,7 +288,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
             $sale = Sale::create([
                 'invoice_number' => 'HOLD-' . strtoupper(uniqid()),
-                'user_id' => $hasSettings ? $user->created_by : $user->id,
+                'user_id' => $user->created_by ? $user->created_by : $user->id,
                 'input_id' => $user->id,
                 'customer_id' => $this->selectedCustomerId,
                 'subtotal' => $this->subtotal,

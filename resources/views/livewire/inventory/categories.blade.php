@@ -88,7 +88,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
             'icon' => $this->icon,
             'color' => $this->color,
             'description' => $this->description,
-            'user_id' => $hasSettings ? $user->created_by : $user->id,
+            'user_id' => $user->created_by ? $user->created_by : $user->id,
             'input_id' => $user->id,
         ];
 
