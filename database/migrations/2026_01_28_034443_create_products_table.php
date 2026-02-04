@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->integer('stock')->default(0);
             $table->string('status')->default('Active');
-            $table->foreignUuid('icon')->nullable()->constrained('icons')->nullOnDelete();
+            $table->foreignUuid('icon')->nullable()->constrained('emojis')->nullOnDelete();
             $table->string('tenant_id')->nullable();
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

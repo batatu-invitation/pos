@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('application_settings', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->string('key');
             $table->text('value')->nullable();

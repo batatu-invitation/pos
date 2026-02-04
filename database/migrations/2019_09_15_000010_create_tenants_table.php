@@ -16,7 +16,7 @@ class CreateTenantsTable extends Migration
     public function up(): void
     {
         Schema::create('tenants', function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->uuid('id')->primary();
 
             // Custom columns for Branch management
             $table->string('name');
