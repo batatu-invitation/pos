@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('invoice_number')->unique();
-            $table->foreignUuid('user_id')->constrained('users')->nullOnDelete(); // Cashier
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('customer_id')->nullable()->constrained('customers')->nullOnDelete();
+            $table->foreignUuid('tenant_id')->nullable()->constrained('tenant')->nullOnDelete();
             $table->foreignUuid('tax_id')->nullable()->constrained('taxes')->nullOnDelete();
+            $table->string('invoice_number')->unique();
             $table->decimal('subtotal', 10, 2);
             $table->decimal('tax', 10, 2)->default(0);
             $table->decimal('discount', 10, 2)->default(0);
@@ -26,7 +28,6 @@ return new class extends Migration
             $table->string('payment_method'); // Cash, Card, etc.
             $table->string('status')->default('completed'); // completed, refunded, pending
             $table->text('notes')->nullable();
-            $table->string('tenant_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
