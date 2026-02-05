@@ -121,10 +121,12 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
         <h2 class="text-2xl font-bold text-gray-800"></h2>
         <div class="flex space-x-2">
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                <button @click="open = !open"
+                    class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                     <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
                 </button>
-                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
+                <div x-show="open" @click.away="open = false"
+                    class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
                     <button @click="
                         Swal.fire({
                             title: 'Export Excel?',
@@ -179,16 +181,14 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
                         class="text-gray-400 hover:text-indigo-600 transition-colors" title="{{ __('Edit') }}">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button type="button"
-                        x-on:click="$dispatch('swal:confirm', {
-                        title: '{{ __('Delete Category?') }}',
-                        text: '{{ __('Are you sure you want to delete this category?') }}',
-                        icon: 'warning',
-                        method: 'delete',
-                        params: ['{{ $category->id }}'],
-                        componentId: '{{ $this->getId() }}'
-                    })"
-                        class="text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Delete') }}">
+                    <button type="button" x-on:click="$dispatch('swal:confirm', {
+                                    title: '{{ __('Delete Category?') }}',
+                                    text: '{{ __('Are you sure you want to delete this category?') }}',
+                                    icon: 'warning',
+                                    method: 'delete',
+                                    params: ['{{ $category->id }}'],
+                                    componentId: '{{ $this->getId() }}'
+                                })" class="text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Delete') }}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -225,8 +225,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 
     <!-- Category Modal -->
     <x-modal name="category-modal" focusable>
-        <form
-            x-on:submit.prevent="$dispatch('swal:confirm', {
+        <form x-on:submit.prevent="$dispatch('swal:confirm', {
             title: '{{ $editingCategoryId ? __('Update Category?') : __('Create Category?') }}',
             text: '{{ $editingCategoryId ? __('Are you sure you want to update this category?') : __('Are you sure you want to create this new category?') }}',
             icon: 'question',
@@ -234,8 +233,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
             method: 'save',
             params: [],
             componentId: '{{ $this->getId() }}'
-        })"
-            class="p-6">
+        })" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-6">
                 {{ $editingCategoryId ? __('Edit Category') : __('Create New Category') }}
             </h2>
@@ -281,7 +279,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
                     <textarea wire:model="description" id="description"
                         class="block mt-1 p-4 w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         rows="3">
-</textarea>
+                    </textarea>
                     <x-input-error :messages="$errors->get('description')" class="mt-2" />
                 </div>
             </div>

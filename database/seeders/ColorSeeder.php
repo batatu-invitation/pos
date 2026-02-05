@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Color;
+use App\Models\User;
 
 class ColorSeeder extends Seeder
 {
@@ -12,6 +13,8 @@ class ColorSeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::where('email', 'superadmin@example.com')->first();
+
         $colors = [
             ['class' => 'bg-orange-100', 'name' => 'Orange'],
             ['class' => 'bg-blue-100', 'name' => 'Blue'],
@@ -36,6 +39,7 @@ class ColorSeeder extends Seeder
                 [
                     'name' => $data['name'],
                     // 'tenant_id' => 'default'
+                    'user_id' => $user?->id,
                 ]
             );
         }

@@ -122,6 +122,7 @@ new #[Layout('components.layouts.app')] #[Title('User Management')] class extend
             'phone' => $this->phone,
             'role' => $this->role,
             'status' => $this->status,
+            'created_by' => auth()->id()
         ];
 
         if (!empty($this->password)) {

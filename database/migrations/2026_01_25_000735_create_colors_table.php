@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('colors', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->nullOnDelete();
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('name');
             $table->string('class');
-            $table->string('tenant_id')->nullable();
-            $table->foreignUuid('user_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

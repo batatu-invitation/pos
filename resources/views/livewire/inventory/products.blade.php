@@ -14,9 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\ApplicationSetting;
 
 new #[Layout('components.layouts.app')]
-#[Title('Produk - Modern POS')]
-class extends Component
-{
+    #[Title('Produk - Modern POS')]
+    class extends Component {
     use WithPagination, WithFileUploads;
 
     public $name = '';
@@ -27,7 +26,7 @@ class extends Component
     public $margin = '';
     public $stock = '';
     public $status = 'Active';
-    public $icon = '';
+    public $icon_id = '';
     public $image;
     public $existingImage;
     public $editingProductId = null;
@@ -36,22 +35,53 @@ class extends Component
 
     public function with()
     {
-        return [
-            'products' => Product::with('category')
-                ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('sku', 'like', '%' . $this->search . '%'))
-                ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
-                ->latest()
-                ->paginate(10),
-            'categories' => Category::all(),
-            'emojis' => Emoji::all(),
-        ];
+        if (auth()->user()->hasRole('Super Admin')) {
+            return [
+                'products' => Product::with('category')
+                    ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('sku', 'like', '%' . $this->search . '%'))
+                    ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
+                    ->latest()
+                    ->paginate(10),
+                'categories' => Category::all(),
+                'emojis' => Emoji::all(),
+            ];
+        }
+
+        if (!auth()->user()->created_by) {
+            return [
+                'products' => Product::with('category')
+                    ->where('user_id', auth()->id())
+                    ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('sku', 'like', '%' . $this->search . '%'))
+                    ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
+                    ->latest()
+                    ->paginate(10),
+                'categories' => Category::all(),
+                'emojis' => Emoji::all(),
+            ];
+        } else {
+            if (auth()->user()->hasRole(['Manager', 'Admin'])) {
+                return [
+                    'products' => Product::with('category')
+                        ->where('user_id', auth()->user()->created_by)
+                        ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
+                            ->orWhere('sku', 'like', '%' . $this->search . '%'))
+                        ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
+                        ->latest()
+                        ->paginate(10),
+                    'categories' => Category::all(),
+                    'emojis' => Emoji::all(),
+                ];
+            }
+            abort(403);
+        }
+
     }
 
     public function create()
     {
-        $this->reset(['name', 'sku', 'category_id', 'price', 'cost', 'margin', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
-        $this->icon = '🍔'; // Default
+        $this->reset(['name', 'sku', 'category_id', 'price', 'cost', 'margin', 'stock', 'status', 'icon_id', 'image', 'existingImage', 'editingProductId']);
         $this->status = 'Active';
         $this->dispatch('open-modal', 'product-modal');
     }
@@ -68,7 +98,7 @@ class extends Component
         $this->margin = $product->margin;
         $this->stock = $product->stock;
         $this->status = $product->status;
-        $this->icon = $product->icon;
+        $this->icon_id = $product->icon_id;
         $this->existingImage = $product->image;
         $this->reset('image');
 
@@ -102,13 +132,13 @@ class extends Component
     {
         $this->validate([
             'name' => 'required|min:2',
-            'sku' => 'required|unique:products,sku,' . $this->editingProductId,
+            'sku' => 'required|unique:products,sku' . ($this->editingProductId ? ',' . $this->editingProductId : ''),
             'category_id' => 'required|exists:categories,id',
             'price' => 'required',
             'cost' => 'required',
             'stock' => 'required|integer|min:0',
             'status' => 'required',
-            'icon' => 'nullable',
+            'icon_id' => 'nullable|exists:emojis,id',
             'image' => 'nullable|image|max:2048', // 2MB Max
         ]);
         $user = auth()->user();
@@ -131,9 +161,9 @@ class extends Component
             'margin' => $this->margin,
             'stock' => $this->stock,
             'status' => $this->status,
-            'icon' => $this->icon,
+            'icon_id' => $this->icon_id,
             'user_id' => $user->created_by ? $user->created_by : $user->id,
-            'input_id' =>  $user->id,
+            'input_id' => $user->id,
         ];
 
         // Handle Image Upload with WebP Conversion
@@ -150,9 +180,9 @@ class extends Component
 
             // Delete old image if editing
             if ($this->editingProductId && $this->existingImage) {
-                 if (Storage::disk('public')->exists($this->existingImage)) {
+                if (Storage::disk('public')->exists($this->existingImage)) {
                     Storage::disk('public')->delete($this->existingImage);
-                 }
+                }
             }
         }
 
@@ -165,7 +195,7 @@ class extends Component
         }
 
         $this->dispatch('close-modal', 'product-modal');
-        $this->reset(['name', 'sku', 'category_id', 'price', 'cost', 'margin', 'stock', 'status', 'icon', 'image', 'existingImage', 'editingProductId']);
+        $this->reset(['name', 'sku', 'category_id', 'price', 'cost', 'margin', 'stock', 'status', 'icon_id', 'image', 'existingImage', 'editingProductId']);
         $this->dispatch('notify', $message);
     }
 
@@ -202,20 +232,25 @@ class extends Component
         <h2 class="text-2xl font-bold text-gray-800">{{ __('Products') }}</h2>
         <div class="flex gap-2" x-data="{ open: false }">
             <div class="relative">
-                <button @click="open = !open" @click.away="open = false" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors shadow-sm">
+                <button @click="open = !open" @click.away="open = false"
+                    class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors shadow-sm">
                     <i class="fas fa-file-export"></i> {{ __('Export') }}
                     <i class="fas fa-chevron-down text-xs"></i>
                 </button>
-                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1"
+                    style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false"
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <i class="fas fa-file-excel text-green-600 mr-2"></i> {{ __('Export Excel') }}
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <button wire:click="exportPdf" @click="open = false"
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <i class="fas fa-file-pdf text-red-600 mr-2"></i> {{ __('Export PDF') }}
                     </button>
                 </div>
             </div>
-            <button wire:click="create" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+            <button wire:click="create"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
                 <i class="fas fa-plus mr-2"></i> {{ __('Add Product') }}
             </button>
         </div>
@@ -227,10 +262,13 @@ class extends Component
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                     <i class="fas fa-search text-gray-400"></i>
                 </span>
-                <input wire:model.live="search" type="text" class="w-full py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500" placeholder="{{ __('Search products...') }}">
+                <input wire:model.live="search" type="text"
+                    class="w-full py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
+                    placeholder="{{ __('Search products...') }}">
             </div>
             <div class="flex items-center gap-2">
-                <select wire:model.live="categoryFilter" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2">
+                <select wire:model.live="categoryFilter"
+                    class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2">
                     <option value="">{{ __('All Categories') }}</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->name }}">{{ $category->name }}</option>
@@ -256,50 +294,56 @@ class extends Component
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($products as $product)
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                @if($product->image)
-                                    <img class="h-10 w-10 rounded-lg object-cover mr-3" src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}">
-                                @else
-                                    <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl mr-3">{{ $product->icon }}</div>
-                                @endif
-                                <div>
-                                    <p class="font-medium text-gray-800">{{ $product->name }}</p>
-                                    <p class="text-xs text-gray-500">SKU: {{ $product->sku }}</p>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    @if($product->image)
+                                        <img class="h-10 w-10 rounded-lg object-cover mr-3"
+                                            src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}">
+                                    @else
+                                        <div
+                                            class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl mr-3">
+                                            {{ $product->emoji->icon ?? '📦' }}</div>
+                                    @endif
+                                    <div>
+                                        <p class="font-medium text-gray-800">{{ $product->name }}</p>
+                                        <p class="text-xs text-gray-500">SKU: {{ $product->sku }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">{{ $product->category->name ?? __('Uncategorized') }}</td>
-                        <td class="px-6 py-4 font-medium text-gray-800">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
-                        <td class="px-6 py-4">
-                            <span class="{{ $product->stock < 10 ? 'text-red-600 font-bold' : '' }}">
-                                {{ $product->stock }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $product->status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ __($product->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button wire:click="edit('{{ $product->id }}')" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                            <button type="button" x-on:click="$dispatch('swal:confirm', {
-                                title: '{{ __('Delete Product?') }}',
-                                text: '{{ __('Are you sure you want to delete this product?') }}',
-                                icon: 'warning',
-                                method: 'delete',
-                                params: ['{{ $product->id }}'],
-                                componentId: '{{ $this->getId() }}'
-                            })" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
+                            </td>
+                            <td class="px-6 py-4">{{ $product->category->name ?? __('Uncategorized') }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-800">Rp
+                                {{ number_format($product->price, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">
+                                <span class="{{ $product->stock < 10 ? 'text-red-600 font-bold' : '' }}">
+                                    {{ $product->stock }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span
+                                    class="px-2 py-1 text-xs font-semibold rounded-full {{ $product->status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ __($product->status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button wire:click="edit('{{ $product->id }}')"
+                                    class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                <button type="button" x-on:click="$dispatch('swal:confirm', {
+                                    title: '{{ __('Delete Product?') }}',
+                                    text: '{{ __('Are you sure you want to delete this product?') }}',
+                                    icon: 'warning',
+                                    method: 'delete',
+                                    params: ['{{ $product->id }}'],
+                                    componentId: '{{ $this->getId() }}'
+                                })" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                            {{ __('No products found.') }}
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                {{ __('No products found.') }}
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -329,26 +373,33 @@ class extends Component
                 <!-- Image Upload -->
                 <div class="flex flex-col items-center justify-center">
                     <div class="relative group">
-                         @if ($image)
-                            <img src="{{ $image->temporaryUrl() }}" class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg">
+                        @if ($image)
+                            <img src="{{ $image->temporaryUrl() }}"
+                                class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg">
                         @elseif ($existingImage)
-                            <img src="{{ Storage::url($existingImage) }}" class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg">
+                            <img src="{{ Storage::url($existingImage) }}"
+                                class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg">
                         @else
-                            <div class="h-24 w-24 rounded-full bg-indigo-50 flex items-center justify-center border-4 border-white shadow-lg text-indigo-300">
+                            <div
+                                class="h-24 w-24 rounded-full bg-indigo-50 flex items-center justify-center border-4 border-white shadow-lg text-indigo-300">
                                 <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                             </div>
                         @endif
 
-                        <label for="image" class="absolute bottom-0 right-0 bg-indigo-600 rounded-full p-2 text-white hover:bg-indigo-700 cursor-pointer shadow-md transition-all transform hover:scale-110">
+                        <label for="image"
+                            class="absolute bottom-0 right-0 bg-indigo-600 rounded-full p-2 text-white hover:bg-indigo-700 cursor-pointer shadow-md transition-all transform hover:scale-110">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
                             <input wire:model="image" id="image" type="file" class="hidden" accept="image/*">
                         </label>
                     </div>
-                    <div wire:loading wire:target="image" class="text-xs text-indigo-500 mt-2 font-medium">{{ __('Uploading...') }}</div>
+                    <div wire:loading wire:target="image" class="text-xs text-indigo-500 mt-2 font-medium">
+                        {{ __('Uploading...') }}</div>
                     <x-input-error :messages="$errors->get('image')" class="mt-2 text-center" />
                 </div>
 
@@ -356,12 +407,14 @@ class extends Component
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <x-input-label for="name" :value="__('Product Name')" />
-                        <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. Double Burger') }}" />
+                        <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text"
+                            placeholder="{{ __('e.g. Double Burger') }}" />
                         <x-input-error :messages="$errors->get('name')" class="mt-2" />
                     </div>
                     <div>
                         <x-input-label for="sku" :value="__('SKU')" />
-                        <x-text-input wire:model="sku" id="sku" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. BUR-001') }}" />
+                        <x-text-input wire:model="sku" id="sku" class="block mt-1 w-full" type="text"
+                            placeholder="{{ __('e.g. BUR-001') }}" />
                         <x-input-error :messages="$errors->get('sku')" class="mt-2" />
                     </div>
                 </div>
@@ -370,7 +423,8 @@ class extends Component
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <x-input-label for="category_id" :value="__('Category')" />
-                        <select wire:model="category_id" id="category_id" class="block w-full px-3 py-2 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <select wire:model="category_id" id="category_id"
+                            class="block w-full px-3 py-2 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             <option value="">{{ __('Select Category') }}</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -379,14 +433,15 @@ class extends Component
                         <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
                     </div>
                     <div>
-                        <x-input-label for="icon" :value="__('Icon (Emoji)')" />
-                        <select wire:model="icon" id="icon" class="block w-full px-3 py-2 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <x-input-label for="icon_id" :value="__('Icon (Emoji)')" />
+                        <select wire:model="icon_id" id="icon_id"
+                            class="block w-full px-3 py-2 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             <option value="">{{ __('Select Icon') }}</option>
                             @foreach($emojis as $emoji)
-                                <option value="{{ $emoji->icon }}">{{ $emoji->icon }} {{ $emoji->name }}</option>
+                                <option value="{{ $emoji->id }}">{{ $emoji->icon }} {{ $emoji->name }}</option>
                             @endforeach
                         </select>
-                        <x-input-error :messages="$errors->get('icon')" class="mt-2" />
+                        <x-input-error :messages="$errors->get('icon_id')" class="mt-2" />
                     </div>
                 </div>
 
@@ -394,26 +449,16 @@ class extends Component
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <x-input-label for="price" :value="__('Price (IDR)')" />
-                        <x-text-input
-                            wire:model="price"
+                        <x-text-input wire:model="price"
                             x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')"
-                            id="price"
-                            class="block mt-1 w-full"
-                            type="text"
-                            placeholder="0"
-                        />
+                            id="price" class="block mt-1 w-full" type="text" placeholder="0" />
                         <x-input-error :messages="$errors->get('price')" class="mt-2" />
                     </div>
                     <div>
                         <x-input-label for="cost" :value="__('Cost (IDR)')" />
-                        <x-text-input
-                            wire:model="cost"
+                        <x-text-input wire:model="cost"
                             x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')"
-                            id="cost"
-                            class="block mt-1 w-full"
-                            type="text"
-                            placeholder="0"
-                        />
+                            id="cost" class="block mt-1 w-full" type="text" placeholder="0" />
                         <x-input-error :messages="$errors->get('cost')" class="mt-2" />
                     </div>
                 </div>
@@ -422,7 +467,8 @@ class extends Component
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <x-input-label for="stock" :value="__('Stock')" />
-                        <x-text-input wire:model="stock" id="stock" class="block mt-1 w-full" type="number" placeholder="0" />
+                        <x-text-input wire:model="stock" id="stock" class="block mt-1 w-full" type="number"
+                            placeholder="0" />
                         <x-input-error :messages="$errors->get('stock')" class="mt-2" />
                     </div>
                 </div>
@@ -430,7 +476,8 @@ class extends Component
                 <!-- Status -->
                 <div>
                     <x-input-label for="status" :value="__('Status')" />
-                    <select wire:model="status" id="status" class="block w-full px-3 py-2 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <select wire:model="status" id="status"
+                        class="block w-full px-3 py-2 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                         <option value="Active">{{ __('Active') }}</option>
                         <option value="Inactive">{{ __('Inactive') }}</option>
                     </select>

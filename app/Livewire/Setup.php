@@ -118,7 +118,7 @@ class Setup extends Component
             'receiptHeader' => 'nullable|string',
             'receiptFooter' => 'nullable|string',
             'receiptShowLogo' => 'boolean',
-            'logo' => 'nullable|image|max:2048', // 1MB Max
+            'logo' => 'nullable|image|max:5048', // 5MB Max
         ]);
 
         $logoPath = null;

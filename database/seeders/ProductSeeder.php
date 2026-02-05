@@ -6,6 +6,8 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Emoji;
+use App\Models\User;
 
 class ProductSeeder extends Seeder
 {
@@ -14,6 +16,8 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::where('email', 'superadmin@example.com')->first();
+
         $products = [
             ['name' => 'Double Burger', 'sku' => 'BUR-001', 'category' => 'Food', 'price' => 12.00, 'stock' => 120, 'status' => 'Active', 'icon' => '🍔'],
             ['name' => 'Cola Zero', 'sku' => 'DRK-001', 'category' => 'Drinks', 'price' => 3.00, 'stock' => 50, 'status' => 'Active', 'icon' => '🥤'],
@@ -37,7 +41,20 @@ class ProductSeeder extends Seeder
                  $category = Category::create([
                     'name' => $item['category'],
                     'icon' => '📝', 
-                    'color' => 'bg-gray-100'
+                    'color' => 'bg-gray-100',
+                    'user_id' => $user?->id,
+                ]);
+            }
+
+            $emoji = Emoji::where('icon', $item['icon'])->first();
+            // If emoji not found, we might want to create it or leave it null.
+            // Since EmojiSeeder runs before, it should be there. 
+            // If not, we can create it on the fly or skip.
+            if (!$emoji) {
+                $emoji = Emoji::create([
+                    'icon' => $item['icon'], 
+                    'name' => $item['name'],
+                    'user_id' => $user?->id,
                 ]);
             }
 
@@ -49,7 +66,8 @@ class ProductSeeder extends Seeder
                     'price' => $item['price'],
                     'stock' => $item['stock'],
                     'status' => $item['status'],
-                    'icon' => $item['icon'],
+                    'icon_id' => $emoji->id,
+                    'user_id' => $user?->id,
                 ]
             );
         }

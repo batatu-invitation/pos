@@ -21,7 +21,7 @@ class Product extends Model
         'stock',
         'status',
         'image',
-        'icon',
+        'icon_id',
         'tenant_id',
         'user_id',
         'input_id'
@@ -30,5 +30,10 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function emoji()
+    {
+        return $this->belongsTo(Emoji::class, 'icon_id');
     }
 }

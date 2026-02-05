@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Emoji;
+use App\Models\User;
 
 class EmojiSeeder extends Seeder
 {
@@ -12,6 +13,8 @@ class EmojiSeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::where('email', 'superadmin@example.com')->first();
+
         $emojis = [
             ['icon' => '🍔', 'name' => 'Burger'],
             ['icon' => '🥤', 'name' => 'Drink'],
@@ -36,6 +39,7 @@ class EmojiSeeder extends Seeder
                 [
                     'name' => $data['name'],
                     // 'tenant_id' => 'default' // Optional: set a default tenant or leave null for global
+                    'user_id' => $user?->id,
                 ]
             );
         }

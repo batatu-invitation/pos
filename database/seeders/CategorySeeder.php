@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Category;
+use App\Models\User;
 
 class CategorySeeder extends Seeder
 {
@@ -13,6 +14,8 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::where('email', 'superadmin@example.com')->first();
+
         $categories = [
             'Food' => ['icon' => '🍔', 'color' => 'bg-orange-100', 'description' => 'Delicious food items'],
             'Drinks' => ['icon' => '🥤', 'color' => 'bg-blue-100', 'description' => 'Refreshing beverages'],
@@ -38,6 +41,7 @@ class CategorySeeder extends Seeder
                     'icon' => $data['icon'],
                     'color' => $data['color'],
                     'description' => $data['description'],
+                    'user_id' => $user?->id,
                 ]
             );
         }
