@@ -36,7 +36,7 @@ new #[Layout('components.layouts.app')]
     public function with()
     {
         $user = auth()->user();
-        $query = Product::with('category');
+        $query = Product::with(['category', 'emoji']);
 
         if ($user->hasRole('Super Admin')) {
             //
