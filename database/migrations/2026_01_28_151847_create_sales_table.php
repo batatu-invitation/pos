@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('customer_id')->nullable()->constrained('customers')->nullOnDelete();
-            $table->foreignUuid('tenant_id')->nullable()->constrained('tenant')->nullOnDelete();
+            $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->nullOnDelete();
             $table->foreignUuid('tax_id')->nullable()->constrained('taxes')->nullOnDelete();
             $table->string('invoice_number')->unique();
             $table->decimal('subtotal', 10, 2);
