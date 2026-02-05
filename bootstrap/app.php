@@ -14,10 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\ThemeMiddleware::class,
             // \App\Http\Middleware\LogUserActivity::class,
         ]);
         $middleware->alias([
             'check.setup' => \App\Http\Middleware\CheckSetupCompletion::class,
+        ]);
+        $middleware->encryptCookies(except: [
+            'theme',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

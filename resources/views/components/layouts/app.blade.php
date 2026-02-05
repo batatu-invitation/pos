@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ ($currentTheme ?? 'system') === 'dark' ? 'dark' : '' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -20,6 +20,7 @@
     </script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -33,9 +34,10 @@
             }
         }
     </script>
+   
 </head>
 
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
 
     <div class="flex h-screen overflow-hidden">
 
@@ -76,7 +78,7 @@
                         <span class="font-medium">{{ __('POS Terminal') }}</span>
                     </a>
                     @endrole
-                    @role(['Super Admin', 'Manager', 'Admin','Inventory Manager'])
+                    @role(['Super Admin', 'Manager','Inventory Manager'])
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Inventory') }}</p>
                     <a wire:navigate.hover href="{{ route('inventory.products') }}"
@@ -318,12 +320,12 @@
         <div class="flex-1 flex flex-col overflow-hidden">
 
             <!-- Header -->
-            <header class="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b border-gray-200">
+            <header class="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                 <div class="flex items-center">
-                    <button onclick="toggleSidebar()" class="text-gray-500 focus:outline-none mr-4">
+                    <button onclick="toggleSidebar()" class="text-gray-500 focus:outline-none mr-4 dark:text-gray-400">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">{{ $header ?? __('Dashboard') }}</h1>
+                    <h1 class="text-2xl font-semibold text-gray-800 dark:text-white">{{ $header ?? __('Dashboard') }}</h1>
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -344,10 +346,70 @@
                             class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
                     </button>
 
+                    <!-- Theme Switcher -->
+                    <div class="relative" x-data="{
+                        open: false,
+                        theme: '{{ $currentTheme ?? "system" }}',
+                        setTheme(val) {
+                            this.theme = val;
+                            localStorage.setItem('theme', val);
+                            document.cookie = 'theme=' + val + '; path=/; max-age=31536000; SameSite=Lax';
+                            if (val === 'dark' || (val === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                                document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                            }
+                            this.open = false;
+                        },
+                        init() {
+                            if (this.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                                document.documentElement.classList.add('dark');
+                            }
+                            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                                if (this.theme === 'system') {
+                                    if (e.matches) document.documentElement.classList.add('dark');
+                                    else document.documentElement.classList.remove('dark');
+                                }
+                            });
+                        }
+                    }">
+                        <button @click="open = !open"
+                            class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none p-2 dark:text-gray-400 dark:hover:text-indigo-400">
+                            <template x-if="theme === 'light'"><i class="fas fa-sun text-xl"></i></template>
+                            <template x-if="theme === 'dark'"><i class="fas fa-moon text-xl"></i></template>
+                            <template x-if="theme === 'system'"><i class="fas fa-desktop text-xl"></i></template>
+                        </button>
+                        <div x-show="open" @click.away="open = false"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            class="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:ring-gray-700"
+                            style="display: none;">
+                            <button @click="setTheme('light')"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                :class="{ 'bg-gray-50 dark:bg-gray-700': theme === 'light' }">
+                                <i class="fas fa-sun w-5 text-center mr-2"></i> {{ __('Light') }}
+                            </button>
+                            <button @click="setTheme('dark')"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                :class="{ 'bg-gray-50 dark:bg-gray-700': theme === 'dark' }">
+                                <i class="fas fa-moon w-5 text-center mr-2"></i> {{ __('Dark') }}
+                            </button>
+                            <button @click="setTheme('system')"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                :class="{ 'bg-gray-50 dark:bg-gray-700': theme === 'system' }">
+                                <i class="fas fa-desktop w-5 text-center mr-2"></i> {{ __('System') }}
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Language Switcher -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open"
-                            class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none p-2">
+                            class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none p-2 dark:text-gray-400 dark:hover:text-indigo-400">
                             <i class="fas fa-globe text-xl"></i>
                             <span class="text-sm font-medium">{{ app()->getLocale() == 'id' ? 'ID' : 'EN' }}</span>
                         </button>
@@ -358,14 +420,14 @@
                             x-transition:leave="transition ease-in duration-75"
                             x-transition:leave-start="transform opacity-100 scale-100"
                             x-transition:leave-end="transform opacity-0 scale-95"
-                            class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5"
+                            class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:ring-gray-700"
                             style="display: none;">
                             <a wire:navigate.hover href="{{ route('lang.switch', 'en') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'en' ? 'bg-gray-50' : '' }}">
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 {{ app()->getLocale() == 'en' ? 'bg-gray-50 dark:bg-gray-700' : '' }}">
                                 <span class="mr-2">🇺🇸</span> English
                             </a>
                             <a wire:navigate.hover href="{{ route('lang.switch', 'id') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'id' ? 'bg-gray-50' : '' }}">
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 {{ app()->getLocale() == 'id' ? 'bg-gray-50 dark:bg-gray-700' : '' }}">
                                 <span class="mr-2">🇮🇩</span> Indonesia
                             </a>
                         </div>
@@ -380,7 +442,7 @@
             </header>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6 dark:bg-gray-900">
                 {{ $slot }}
             </main>
         </div>

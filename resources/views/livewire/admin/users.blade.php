@@ -122,7 +122,6 @@ new #[Layout('components.layouts.app')] #[Title('User Management')] class extend
             'phone' => $this->phone,
             'role' => $this->role,
             'status' => $this->status,
-            'created_by' => auth()->id()
         ];
 
         if (!empty($this->password)) {
@@ -135,6 +134,7 @@ new #[Layout('components.layouts.app')] #[Title('User Management')] class extend
             $user->syncRoles($this->role);
             $message = __('User updated successfully!');
         } else {
+            $data['created_by'] = auth()->id();
             $user = User::create($data);
             $user->assignRole($this->role);
             $message = __('User created successfully!');
