@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('taxes', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('tenant_id')->references('id')->on('tenants')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->nullOnDelete();
             $table->string('name');
             $table->decimal('rate', 5, 2);
             $table->boolean('is_active')->default(false);
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });

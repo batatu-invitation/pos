@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('tenant_id')->nullable();
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('name');
             $table->string('icon')->nullable();
             $table->string('color')->nullable();
             $table->text('description')->nullable();
-            $table->string('tenant_id')->nullable();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

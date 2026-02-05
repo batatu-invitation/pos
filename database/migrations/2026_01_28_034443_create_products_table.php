@@ -13,15 +13,19 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('icon_id')->nullable()->constrained('emojis')->nullOnDelete();
+            $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->nullOnDelete();   
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('name')->index();
             $table->string('sku')->unique();
             $table->foreignUuid('category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->decimal('price', 10, 2);
+            $table->decimal('cost', 15, 2)->default(0);
+            $table->decimal('margin', 10, 2)->default(0);
             $table->integer('stock')->default(0);
             $table->string('status')->default('Active');
-            $table->foreignUuid('icon')->nullable()->constrained('emojis')->nullOnDelete();
-            $table->string('tenant_id')->nullable();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('image')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
