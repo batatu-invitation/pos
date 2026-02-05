@@ -35,48 +35,29 @@ new #[Layout('components.layouts.app')]
 
     public function with()
     {
-        if (auth()->user()->hasRole('Super Admin')) {
-            return [
-                'products' => Product::with('category')
-                    ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('sku', 'like', '%' . $this->search . '%'))
-                    ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
-                    ->latest()
-                    ->paginate(10),
-                'categories' => Category::all(),
-                'emojis' => Emoji::all(),
-            ];
-        }
+        $user = auth()->user();
+        $query = Product::with('category');
 
-        if (!auth()->user()->created_by) {
-            return [
-                'products' => Product::with('category')
-                    ->where('user_id', auth()->id())
-                    ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('sku', 'like', '%' . $this->search . '%'))
-                    ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
-                    ->latest()
-                    ->paginate(10),
-                'categories' => Category::all(),
-                'emojis' => Emoji::all(),
-            ];
+        if ($user->hasRole('Super Admin')) {
+            //
+        } elseif (!$user->created_by) {
+            $query->where('user_id', $user->id);
+        } elseif ($user->hasRole(['Manager', 'Admin', 'Inventory Manager'])) {
+            $query->where('user_id', $user->created_by);
         } else {
-            if (auth()->user()->hasRole(['Manager', 'Admin'])) {
-                return [
-                    'products' => Product::with('category')
-                        ->where('user_id', auth()->user()->created_by)
-                        ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
-                            ->orWhere('sku', 'like', '%' . $this->search . '%'))
-                        ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
-                        ->latest()
-                        ->paginate(10),
-                    'categories' => Category::all(),
-                    'emojis' => Emoji::all(),
-                ];
-            }
             abort(403);
         }
 
+        return [
+            'products' => $query
+                ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
+                    ->orWhere('sku', 'like', '%' . $this->search . '%'))
+                ->when($this->categoryFilter, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $this->categoryFilter)))
+                ->latest()
+                ->paginate(10),
+            'categories' => Category::all(),
+            'emojis' => Emoji::all(),
+        ];
     }
 
     public function create()
