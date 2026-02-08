@@ -134,40 +134,51 @@ new #[Layout('components.layouts.app', ['header' => 'Emojis'])] #[Title('Emojis 
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800"></h2>
-        <div class="flex gap-2">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 space-y-6">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h2 class="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">Emojis</h2>
+        <div class="flex flex-wrap items-center gap-3">
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center shadow-sm">
-                    <i class="fas fa-file-export mr-2"></i> Export
-                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                <button @click="open = !open" 
+                        class="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm font-medium flex items-center gap-2">
+                    <i class="fas fa-file-export text-gray-400 dark:text-gray-500"></i> 
+                    <span>Export</span>
+                    <i class="fas fa-chevron-down text-xs ml-1 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                 </button>
-                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                <div x-show="open" 
+                     @click.away="open = false" 
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 py-1 overflow-hidden" 
+                     style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <i class="fas fa-file-excel text-green-500 mr-3"></i> Excel Export
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                    <button wire:click="exportPdf" @click="open = false" class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <i class="fas fa-file-pdf text-red-500 mr-3"></i> PDF Export
                     </button>
                 </div>
             </div>
             <button wire:click="create"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                <i class="fas fa-plus mr-2"></i> Add Emoji
+                class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-md hover:shadow-lg font-medium flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                <span>Add Emoji</span>
             </button>
         </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
         @forelse($emojis as $emoji)
-            <div
-                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center text-center group hover:shadow-md transition-shadow relative">
-
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center text-center group hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+                
                 @if($emoji->tenant_id === auth()->id())
-                <div class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full p-1 shadow-sm">
                     <button wire:click="edit('{{ $emoji->id }}')"
-                        class="text-gray-400 hover:text-indigo-600 transition-colors p-1" title="Edit">
+                        class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1.5" title="Edit">
                         <i class="fas fa-edit text-xs"></i>
                     </button>
                     <button type="button"
@@ -179,31 +190,33 @@ new #[Layout('components.layouts.app', ['header' => 'Emojis'])] #[Title('Emojis 
                         params: ['{{ $emoji->id }}'],
                         componentId: '{{ $this->getId() }}'
                     })"
-                        class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Delete">
+                        class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1.5" title="Delete">
                         <i class="fas fa-trash text-xs"></i>
                     </button>
                 </div>
                 @endif
 
-                <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">
+                <div class="text-5xl mb-3 group-hover:scale-110 transition-transform duration-300 filter drop-shadow-sm">
                     {{ $emoji->icon }}
                 </div>
-                <h3 class="font-medium text-gray-800 text-sm truncate w-full">{{ $emoji->name ?? 'Unnamed' }}</h3>
+                
+                <h3 class="font-bold text-gray-800 dark:text-white text-sm truncate w-full mb-1">{{ $emoji->name ?? 'Unnamed' }}</h3>
+                
                 @if(!$emoji->tenant_id)
-                    <span class="text-xs text-gray-400 mt-1 bg-gray-100 px-2 py-0.5 rounded-full">Global</span>
+                    <span class="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">Global</span>
                 @endif
             </div>
         @empty
-            <div class="col-span-full bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                <div class="mx-auto h-12 w-12 text-gray-400">
-                    <i class="fas fa-icons text-4xl"></i>
+            <div class="col-span-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-12 text-center">
+                <div class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600 mb-4">
+                    <i class="fas fa-icons text-5xl"></i>
                 </div>
-                <h3 class="mt-2 text-sm font-semibold text-gray-900">No emojis</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating a new emoji.</p>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">No emojis found</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new emoji.</p>
                 <div class="mt-6">
                     <button wire:click="create"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        <i class="fas fa-plus -ml-0.5 mr-1.5" aria-hidden="true"></i>
+                        class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all">
+                        <i class="fas fa-plus -ml-0.5 mr-2" aria-hidden="true"></i>
                         Add Emoji
                     </button>
                 </div>
@@ -226,18 +239,18 @@ new #[Layout('components.layouts.app', ['header' => 'Emojis'])] #[Title('Emojis 
             params: [],
             componentId: '{{ $this->getId() }}'
         })"
-            class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-6">
+            class="p-6 dark:bg-gray-800">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 {{ $editingEmojiId ? 'Edit Emoji' : 'Create New Emoji' }}
             </h2>
 
             <div class="space-y-6">
                 <div>
                     <x-input-label for="icon" value="Icon (Emoji)" />
-                    <x-text-input wire:model="icon" id="icon" class="block mt-1 w-full text-2xl" type="text"
+                    <x-text-input wire:model="icon" id="icon" class="block mt-1 w-full text-4xl text-center py-4" type="text"
                         placeholder="e.g. 🚀" />
-                    <p class="text-sm text-gray-500 mt-1">Paste an emoji here.</p>
-                    <x-input-error :messages="$errors->get('icon')" class="mt-2" />
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">Paste an emoji above.</p>
+                    <x-input-error :messages="$errors->get('icon')" class="mt-2 text-center" />
                 </div>
 
                 <div>
@@ -248,12 +261,12 @@ new #[Layout('components.layouts.app', ['header' => 'Emojis'])] #[Title('Emojis 
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end">
+            <div class="mt-8 flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">
                     Cancel
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3">
+                <x-primary-button>
                     {{ $editingEmojiId ? 'Update Emoji' : 'Create Emoji' }}
                 </x-primary-button>
             </div>

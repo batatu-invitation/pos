@@ -116,40 +116,51 @@ new #[Layout('components.layouts.app', ['header' => 'Colors'])] #[Title('Colors 
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800"></h2>
-        <div class="flex gap-2">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 space-y-6">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h2 class="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">Colors</h2>
+        <div class="flex flex-wrap items-center gap-3">
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center shadow-sm">
-                    <i class="fas fa-file-export mr-2"></i> Export
-                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                <button @click="open = !open" 
+                        class="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm font-medium flex items-center gap-2">
+                    <i class="fas fa-file-export text-gray-400 dark:text-gray-500"></i> 
+                    <span>Export</span>
+                    <i class="fas fa-chevron-down text-xs ml-1 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                 </button>
-                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                <div x-show="open" 
+                     @click.away="open = false" 
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 py-1 overflow-hidden" 
+                     style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <i class="fas fa-file-excel text-green-500 mr-3"></i> Excel Export
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
+                    <button wire:click="exportPdf" @click="open = false" class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <i class="fas fa-file-pdf text-red-500 mr-3"></i> PDF Export
                     </button>
                 </div>
             </div>
             <button wire:click="create"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                <i class="fas fa-plus mr-2"></i> Add Color
+                class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-md hover:shadow-lg font-medium flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                <span>Add Color</span>
             </button>
         </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
         @forelse($colors as $colorItem)
-            <div
-                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center text-center group hover:shadow-md transition-shadow relative">
-
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center text-center group hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+                
                 @if($colorItem->tenant_id === auth()->id())
-                <div class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full p-1 shadow-sm">
                     <button wire:click="edit('{{ $colorItem->id }}')"
-                        class="text-gray-400 hover:text-indigo-600 transition-colors p-1" title="Edit">
+                        class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1.5" title="Edit">
                         <i class="fas fa-edit text-xs"></i>
                     </button>
                     <button type="button"
@@ -161,30 +172,32 @@ new #[Layout('components.layouts.app', ['header' => 'Colors'])] #[Title('Colors 
                         params: ['{{ $colorItem->id }}'],
                         componentId: '{{ $this->getId() }}'
                     })"
-                        class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Delete">
+                        class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1.5" title="Delete">
                         <i class="fas fa-trash text-xs"></i>
                     </button>
                 </div>
                 @endif
 
-                <div class="w-16 h-16 {{ $colorItem->class }} rounded-full mb-4 shadow-inner group-hover:scale-110 transition-transform"></div>
-                <h3 class="font-medium text-gray-800 text-sm truncate w-full">{{ $colorItem->name }}</h3>
-                <p class="text-xs text-gray-400 mt-1">{{ $colorItem->class }}</p>
+                <div class="w-16 h-16 {{ $colorItem->class }} rounded-full mb-4 shadow-inner ring-4 ring-gray-50 dark:ring-gray-700 group-hover:scale-110 transition-transform duration-300"></div>
+                
+                <h3 class="font-bold text-gray-800 dark:text-white text-sm truncate w-full mb-1">{{ $colorItem->name }}</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md">{{ $colorItem->class }}</p>
+                
                  @if(!$colorItem->tenant_id)
-                    <span class="text-xs text-gray-400 mt-1 bg-gray-100 px-2 py-0.5 rounded-full">Global</span>
+                    <span class="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">Global</span>
                 @endif
             </div>
         @empty
-            <div class="col-span-full bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                <div class="mx-auto h-12 w-12 text-gray-400">
-                    <i class="fas fa-palette text-4xl"></i>
+            <div class="col-span-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-12 text-center">
+                <div class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600 mb-4">
+                    <i class="fas fa-palette text-5xl"></i>
                 </div>
-                <h3 class="mt-2 text-sm font-semibold text-gray-900">No colors</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating a new color.</p>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">No colors found</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new color.</p>
                 <div class="mt-6">
                     <button wire:click="create"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        <i class="fas fa-plus -ml-0.5 mr-1.5" aria-hidden="true"></i>
+                        class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all">
+                        <i class="fas fa-plus -ml-0.5 mr-2" aria-hidden="true"></i>
                         Add Color
                     </button>
                 </div>
@@ -207,8 +220,8 @@ new #[Layout('components.layouts.app', ['header' => 'Colors'])] #[Title('Colors 
             params: [],
             componentId: '{{ $this->getId() }}'
         })"
-            class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-6">
+            class="p-6 dark:bg-gray-800">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 {{ $editingColorId ? 'Edit Color' : 'Create New Color' }}
             </h2>
 
@@ -224,22 +237,24 @@ new #[Layout('components.layouts.app', ['header' => 'Colors'])] #[Title('Colors 
                     <x-input-label for="class" value="Tailwind Class" />
                     <x-text-input wire:model="class" id="class" class="block mt-1 w-full" type="text"
                         placeholder="e.g. bg-orange-500" />
-                    <p class="text-sm text-gray-500 mt-1">Enter a valid Tailwind CSS background class.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Enter a valid Tailwind CSS background class.</p>
                     <x-input-error :messages="$errors->get('class')" class="mt-2" />
                 </div>
 
                 <div class="mt-4">
-                     <p class="text-sm text-gray-700 mb-2">Preview:</p>
-                     <div class="w-full h-12 rounded-lg border border-gray-200" :class="$wire.class"></div>
+                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</p>
+                     <div class="w-full h-16 rounded-xl border border-gray-200 dark:border-gray-600 shadow-inner flex items-center justify-center" :class="$wire.class">
+                        <span class="text-xs text-white/50 font-mono" x-text="$wire.class"></span>
+                     </div>
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end">
+            <div class="mt-8 flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">
                     Cancel
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3">
+                <x-primary-button>
                     {{ $editingColorId ? 'Update Color' : 'Create Color' }}
                 </x-primary-button>
             </div>
