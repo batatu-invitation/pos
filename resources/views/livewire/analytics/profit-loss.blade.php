@@ -214,103 +214,160 @@ new #[Layout('components.layouts.app')]
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50">
+            <div>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                    {{ __('Profit & Loss Statement') }}
+                </h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {{ __('Financial performance overview') }}
+                </p>
+            </div>
+            
+             <!-- Date Filters & Export -->
+            <div class="flex flex-col sm:flex-row gap-3 items-center">
+                 <div class="flex items-center gap-2 bg-white dark:bg-gray-700 p-1 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <input wire:model.live="startDate" type="date" class="border-0 bg-transparent text-sm focus:ring-0 text-gray-700 dark:text-gray-200 p-2">
+                    <span class="text-gray-400">-</span>
+                    <input wire:model.live="endDate" type="date" class="border-0 bg-transparent text-sm focus:ring-0 text-gray-700 dark:text-gray-200 p-2">
+                 </div>
 
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">{{ __('Profit & Loss Statement') }}</h2>
-        <div class="flex gap-2">
-            <input wire:model.live="startDate" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <span class="self-center text-gray-500">-</span>
-            <input wire:model.live="endDate" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-
-            <div x-data="{ open: false }" class="relative ml-2">
-                <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center">
-                    <i class="fas fa-file-export mr-2"></i> Export
-                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
-                </button>
-                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20">
+                        <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                        <i class="fas fa-chevron-down ml-2 text-xs"></i>
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
-                    </button>
+                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 py-1" style="display: none;">
+                        <button wire:click="exportExcel" @click="open = false" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <i class="fas fa-file-excel mr-2 text-green-600 dark:text-green-400"></i> Export Excel
+                        </button>
+                        <button wire:click="exportPdf" @click="open = false" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <i class="fas fa-file-pdf mr-2 text-red-600 dark:text-red-400"></i> Export PDF
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <p class="text-sm font-medium text-gray-500">{{ __('Total Revenue') }}</p>
-            <h3 class="text-3xl font-bold text-green-600 mt-2">Rp. {{ number_format($this->getTotalRevenue(), 0, ',', '.') }}</h3>
-            <p class="text-xs {{ $revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} mt-1 flex items-center">
-                <i class="fas fa-{{ $revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i> {{ number_format(abs($revenueGrowth), 1, ',', '.') }}% {{ __('vs last period') }}
-            </p>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <p class="text-sm font-medium text-gray-500">{{ __('Total Expenses') }}</p>
-            <h3 class="text-3xl font-bold text-red-600 mt-2">Rp. {{ number_format($this->getTotalExpenses(), 0, ',', '.') }}</h3>
-            <p class="text-xs {{ $expenseGrowth <= 0 ? 'text-green-500' : 'text-red-500' }} mt-1 flex items-center">
-                <i class="fas fa-{{ $expenseGrowth > 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i> {{ number_format(abs($expenseGrowth), 1, ',', '.') }}% {{ __('vs last period') }}
-            </p>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <p class="text-sm font-medium text-gray-500">{{ __('Net Profit') }}</p>
-            <h3 class="text-3xl font-bold text-indigo-600 mt-2">Rp. {{ number_format($this->getNetProfit(), 0, ',', '.') }}</h3>
-            <p class="text-xs text-green-500 mt-1 flex items-center">
-                <i class="fas fa-chart-line mr-1"></i> {{ number_format($netProfitMargin, 1, ',', '.') }}% {{ __('Net Margin') }}
-            </p>
-        </div>
-    </div>
-
-    <!-- Detailed P&L Statement -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h2 class="text-lg font-bold text-gray-800">{{ __('Income Statement') }}</h2>
-            <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}</span>
-        </div>
-
-        <div class="p-6">
-            <!-- Revenue Section -->
-            <div class="mb-8">
-                <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Cashier Sales') }}</h3>
-                <div class="space-y-3">
-                    @foreach($revenueItems as $item)
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span class="text-gray-700">{{ $item['name'] }}</span>
-                        <span class="font-medium text-gray-900">Rp. {{ number_format($item['amount'], 0, ',', '.') }}</span>
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total Revenue -->
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-green-500/50 transition-all duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Revenue') }}</p>
+                        <h3 class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+                            Rp. {{ number_format($this->getTotalRevenue(), 0, ',', '.') }}
+                        </h3>
                     </div>
-                    @endforeach
-                    <div class="flex justify-between items-center py-3 bg-green-50 px-4 rounded-lg mt-4">
-                        <span class="font-bold text-green-800">{{ __('Total Revenue') }}</span>
-                        <span class="font-bold text-green-800">Rp. {{ number_format($this->getTotalRevenue(), 0, ',', '.') }}</span>
+                    <div class="p-3 bg-green-50 dark:bg-green-900/30 rounded-2xl text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-coins text-xl"></i>
                     </div>
+                </div>
+                 <div class="flex items-center text-sm {{ $revenueGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                    <span class="flex items-center font-medium bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-lg mr-2">
+                         <i class="fas fa-{{ $revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i> {{ number_format(abs($revenueGrowth), 1, ',', '.') }}%
+                    </span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ __('vs last period') }}</span>
                 </div>
             </div>
 
-            <!-- Expenses Section -->
-            <div class="mb-8">
-                <h3 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">{{ __('Expenses') }}</h3>
-                <div class="space-y-3">
-                    @foreach($expenseItems as $item)
-                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span class="text-gray-700">{{ $item['name'] }}</span>
-                        <span class="font-medium text-gray-900">Rp. {{ number_format($item['amount'], 0, ',', '.') }}</span>
+            <!-- Total Expenses -->
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-red-500/50 transition-all duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Expenses') }}</p>
+                        <h3 class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
+                            Rp. {{ number_format($this->getTotalExpenses(), 0, ',', '.') }}
+                        </h3>
                     </div>
-                    @endforeach
-                    <div class="flex justify-between items-center py-3 bg-red-50 px-4 rounded-lg mt-4">
-                        <span class="font-bold text-red-800">{{ __('Total Expenses') }}</span>
-                        <span class="font-bold text-red-800">Rp. {{ number_format($this->getTotalExpenses(), 0, ',', '.') }}</span>
+                    <div class="p-3 bg-red-50 dark:bg-red-900/30 rounded-2xl text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-wallet text-xl"></i>
                     </div>
+                </div>
+                <div class="flex items-center text-sm {{ $expenseGrowth <= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                    <span class="flex items-center font-medium bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-lg mr-2">
+                        <i class="fas fa-{{ $expenseGrowth > 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i> {{ number_format(abs($expenseGrowth), 1, ',', '.') }}%
+                    </span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ __('vs last period') }}</span>
                 </div>
             </div>
 
             <!-- Net Profit -->
-            <div class="flex justify-between items-center py-4 bg-gray-900 text-white px-6 rounded-xl shadow-lg">
-                <span class="text-lg font-bold">{{ __('Net Profit') }}</span>
-                <span class="text-2xl font-bold">Rp. {{ number_format($this->getNetProfit(), 0, ',', '.') }}</span>
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-indigo-500/50 transition-all duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Net Profit') }}</p>
+                        <h3 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">
+                            Rp. {{ number_format($this->getNetProfit(), 0, ',', '.') }}
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-line text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center text-sm text-indigo-600 dark:text-indigo-400">
+                     <span class="flex items-center font-medium bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded-lg mr-2">
+                        <i class="fas fa-chart-pie mr-1"></i> {{ number_format($netProfitMargin, 1, ',', '.') }}%
+                    </span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ __('Net Margin') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed P&L Statement -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Income Statement') }}</h3>
+                <span class="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                    {{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}
+                </span>
+            </div>
+
+            <div class="p-6 space-y-8">
+                <!-- Revenue Section -->
+                <div>
+                    <h3 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-4">{{ __('Cashier Sales') }}</h3>
+                    <div class="space-y-3">
+                        @foreach($revenueItems as $item)
+                        <div class="flex justify-between items-center py-2 border-b border-dashed border-gray-100 dark:border-gray-700">
+                            <span class="text-gray-700 dark:text-gray-300">{{ $item['name'] }}</span>
+                            <span class="font-medium text-gray-900 dark:text-white">Rp. {{ number_format($item['amount'], 0, ',', '.') }}</span>
+                        </div>
+                        @endforeach
+                        <div class="flex justify-between items-center py-4 bg-green-50 dark:bg-green-900/20 px-6 rounded-2xl mt-4">
+                            <span class="font-bold text-green-800 dark:text-green-300">{{ __('Total Revenue') }}</span>
+                            <span class="font-bold text-green-800 dark:text-green-300">Rp. {{ number_format($this->getTotalRevenue(), 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expenses Section -->
+                <div>
+                    <h3 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-4">{{ __('Expenses') }}</h3>
+                    <div class="space-y-3">
+                        @foreach($expenseItems as $item)
+                        <div class="flex justify-between items-center py-2 border-b border-dashed border-gray-100 dark:border-gray-700">
+                            <span class="text-gray-700 dark:text-gray-300">{{ $item['name'] }}</span>
+                            <span class="font-medium text-gray-900 dark:text-white">Rp. {{ number_format($item['amount'], 0, ',', '.') }}</span>
+                        </div>
+                        @endforeach
+                        <div class="flex justify-between items-center py-4 bg-red-50 dark:bg-red-900/20 px-6 rounded-2xl mt-4">
+                            <span class="font-bold text-red-800 dark:text-red-300">{{ __('Total Expenses') }}</span>
+                            <span class="font-bold text-red-800 dark:text-red-300">Rp. {{ number_format($this->getTotalExpenses(), 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Net Profit -->
+                <div class="flex justify-between items-center py-6 bg-gray-900 dark:bg-black text-white px-8 rounded-2xl shadow-lg mt-6">
+                    <span class="text-xl font-bold">{{ __('Net Profit') }}</span>
+                    <span class="text-3xl font-bold text-indigo-400">Rp. {{ number_format($this->getNetProfit(), 0, ',', '.') }}</span>
+                </div>
             </div>
         </div>
     </div>

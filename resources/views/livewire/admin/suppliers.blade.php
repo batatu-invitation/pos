@@ -303,48 +303,48 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
                     <!-- Name -->
                     <div class="col-span-1 md:col-span-2">
                         <x-input-label for="name" :value="__('Company Name')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
-                        <x-text-input wire:model="name" id="name" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" type="text"
+                        <x-text-input wire:model="name" id="name" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="text"
                             placeholder="PT. Example" />
                         <x-input-error :messages="$errors->get('name')" class="mt-1" />
                     </div>
 
                     <!-- Contact Person -->
                     <div>
-                        <x-input-label for="contact_person" :value="__('Contact Person')" class="text-gray-700 font-medium mb-1" />
-                        <x-text-input wire:model="contact_person" id="contact_person" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="text"
+                        <x-input-label for="contact_person" :value="__('Contact Person')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                        <x-text-input wire:model="contact_person" id="contact_person" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="text"
                             placeholder="John Doe" />
                         <x-input-error :messages="$errors->get('contact_person')" class="mt-1" />
                     </div>
 
                     <!-- Phone -->
                     <div>
-                        <x-input-label for="phone" :value="__('Phone Number')" class="text-gray-700 font-medium mb-1" />
-                        <x-text-input wire:model="phone" id="phone" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="text"
+                        <x-input-label for="phone" :value="__('Phone Number')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                        <x-text-input wire:model="phone" id="phone" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="text"
                             placeholder="+62 ..." />
                         <x-input-error :messages="$errors->get('phone')" class="mt-1" />
                     </div>
 
                     <!-- Email -->
                     <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="email" :value="__('Email Address')" class="text-gray-700 font-medium mb-1" />
-                        <x-text-input wire:model="email" id="email" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="email"
+                        <x-input-label for="email" :value="__('Email Address')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                        <x-text-input wire:model="email" id="email" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="email"
                             placeholder="email@example.com" />
                         <x-input-error :messages="$errors->get('email')" class="mt-1" />
                     </div>
 
                     <!-- Address -->
                     <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="address" :value="__('Address')" class="text-gray-700 font-medium mb-1" />
-                        <textarea wire:model="address" id="address" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 shadow-sm" rows="3" placeholder="Full address..."></textarea>
+                        <x-input-label for="address" :value="__('Address')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                        <textarea wire:model="address" id="address" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" rows="3" placeholder="Full address..."></textarea>
                         <x-input-error :messages="$errors->get('address')" class="mt-1" />
                     </div>
 
                     <!-- Status -->
                     <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="status" :value="__('Status')" class="text-gray-700 font-medium mb-1" />
+                        <x-input-label for="status" :value="__('Status')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                         <div class="relative">
                             <select wire:model="status" id="status"
-                                class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700">
+                                class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                                 <option value="Active">{{ __('Active') }}</option>
                                 <option value="Inactive">{{ __('Inactive') }}</option>
                             </select>
@@ -355,11 +355,11 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
 
                 <div class="mt-8 flex justify-end gap-3">
                     <button type="button" x-on:click="$dispatch('close-modal', 'supplier-modal')"
-                        class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm">
+                        class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600">
                         {{ __('Cancel') }}
                     </button>
                     <button type="submit"
-                        class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 font-medium text-sm">
+                        class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 font-medium text-sm dark:shadow-none dark:bg-indigo-500 dark:hover:bg-indigo-600">
                         {{ $editingId ? __('Update Supplier') : __('Create Supplier') }}
                     </button>
                 </div>

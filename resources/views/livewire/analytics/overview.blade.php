@@ -206,15 +206,39 @@ class extends Component
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6"
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6 custom-scrollbar"
      x-data="{
          chart: null,
+         isDark: document.documentElement.classList.contains('dark'),
          init() {
              this.$nextTick(() => {
                  if (this.$el.dataset.chart) {
                     this.renderChart(JSON.parse(this.$el.dataset.chart));
                  }
              });
+
+             const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class') {
+                        this.isDark = document.documentElement.classList.contains('dark');
+                        if (this.chart) {
+                            this.updateChartTheme();
+                        }
+                    }
+                });
+             });
+             observer.observe(document.documentElement, { attributes: true });
+         },
+         updateChartTheme() {
+            if (!this.chart) return;
+            const textColor = this.isDark ? '#9ca3af' : '#4b5563';
+            const gridColor = this.isDark ? '#374151' : '#f3f4f6';
+            
+            this.chart.options.scales.x.grid.color = gridColor;
+            this.chart.options.scales.y.grid.color = gridColor;
+            this.chart.options.scales.x.ticks.color = textColor;
+            this.chart.options.scales.y.ticks.color = textColor;
+            this.chart.update();
          },
          renderChart(data) {
              if (!data) return;
@@ -225,6 +249,9 @@ class extends Component
              if (this.chart) {
                  this.chart.destroy();
              }
+
+             const textColor = this.isDark ? '#9ca3af' : '#4b5563';
+             const gridColor = this.isDark ? '#374151' : '#f3f4f6';
 
              this.chart = new Chart(ctx, {
                  type: 'line',
@@ -252,9 +279,10 @@ class extends Component
                              beginAtZero: true,
                              grid: {
                                  borderDash: [2, 4],
-                                 color: '#f3f4f6'
+                                 color: gridColor
                              },
                              ticks: {
+                                 color: textColor,
                                  callback: function(value) {
                                      return 'Rp ' + value.toLocaleString();
                                  }
@@ -262,7 +290,11 @@ class extends Component
                          },
                          x: {
                              grid: {
-                                 display: false
+                                 display: false,
+                                 color: gridColor
+                             },
+                             ticks: {
+                                 color: textColor
                              }
                          }
                      }
@@ -278,13 +310,13 @@ class extends Component
     <!-- Header Actions -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
-            <h2 class="text-lg font-bold text-gray-800">{{ __('Business Overview') }}</h2>
-            <p class="text-sm text-gray-500">{{ __('Key performance indicators for your business.') }}</p>
+            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">{{ __('Business Overview') }}</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Key performance indicators for your business.') }}</p>
         </div>
         <div class="flex items-center space-x-3">
             <div class="relative">
                 <i class="fas fa-calendar absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-                <select wire:model.live="dateRange" class="pl-8 pr-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select wire:model.live="dateRange" class="pl-8 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
                     <option value="7_days">{{ __('Last 7 Days') }}</option>
                     <option value="30_days">{{ __('Last 30 Days') }}</option>
                     <option value="this_month">{{ __('This Month') }}</option>
@@ -292,7 +324,7 @@ class extends Component
                     <option value="this_year">{{ __('This Year') }}</option>
                 </select>
             </div>
-            <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+            <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
                 <i class="fas fa-download mr-2"></i> {{ __('Report') }}
             </button>
         </div>
@@ -301,85 +333,85 @@ class extends Component
     <!-- KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total Sales -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('Total Sales') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($totalSales, 0, ',', '.') }}</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Sales') }}</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">Rp. {{ number_format($totalSales, 0, ',', '.') }}</h3>
                 </div>
-                <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400">
                     <i class="fas fa-dollar-sign text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="{{ $salesGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                <span class="{{ $salesGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
                     <i class="fas fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($salesGrowth), 1) }}%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
+                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
             </div>
         </div>
 
         <!-- Total Orders -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('Total Orders') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($totalOrders) }}</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Orders') }}</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalOrders) }}</h3>
                 </div>
-                <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
+                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
                     <i class="fas fa-shopping-bag text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="{{ $ordersGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                <span class="{{ $ordersGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
                     <i class="fas fa-arrow-{{ $ordersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($ordersGrowth), 1) }}%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
+                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
             </div>
         </div>
 
         <!-- New Customers -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('New Customers') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($newCustomers) }}</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('New Customers') }}</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($newCustomers) }}</h3>
                 </div>
-                <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
+                <div class="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
                     <i class="fas fa-users text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="{{ $customersGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                <span class="{{ $customersGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
                     <i class="fas fa-arrow-{{ $customersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($customersGrowth), 1) }}%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
+                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
             </div>
         </div>
 
         <!-- Avg Transaction -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('Avg. Transaction') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1">Rp. {{ number_format($avgTransaction, ) }}</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Avg. Transaction') }}</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">Rp. {{ number_format($avgTransaction, ) }}</h3>
                 </div>
-                <div class="p-2 bg-orange-50 rounded-lg text-orange-600">
+                <div class="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-xl text-orange-600 dark:text-orange-400">
                     <i class="fas fa-receipt text-lg"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="{{ $avgTransactionGrowth >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium flex items-center">
+                <span class="{{ $avgTransactionGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
                     <i class="fas fa-arrow-{{ $avgTransactionGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($avgTransactionGrowth), 1) }}%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last period') }}</span>
+                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
             </div>
         </div>
     </div>
 
     <!-- Main Chart -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8" wire:ignore>
-        <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Revenue Analytics') }}</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 mb-8" wire:ignore>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">{{ __('Revenue Analytics') }}</h3>
         <div class="relative h-80 w-full">
             <canvas x-ref="revenueChart"></canvas>
         </div>
@@ -387,29 +419,29 @@ class extends Component
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Top Products -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-gray-800">{{ __('Top Selling Products') }}</h3>
-                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">{{ __('View All') }}</a>
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+                <h3 class="font-bold text-gray-800 dark:text-white">{{ __('Top Selling Products') }}</h3>
+                <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">{{ __('View All') }}</a>
             </div>
             <div class="p-0">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 dark:text-gray-400 uppercase">
                         <tr>
                             <th class="px-6 py-3 font-medium">{{ __('Product') }}</th>
                             <th class="px-6 py-3 font-medium text-right">{{ __('Sales') }}</th>
                             <th class="px-6 py-3 font-medium text-right">{{ __('Revenue') }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 text-sm">
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
                         @foreach($topProducts as $product)
-                        <tr>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="px-6 py-3 flex items-center">
-                                <div class="w-8 h-8 rounded bg-gray-200 mr-3"></div>
-                                <span class="font-medium text-gray-800">{{ $product['name'] }}</span>
+                                <div class="w-8 h-8 rounded bg-gray-200 dark:bg-gray-600 mr-3"></div>
+                                <span class="font-medium text-gray-800 dark:text-gray-200">{{ $product['name'] }}</span>
                             </td>
-                            <td class="px-6 py-3 text-right text-gray-600">{{ $product['sales'] }}</td>
-                            <td class="px-6 py-3 text-right font-medium text-gray-900">Rp. {{ number_format($product['revenue'], 0 , ',', '.' ) }}</td>
+                            <td class="px-6 py-3 text-right text-gray-600 dark:text-gray-400">{{ $product['sales'] }}</td>
+                            <td class="px-6 py-3 text-right font-medium text-gray-900 dark:text-gray-100">Rp. {{ number_format($product['revenue'], 0 , ',', '.' ) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -419,15 +451,15 @@ class extends Component
     </div>
 
     <!-- Recent Activities Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-8">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">{{ __('Recent System Activities') }}</h3>
-            <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">{{ __('View All Logs') }}</button>
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mt-8">
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ __('Recent System Activities') }}</h3>
+            <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">{{ __('View All Logs') }}</button>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                    <tr class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                         <th class="px-6 py-3 font-medium">{{ __('Activity') }}</th>
                         <th class="px-6 py-3 font-medium">{{ __('User') }}</th>
                         <th class="px-6 py-3 font-medium">{{ __('Time') }}</th>
@@ -435,21 +467,21 @@ class extends Component
                         <th class="px-6 py-3 font-medium">{{ __('Status') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @foreach($recentActivities as $activity)
-                    <tr class="hover:bg-gray-50 transition-colors">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center">
                                 <div class="h-8 w-8 rounded-full flex items-center justify-center mr-3
-                                    {{ $activity['type'] === 'success' ? 'bg-green-100 text-green-600' :
-                                       ($activity['type'] === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                                       ($activity['type'] === 'danger' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600')) }}">
+                                    {{ $activity['type'] === 'success' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' :
+                                       ($activity['type'] === 'warning' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                       ($activity['type'] === 'danger' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400')) }}">
                                     <i class="fas fa-{{ $activity['type'] === 'success' ? 'check' :
                                        ($activity['type'] === 'warning' ? 'exclamation' :
                                        ($activity['type'] === 'danger' ? 'times' : 'info')) }}"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $activity['action'] }}</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $activity['action'] }}</p>
                                     <p class="text-xs text-gray-500">{{ $activity['details'] }}</p>
                                 </div>
                             </div>

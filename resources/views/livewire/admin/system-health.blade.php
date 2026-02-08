@@ -146,7 +146,7 @@ class extends Component
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6"
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6 dark:bg-gray-900"
      x-data="{
          init() {
              this.$nextTick(() => {
@@ -164,6 +164,10 @@ class extends Component
                 // Destroy existing chart if it exists to prevent duplicates on refresh
                 const existingChart = Chart.getChart(ctx);
                 if (existingChart) existingChart.destroy();
+
+                const isDarkMode = document.documentElement.classList.contains('dark');
+                const gridColor = isDarkMode ? '#374151' : '#f3f4f6';
+                const textColor = isDarkMode ? '#9ca3af' : '#4b5563';
 
                 new Chart(ctx, {
                     type: 'line',
@@ -185,7 +189,15 @@ class extends Component
                             legend: { display: false }
                         },
                         scales: {
-                            y: { beginAtZero: true, ticks: { precision: 0 } }
+                            y: { 
+                                beginAtZero: true, 
+                                ticks: { precision: 0, color: textColor },
+                                grid: { color: gridColor }
+                            },
+                            x: {
+                                ticks: { color: textColor },
+                                grid: { color: gridColor }
+                            }
                         }
                     }
                 });
@@ -196,12 +208,12 @@ class extends Component
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-semibold text-gray-800">{{ __('System Health') }}</h1>
+        <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">{{ __('System Health') }}</h1>
         <div class="flex items-center space-x-4">
-            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+            <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full text-sm font-medium border border-green-200 dark:border-green-800">
                 <i class="fas fa-check-circle mr-1"></i> {{ __('System Online') }}
             </span>
-            <button wire:click="$refresh" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors" title="{{ __('Refresh Data') }}">
+            <button wire:click="$refresh" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors dark:hover:text-indigo-400" title="{{ __('Refresh Data') }}">
                 <i class="fas fa-sync-alt"></i>
             </button>
         </div>
@@ -209,47 +221,47 @@ class extends Component
 
     <!-- Status Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500">{{ __('Server Status') }}</h3>
-                <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">{{ $serverStatus }}</span>
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Server Status') }}</h3>
+                <span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold rounded-full">{{ $serverStatus }}</span>
             </div>
-            <div class="flex items-center text-green-600">
+            <div class="flex items-center text-green-600 dark:text-green-400">
                 <i class="fas fa-check-circle mr-2"></i>
                 <span class="font-medium">Laravel v{{ app()->version() }}</span>
             </div>
-            <div class="text-xs text-gray-400 mt-1">PHP v{{ phpversion() }}</div>
+            <div class="text-xs text-gray-400 mt-1 dark:text-gray-500">PHP v{{ phpversion() }}</div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500">{{ __('CPU Load (1m)') }}</h3>
-                <span class="text-xs text-gray-400">{{ __('Est. Usage') }}</span>
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('CPU Load (1m)') }}</h3>
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ __('Est. Usage') }}</span>
             </div>
-            <div class="text-2xl font-bold text-gray-900 mb-2" >{{ $cpuUsage }}%</div>
-            <div class="w-full bg-gray-200 rounded-full h-1.5">
+            <div class="text-2xl font-bold text-gray-900 mb-2 dark:text-gray-100" >{{ $cpuUsage }}%</div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                 <div class="bg-indigo-600 h-1.5 rounded-full" style="width: {{ $cpuUsage }}%"></div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500">{{ __('Memory (PHP)') }}</h3>
-                <span class="text-xs text-gray-400">{{ __('Limit:') }} {{ $memoryLimit }}</span>
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Memory (PHP)') }}</h3>
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ __('Limit:') }} {{ $memoryLimit }}</span>
             </div>
-            <div class="text-2xl font-bold text-gray-900 mb-2">{{ $memoryUsage }}</div>
-            <div class="w-full bg-gray-200 rounded-full h-1.5">
+            <div class="text-2xl font-bold text-gray-900 mb-2 dark:text-gray-100">{{ $memoryUsage }}</div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                 <div class="bg-yellow-500 h-1.5 rounded-full" style="width: {{ $memoryPercentage }}%"></div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500">{{ __('Disk Space') }}</h3>
-                <span class="text-xs text-gray-400">{{ $diskTotal }} {{ __('Total') }}</span>
+                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Disk Space') }}</h3>
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ $diskTotal }} {{ __('Total') }}</span>
             </div>
-            <div class="text-2xl font-bold text-gray-900 mb-2">{{ $diskFree }} {{ __('Free') }}</div>
-            <div class="w-full bg-gray-200 rounded-full h-1.5">
+            <div class="text-2xl font-bold text-gray-900 mb-2 dark:text-gray-100">{{ $diskFree }} {{ __('Free') }}</div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                 <div class="bg-indigo-600 h-1.5 rounded-full" style="width: {{ $diskPercentage }}%"></div>
             </div>
         </div>
@@ -259,24 +271,32 @@ class extends Component
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
         <!-- Activity Chart -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Activity Volume (Last 10 Hours)') }}</h3>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 dark:text-gray-100">{{ __('Activity Volume (Last 10 Hours)') }}</h3>
             <div class="h-64">
                 <canvas id="activityVolumeChart"></canvas>
             </div>
         </div>
 
         <!-- System Services Health -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Service Status') }}</h3>
-            <div class="space-y-4 max-h-64 overflow-y-auto pr-2">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 dark:text-gray-100">{{ __('Service Status') }}</h3>
+            <div class="space-y-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                 @foreach($services as $service)
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-2xl dark:bg-gray-700/50">
                     <div class="flex items-center">
                         <i class="fas fa-{{ $service['icon'] }} text-indigo-500 w-6"></i>
-                        <span class="font-medium text-gray-900 ml-2">{{ $service['name'] }}</span>
+                        <span class="font-medium text-gray-900 ml-2 dark:text-gray-200">{{ $service['name'] }}</span>
                     </div>
-                    <span class="px-2 py-1 bg-{{ $service['status_color'] }}-100 text-{{ $service['status_color'] }}-700 text-xs font-semibold rounded">{{ $service['status'] }}</span>
+                    @php
+                        $colorClass = match($service['status_color']) {
+                            'green' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                            'yellow' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                            'red' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                            default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                        };
+                    @endphp
+                    <span class="px-2 py-1 {{ $colorClass }} text-xs font-semibold rounded-lg">{{ $service['status'] }}</span>
                 </div>
                 @endforeach
             </div>
@@ -284,31 +304,40 @@ class extends Component
     </div>
 
     <!-- Recent System Activity -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-bold text-gray-800">{{ __('Recent System Activity') }}</h3>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">{{ __('Recent System Activity') }}</h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
+                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider dark:bg-gray-700/50 dark:text-gray-400">
                         <th class="px-6 py-3 font-semibold">{{ __('Time') }}</th>
                         <th class="px-6 py-3 font-semibold">{{ __('Source') }}</th>
                         <th class="px-6 py-3 font-semibold">{{ __('Type') }}</th>
                         <th class="px-6 py-3 font-semibold">{{ __('Message') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 text-sm">
+                <tbody class="divide-y divide-gray-100 text-sm dark:divide-gray-700">
                     @forelse($alerts as $alert)
-                    <tr>
-                        <td class="px-6 py-4 text-gray-500">{{ $alert['time'] }}</td>
-                        <td class="px-6 py-4 font-medium text-gray-900">{{ $alert['service'] }}</td>
-                        <td class="px-6 py-4"><span class="px-2 py-1 bg-{{ $alert['type_color'] }}-100 text-{{ $alert['type_color'] }}-700 rounded text-xs">{{ $alert['type'] }}</span></td>
-                        <td class="px-6 py-4 text-gray-600">{{ $alert['message'] }}</td>
+                    <tr class="hover:bg-gray-50 transition-colors dark:hover:bg-gray-700/30">
+                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ $alert['time'] }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-200">{{ $alert['service'] }}</td>
+                        <td class="px-6 py-4">
+                            @php
+                                $typeColor = match($alert['type_color']) {
+                                    'yellow' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                    'blue' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                                    default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                };
+                            @endphp
+                            <span class="px-2 py-1 {{ $typeColor }} rounded-lg text-xs">{{ $alert['type'] }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300">{{ $alert['message'] }}</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">{{ __('No recent activity found.') }}</td>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">{{ __('No recent activity found.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

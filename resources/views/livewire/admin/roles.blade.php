@@ -381,23 +381,23 @@ class extends Component
             method: 'saveRole',
             params: [],
             componentId: '{{ $this->getId() }}'
-        })" class="p-6">
-            <h2 class="text-lg font-medium text-gray-900">
+        })" class="p-6 bg-white dark:bg-gray-800 rounded-3xl">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ $editingRoleId ? __('Edit Role') : __('Create New Role') }}
             </h2>
 
             <div class="mt-6">
-                <x-input-label for="roleName" value="{{ __('Role Name') }}" />
-                <x-text-input wire:model="roleName" id="roleName" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. Store Manager') }}" />
+                <x-input-label for="roleName" value="{{ __('Role Name') }}" class="dark:text-gray-300" />
+                <x-text-input wire:model="roleName" id="roleName" class="block mt-1 w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 rounded-xl" type="text" placeholder="{{ __('e.g. Store Manager') }}" />
                 <x-input-error :messages="$errors->get('roleName')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-secondary-button x-on:click="$dispatch('close')" class="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-xl">
                     {{ __('Cancel') }}
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3">
+                <x-primary-button class="ml-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     {{ __('Save Role') }}
                 </x-primary-button>
             </div>
@@ -414,23 +414,23 @@ class extends Component
             method: 'savePermission',
             params: [],
             componentId: '{{ $this->getId() }}'
-        })" class="p-6">
-            <h2 class="text-lg font-medium text-gray-900">
+        })" class="p-6 bg-white dark:bg-gray-800 rounded-3xl">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ $editingPermissionId ? __('Edit Permission') : __('Create New Permission') }}
             </h2>
 
             <div class="mt-6">
-                <x-input-label for="permissionName" value="{{ __('Permission Name') }}" />
-                <x-text-input wire:model="permissionName" id="permissionName" class="block mt-1 w-full" type="text" placeholder="{{ __('e.g. edit_products') }}" />
+                <x-input-label for="permissionName" value="{{ __('Permission Name') }}" class="dark:text-gray-300" />
+                <x-text-input wire:model="permissionName" id="permissionName" class="block mt-1 w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 rounded-xl" type="text" placeholder="{{ __('e.g. edit_products') }}" />
                 <x-input-error :messages="$errors->get('permissionName')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-secondary-button x-on:click="$dispatch('close')" class="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-xl">
                     {{ __('Cancel') }}
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3">
+                <x-primary-button class="ml-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     {{ $editingPermissionId ? __('Update Permission') : __('Save Permission') }}
                 </x-primary-button>
             </div>
@@ -447,45 +447,45 @@ class extends Component
             method: 'updateRolePermissions',
             params: [],
             componentId: '{{ $this->getId() }}'
-        })" class="p-6">
+        })" class="p-6 bg-white dark:bg-gray-800 rounded-3xl">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
                         {{ __('Configure Permissions') }}
                     </h2>
-                    <p class="text-sm text-gray-500 mt-1">{{ __('Role:') }} <span class="font-semibold text-indigo-600">{{ $editingRoleName }}</span></p>
+                    <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">{{ __('Role:') }} <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $editingRoleName }}</span></p>
                 </div>
-                <button type="button" x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <button type="button" x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-600 transition-colors dark:hover:text-gray-300">
                     <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
 
             <div class="max-h-[65vh] overflow-y-auto p-1 custom-scrollbar">
                 @if($groupedPermissions->isEmpty())
-                    <div class="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <i class="fas fa-folder-open text-gray-300 text-4xl mb-3"></i>
-                        <p class="text-gray-500">{{ __('No permissions found. Create some permissions first.') }}</p>
+                    <div class="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
+                        <i class="fas fa-folder-open text-gray-300 text-4xl mb-3 dark:text-gray-600"></i>
+                        <p class="text-gray-500 dark:text-gray-400">{{ __('No permissions found. Create some permissions first.') }}</p>
                     </div>
                 @else
                     <div class="grid grid-cols-1 gap-6">
                         @foreach($groupedPermissions as $group => $perms)
-                            <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
-                                <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-200/50">
-                                    <h4 class="font-bold text-gray-800 flex items-center">
+                            <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 dark:bg-gray-900/50 dark:border-gray-700">
+                                <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-200/50 dark:border-gray-700">
+                                    <h4 class="font-bold text-gray-800 flex items-center dark:text-gray-200">
                                         <div class="w-2 h-2 rounded-full bg-indigo-500 mr-2"></div>
                                         {{ $group }}
                                     </h4>
-                                    <span class="text-xs font-medium px-2 py-1 bg-white rounded-md text-gray-500 border border-gray-200 shadow-sm">{{ $perms->count() }}</span>
+                                    <span class="text-xs font-medium px-2 py-1 bg-white rounded-md text-gray-500 border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">{{ $perms->count() }}</span>
                                 </div>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                     @foreach($perms as $permission)
-                                        <label class="group relative flex items-center p-3 rounded-xl border cursor-pointer transition-all duration-200 {{ in_array($permission->name, $selectedPermissions) ? 'bg-white border-indigo-200 shadow-sm ring-1 ring-indigo-500/20' : 'bg-white border-gray-200 hover:border-indigo-300 hover:shadow-sm' }}">
+                                        <label class="group relative flex items-center p-3 rounded-xl border cursor-pointer transition-all duration-200 {{ in_array($permission->name, $selectedPermissions) ? 'bg-white border-indigo-200 shadow-sm ring-1 ring-indigo-500/20 dark:bg-gray-800 dark:border-indigo-500/50 dark:ring-indigo-500/40' : 'bg-white border-gray-200 hover:border-indigo-300 hover:shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:border-indigo-500/50' }}">
                                             <div class="flex items-center h-5">
-                                                <input type="checkbox" wire:model="selectedPermissions" value="{{ $permission->name }}" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-colors cursor-pointer">
+                                                <input type="checkbox" wire:model="selectedPermissions" value="{{ $permission->name }}" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-colors cursor-pointer dark:bg-gray-700 dark:border-gray-600 dark:checked:bg-indigo-500">
                                             </div>
                                             <div class="ml-3 text-sm">
-                                                <span class="font-medium text-gray-700 group-hover:text-indigo-700 transition-colors block truncate" title="{{ $permission->name }}">
+                                                <span class="font-medium text-gray-700 group-hover:text-indigo-700 transition-colors block truncate dark:text-gray-300 dark:group-hover:text-indigo-400" title="{{ $permission->name }}">
                                                     {{ str_replace($group . '_', '', $permission->name) }}
                                                 </span>
                                             </div>
@@ -498,12 +498,12 @@ class extends Component
                 @endif
             </div>
 
-            <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <x-secondary-button x-on:click="$dispatch('close')" class="!rounded-xl !px-5 !py-2.5">
+            <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <x-secondary-button x-on:click="$dispatch('close')" class="!rounded-xl !px-5 !py-2.5 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                     {{ __('Cancel') }}
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3 !rounded-xl !px-5 !py-2.5 !bg-indigo-600 hover:!bg-indigo-700 shadow-lg shadow-indigo-100">
+                <x-primary-button class="ml-3 !rounded-xl !px-5 !py-2.5 !bg-indigo-600 hover:!bg-indigo-700 shadow-lg shadow-indigo-100 dark:shadow-none dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     {{ __('Update Permissions') }}
                 </x-primary-button>
             </div>

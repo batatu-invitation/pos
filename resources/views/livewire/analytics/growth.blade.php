@@ -81,12 +81,17 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
         $lastYearMonthly = [];
 
         // Efficient query for monthly data
-        $thisYearSales = Sale::selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')->whereYear('created_at', $now->year)->where('status', 'completed')->groupBy('month')->pluck('total', 'month')->toArray();
+        $thisYearSales = Sale::selectRaw('EXTRACT(MONTH FROM created_at) as month, SUM(total_amount) as total')
+            ->whereYear('created_at', $now->year)
+            ->where('status', 'completed')
+            ->groupByRaw('EXTRACT(MONTH FROM created_at)')
+            ->pluck('total', 'month')
+            ->toArray();
 
-        $lastYearSales = Sale::selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
+        $lastYearSales = Sale::selectRaw('EXTRACT(MONTH FROM created_at) as month, SUM(total_amount) as total')
             ->whereYear('created_at', $now->copy()->subYear()->year)
             ->where('status', 'completed')
-            ->groupBy('month')
+            ->groupByRaw('EXTRACT(MONTH FROM created_at)')
             ->pluck('total', 'month')
             ->toArray();
 
@@ -176,15 +181,15 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
         // Fetch Sales Data Grouped by Year-Month
         $salesData = Sale::selectRaw(
             '
-        YEAR(created_at) as year,
-        MONTH(created_at) as month,
+        EXTRACT(YEAR FROM created_at) as year,
+        EXTRACT(MONTH FROM created_at) as month,
         SUM(total_amount) as revenue,
         COUNT(*) as orders
     ',
         )
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'completed')
-            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
             ->get()
             ->keyBy(function ($item) {
                 return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
@@ -193,13 +198,13 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
         // Fetch Customer Data Grouped by Year-Month
         $customerData = Customer::selectRaw(
             '
-        YEAR(created_at) as year,
-        MONTH(created_at) as month,
+        EXTRACT(YEAR FROM created_at) as year,
+        EXTRACT(MONTH FROM created_at) as month,
         COUNT(*) as count
     ',
         )
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
             ->get()
             ->keyBy(function ($item) {
                 return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
@@ -269,7 +274,11 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
 
 <div x-data="{
     charts: {{ json_encode($charts) }},
+    isDark: document.documentElement.classList.contains('dark'),
     initCharts() {
+        const textColor = this.isDark ? '#9ca3af' : '#4b5563';
+        const gridColor = this.isDark ? '#374151' : '#e5e7eb';
+
         // Revenue Growth Chart (Line)
         const growthCtx = document.getElementById('growthChart').getContext('2d');
         if (window.growthChartInstance) {
@@ -282,12 +291,12 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
                 datasets: [{
                     label: '{{ __('Annual Revenue (Rp.)') }}',
                     data: this.charts.revenue_trend,
-                    borderColor: '#4f46e5',
-                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
                     tension: 0.4,
                     fill: true,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#4f46e5',
+                    pointBackgroundColor: this.isDark ? '#1f2937' : '#ffffff',
+                    pointBorderColor: '#6366f1',
                     pointBorderWidth: 2,
                     pointRadius: 4
                 }]
@@ -301,14 +310,21 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { borderDash: [2, 4] },
+                        grid: { 
+                            color: gridColor,
+                            borderDash: [2, 4] 
+                        },
                         ticks: {
+                            color: textColor,
                             callback: function(value) {
                                 return 'Rp ' + value.toLocaleString();
                             }
                         }
                     },
-                    x: { grid: { display: false } }
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: textColor }
+                    }
                 }
             }
         });
@@ -325,13 +341,13 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
                 datasets: [{
                         label: this.charts.this_year,
                         data: this.charts.this_year_monthly,
-                        backgroundColor: '#4f46e5',
+                        backgroundColor: '#6366f1',
                         borderRadius: 4
                     },
                     {
                         label: this.charts.last_year,
                         data: this.charts.last_year_monthly,
-                        backgroundColor: '#e5e7eb',
+                        backgroundColor: this.isDark ? '#374151' : '#e5e7eb',
                         borderRadius: 4
                     }
                 ]
@@ -345,9 +361,16 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { borderDash: [2, 4] }
+                        grid: { 
+                            color: gridColor,
+                            borderDash: [2, 4] 
+                        },
+                        ticks: { color: textColor }
                     },
-                    x: { grid: { display: false } }
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: textColor }
+                    }
                 }
             }
         });
@@ -367,7 +390,9 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
                     borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     tension: 0.4,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: this.isDark ? '#1f2937' : '#ffffff',
+                    pointBorderColor: '#10b981'
                 }]
             },
             options: {
@@ -375,215 +400,247 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, grid: { borderDash: [2, 4] } },
-                    x: { grid: { display: false } }
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { 
+                            color: gridColor,
+                            borderDash: [2, 4] 
+                        },
+                        ticks: { color: textColor }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: textColor }
+                    }
                 }
             }
         });
+    },
+    init() {
+        this.initCharts();
+        
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    this.isDark = document.documentElement.classList.contains('dark');
+                    this.initCharts();
+                }
+            });
+        });
+        
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
     }
-}" x-init="initCharts();
-Livewire.hook('morph.updated', () => { initCharts(); });" class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+}" x-init="init(); Livewire.hook('morph.updated', () => { initCharts(); });" 
+class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-colors duration-300">
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <!-- YoY Growth -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm text-gray-500 mb-1">{{ __('Annual Revenue Growth') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">
-                        {{ $kpi['annual_revenue_growth'] >= 0 ? '+' : '' }}{{ number_format($kpi['annual_revenue_growth'], 1, ',', '.') }}%
-                    </h3>
-                </div>
-                <div class="p-2 bg-green-50 rounded-lg text-green-600">
-                    <i class="fas fa-chart-line text-xl"></i>
-                </div>
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50">
+            <div>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                    {{ __('Company Growth') }}
+                </h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {{ __('Track key performance indicators and growth metrics') }}
+                </p>
             </div>
-            <p class="text-xs text-gray-500 mt-2">{{ __('Compared to last year') }}</p>
-        </div>
-
-        <!-- New Customers -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm text-gray-500 mb-1">{{ __('New Customer Rate') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">
-                        {{ $kpi['new_customer_rate'] >= 0 ? '+' : '' }}{{ number_format($kpi['new_customer_rate'], 1, ',', '.') }}%
-                    </h3>
-                </div>
-                <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-                    <i class="fas fa-user-plus text-xl"></i>
-                </div>
-            </div>
-            <p
-                class="text-xs {{ $kpi['new_customer_change'] >= 0 ? 'text-green-600' : 'text-red-600' }} mt-2 flex items-center">
-                <i class="fas fa-arrow-{{ $kpi['new_customer_change'] >= 0 ? 'up' : 'down' }} mr-1"></i>
-                {{ abs($kpi['new_customer_change']) }} {{ __('from last month') }}
-            </p>
-        </div>
-
-        <!-- Retention -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm text-gray-500 mb-1">{{ __('Customer Retention') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">
-                        {{ number_format($kpi['customer_retention'], 1, ',', '.') }}%</h3>
-                </div>
-                <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
-                    <i class="fas fa-hand-holding-heart text-xl"></i>
-                </div>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">{{ __('Returning customers') }}</p>
-        </div>
-
-        <!-- Market Share (Used for AOV) -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm text-gray-500 mb-1">{{ __('Avg. Order Value') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">Rp. {{ number_format($kpi['aov'], 0, ',', '.') }}</h3>
-                </div>
-                <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                    <i class="fas fa-shopping-bag text-xl"></i>
-                </div>
-            </div>
-            <p
-                class="text-xs {{ $kpi['aov_growth'] >= 0 ? 'text-green-600' : 'text-red-600' }} mt-2 flex items-center">
-                <i class="fas fa-arrow-{{ $kpi['aov_growth'] >= 0 ? 'up' : 'down' }} mr-1"></i>
-                {{ number_format(abs($kpi['aov_growth']), 1, ',', '.') }}% {{ __('YoY') }}
-            </p>
-        </div>
-    </div>
-
-    <!-- Charts Row 1 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- Revenue Trend -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Revenue Growth Trend (5 Years)') }}</h3>
-            <div class="relative h-72 w-full">
-                <canvas id="growthChart"></canvas>
+            <div class="flex items-center gap-2">
+                <span class="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                    {{ __('Last updated') }}: {{ now()->format('M d, Y') }}
+                </span>
             </div>
         </div>
 
-        <!-- Monthly Comparison -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-800">{{ __('Monthly Performance') }}</h3>
-                <div class="flex space-x-2">
-                    <span class="flex items-center text-xs text-gray-500">
-                        <span class="w-3 h-3 bg-indigo-500 rounded-full mr-1"></span> {{ $charts['this_year'] }}
-                    </span>
-                    <span class="flex items-center text-xs text-gray-500">
-                        <span class="w-3 h-3 bg-gray-300 rounded-full mr-1"></span> {{ $charts['last_year'] }}
-                    </span>
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- YoY Growth -->
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-green-500/50 transition-all duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Annual Revenue Growth') }}</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                            {{ $kpi['annual_revenue_growth'] >= 0 ? '+' : '' }}{{ number_format($kpi['annual_revenue_growth'], 1, ',', '.') }}%
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-green-50 dark:bg-green-900/30 rounded-2xl text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-line text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Compared to last year') }}</p>
+            </div>
+
+            <!-- New Customers -->
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-blue-500/50 transition-all duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('New Customer Rate') }}</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                            {{ $kpi['new_customer_rate'] >= 0 ? '+' : '' }}{{ number_format($kpi['new_customer_rate'], 1, ',', '.') }}%
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-2xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-user-plus text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-xs {{ $kpi['new_customer_change'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} flex items-center">
+                    <i class="fas fa-arrow-{{ $kpi['new_customer_change'] >= 0 ? 'up' : 'down' }} mr-1"></i>
+                    {{ abs($kpi['new_customer_change']) }} {{ __('from last month') }}
+                </p>
+            </div>
+
+            <!-- Retention -->
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-purple-500/50 transition-all duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Customer Retention') }}</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                            {{ number_format($kpi['customer_retention'], 1, ',', '.') }}%
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-2xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-hand-holding-heart text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Returning customers') }}</p>
+            </div>
+
+            <!-- Market Share (Used for AOV) -->
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-indigo-500/50 transition-all duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Avg. Order Value') }}</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                            Rp. {{ number_format($kpi['aov'], 0, ',', '.') }}
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-shopping-bag text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-xs {{ $kpi['aov_growth'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} flex items-center">
+                    <i class="fas fa-arrow-{{ $kpi['aov_growth'] >= 0 ? 'up' : 'down' }} mr-1"></i>
+                    {{ number_format(abs($kpi['aov_growth']), 1, ',', '.') }}% {{ __('YoY') }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Revenue Trend -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('Revenue Growth Trend (5 Years)') }}</h3>
+                <div class="relative h-72 w-full">
+                    <canvas id="growthChart"></canvas>
                 </div>
             </div>
-            <div class="relative h-72 w-full">
-                <canvas id="monthlyCompChart"></canvas>
+
+            <!-- Monthly Comparison -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Monthly Performance') }}</h3>
+                    <div class="flex space-x-2">
+                        <span class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                            <span class="w-3 h-3 bg-indigo-500 rounded-full mr-1"></span> {{ $charts['this_year'] }}
+                        </span>
+                        <span class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                            <span class="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full mr-1"></span> {{ $charts['last_year'] }}
+                        </span>
+                    </div>
+                </div>
+                <div class="relative h-72 w-full">
+                    <canvas id="monthlyCompChart"></canvas>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Charts Row 2 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Customer Acquisition -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Customer Acquisition vs Churn') }}</h3>
-            <div class="relative h-64 w-full">
-                <canvas id="customerChart"></canvas>
+        <!-- Charts Row 2 & Categories -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Customer Acquisition -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 lg:col-span-2">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('Customer Acquisition vs Churn') }}</h3>
+                <div class="relative h-80 w-full">
+                    <canvas id="customerChart"></canvas>
+                </div>
             </div>
-        </div>
 
-        <!-- Top Growing Categories -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Top Growing Categories') }} 60 Days</h3>
-            <div class="space-y-4">
-                @foreach ($topCategories as $category)
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div class="flex items-center">
-                            <div
-                                class="w-10 h-10 rounded-full {{ $category['color'] }} flex items-center justify-center text-{{ $category['color'] }}-600 mr-3">
-                                {{ $category['icon'] }}
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">{{ $category['name'] }}</h4>
-                                <p class="text-xs text-gray-500">{{ number_format($category['sales'], 0, ',', '.') }}
-                                    {{ __('Sales') }}</p>
-                            </div>
+            <!-- Top Growing Categories -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('Fastest Growing Categories') }}</h3>
+                <div class="space-y-4">
+                    @foreach($topCategories as $category)
+                    <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <div class="p-3 rounded-xl bg-{{ $category['color'] ?? 'blue' }}-100 dark:bg-{{ $category['color'] ?? 'blue' }}-900/30 text-{{ $category['color'] ?? 'blue' }}-600 dark:text-{{ $category['color'] ?? 'blue' }}-400 mr-4">
+                            <i class="fas fa-{{ $category['icon'] ?? 'box' }}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900 dark:text-white">{{ $category['name'] }}</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $category['sales'] }} {{ __('units sold') }}</p>
                         </div>
                         <div class="text-right">
-                            <span
-                                class="block {{ $category['growth'] >= 0 ? 'text-green-600' : 'text-red-500' }} font-bold">
-                                {{ $category['growth'] >= 0 ? '+' : '' }}{{ number_format($category['growth'], 1, ',', '.') }}%
+                            <span class="block font-bold {{ $category['growth'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                {{ $category['growth'] >= 0 ? '+' : '' }}{{ number_format($category['growth'], 1) }}%
                             </span>
-                            <span class="text-xs text-gray-400">{{ __('Growth') }}</span>
+                            <span class="text-xs text-gray-400">{{ __('growth') }}</span>
                         </div>
                     </div>
-                @endforeach
-                @if (empty($topCategories))
-                    <div class="text-center p-4 text-gray-500">
+                    @endforeach
+                    @if (empty($topCategories))
+                    <div class="text-center p-4 text-gray-500 dark:text-gray-400">
                         {{ __('No category data available') }}
                     </div>
-                @endif
+                    @endif
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Detailed Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">{{ __('Growth History') }}</h3>
-            <button
-                class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">{{ __('View Full Report') }}</button>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
-                        <th class="px-6 py-4">{{ __('Period') }}</th>
-                        <th class="px-6 py-4 text-right">{{ __('Revenue') }}</th>
-                        <th class="px-6 py-4 text-right">{{ __('Growth Rate') }}</th>
-                        <th class="px-6 py-4 text-right">{{ __('New Customers') }}</th>
-                        <th class="px-6 py-4 text-right">{{ __('Avg. Order Value') }}</th>
-                        <th class="px-6 py-4 text-center">{{ __('Status') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @foreach ($growthHistory as $history)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $history['period'] }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">Rp.
-                                {{ number_format($history['revenue'], 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-sm">
-                                <span
-                                    class="{{ $history['growth_rate'] >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium">
-                                    <i
-                                        class="fas fa-{{ $history['growth_rate'] >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
+        <!-- Growth History Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Growth History') }}</h3>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-sm text-gray-600 dark:text-gray-300">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 uppercase tracking-wider text-xs font-semibold">
+                        <tr>
+                            <th class="px-6 py-4">{{ __('Period') }}</th>
+                            <th class="px-6 py-4">{{ __('Revenue') }}</th>
+                            <th class="px-6 py-4">{{ __('Growth Rate') }}</th>
+                            <th class="px-6 py-4">{{ __('New Customers') }}</th>
+                            <th class="px-6 py-4">{{ __('Avg Order') }}</th>
+                            <th class="px-6 py-4">{{ __('Status') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @foreach($growthHistory as $history)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $history['period'] }}</td>
+                            <td class="px-6 py-4">Rp. {{ number_format($history['revenue'], 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">
+                                <span class="{{ $history['growth_rate'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium">
+                                    <i class="fas fa-{{ $history['growth_rate'] >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
                                     {{ number_format(abs($history['growth_rate']), 1, ',', '.') }}%
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ number_format($history['customers'], 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">Rp.
-                                {{ number_format($history['avg_order'], 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">{{ number_format($history['customers'], 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">Rp. {{ number_format($history['avg_order'], 0, ',', '.') }}</td>
                             <td class="px-6 py-4">
-                                <span
-                                    class="px-2.5 py-1 rounded-full text-xs font-medium
-                                {{ $history['status'] === 'Excellent'
-                                    ? 'bg-green-100 text-green-800'
-                                    : ($history['status'] === 'Good'
-                                        ? 'bg-blue-100 text-blue-800'
-                                        : ($history['status'] === 'Average'
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            : 'bg-red-100 text-red-800')) }}">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium
+                                    {{ $history['status'] == 'Excellent' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : '' }}
+                                    {{ $history['status'] == 'Good' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : '' }}
+                                    {{ $history['status'] == 'Average' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' : '' }}
+                                    {{ $history['status'] == 'Poor' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : '' }}
+                                ">
                                     {{ $history['status'] }}
                                 </span>
                             </td>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
