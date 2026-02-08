@@ -477,6 +477,34 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     </span>
                 </div>
                 <livewire:components.device-toolbar />
+                
+                <!-- Theme Switcher -->
+                <div class="relative" x-data="{
+                    open: false,
+                    currentTheme: localStorage.getItem('theme') || '{{ $currentTheme ?? 'system' }}',
+                    toggleTheme() {
+                        const themes = ['light', 'dark', 'system'];
+                        const currentIndex = themes.indexOf(this.currentTheme);
+                        const nextTheme = themes[(currentIndex + 1) % themes.length];
+                        this.currentTheme = nextTheme;
+                        localStorage.setItem('theme', nextTheme);
+                        document.cookie = 'theme=' + nextTheme + '; path=/; max-age=31536000; SameSite=Lax';
+                        
+                        if (nextTheme === 'dark' || (nextTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                            document.documentElement.classList.add('dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                        }
+                    }
+                }">
+                    <button @click="toggleTheme()"
+                        class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none p-2 dark:text-gray-400 dark:hover:text-indigo-400">
+                        <template x-if="currentTheme === 'light'"><i class="fas fa-sun text-xl"></i></template>
+                        <template x-if="currentTheme === 'dark'"><i class="fas fa-moon text-xl"></i></template>
+                        <template x-if="currentTheme === 'system'"><i class="fas fa-desktop text-xl"></i></template>
+                    </button>
+                </div>
+                
                 <div class="hidden md:flex space-x-2 overflow-x-auto no-scrollbar">
 
                     <button wire:click="filterCategory(null)"
@@ -766,24 +794,24 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     wire:click="$set('showDiscountModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Discount') }}</h3>
+                    class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full dark:bg-gray-800">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">{{ __('Discount') }}</h3>
                         <div class="mt-2">
                             <div class="relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">Rp. </span>
+                                    <span class="text-gray-500 sm:text-sm dark:text-gray-400">Rp. </span>
                                 </div>
                                 <input type="text" x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '')"
                                     wire:model.live.debounce.500ms="discount" step="0.01"
-                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9  p-4 sm:text-sm  border border-gray-300 rounded-md"
+                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9 p-4 sm:text-sm border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                                     placeholder="0.00">
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse dark:bg-gray-700/50">
                         <button type="button" wire:click="$set('showDiscountModal', false)"
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-medium text-white hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                             {{ __('Close') }}
                         </button>
                     </div>
@@ -801,50 +829,50 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     wire:click="$set('showCreateCustomerModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                    class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full dark:bg-gray-800">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4 dark:text-gray-100" id="modal-title">
                             {{ __('New Customer') }}
                         </h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">{{ __('Name') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Name') }}</label>
                                 <input type="text" wire:model="newCustomer.name"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md">
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                                 @error('newCustomer.name')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                    <span class="text-red-500 text-xs dark:text-red-400">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">{{ __('Email') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Email') }}</label>
                                 <input type="email" wire:model="newCustomer.email"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md">
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                                 @error('newCustomer.email')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                    <span class="text-red-500 text-xs dark:text-red-400">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">{{ __('Phone') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Phone') }}</label>
                                 <input type="text" wire:model="newCustomer.phone"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md">
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                                 @error('newCustomer.phone')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                    <span class="text-red-500 text-xs dark:text-red-400">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">{{ __('Address') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Address') }}</label>
                                 <textarea wire:model="newCustomer.address" rows="2"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-md"></textarea>
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm p-4 border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"></textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse dark:bg-gray-700/50">
                         <button type="button" wire:click="saveNewCustomer"
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-medium text-white hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                             {{ __('Save Customer') }}
                         </button>
                         <button type="button" wire:click="$set('showCreateCustomerModal', false)"
-                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600">
                             {{ __('Cancel') }}
                         </button>
                     </div>
@@ -862,38 +890,38 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     wire:click="$set('showHeldOrdersModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                    class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full dark:bg-gray-800">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4 dark:text-gray-100" id="modal-title">
                             {{ __('Held Orders') }}</h3>
                         <div class="overflow-y-auto max-h-96">
                             @forelse($this->heldOrders as $order)
-                                <div class="flex items-center justify-between p-4 mb-2 border rounded-lg hover:bg-gray-50">
+                                <div class="flex items-center justify-between p-4 mb-2 border rounded-xl hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
                                     <div>
-                                        <p class="font-bold text-gray-800">{{ $order->invoice_number }}</p>
-                                        <p class="text-sm text-gray-500">{{ $order->created_at->diffForHumans() }} -
+                                        <p class="font-bold text-gray-800 dark:text-gray-100">{{ $order->invoice_number }}</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $order->created_at->diffForHumans() }} -
                                             {{ $order->customer ? $order->customer->name : __('Walk-in') }}
                                         </p>
-                                        <p class="text-xs text-gray-400">Total: Rp.
+                                        <p class="text-xs text-gray-400 dark:text-gray-500">Total: Rp.
                                             {{ number_format($order->total_amount, 0, ',', '.') }} | Note: {{ $order->notes }}
                                         </p>
                                     </div>
                                     <button wire:click="restoreOrder('{{ $order->id }}')"
-                                        class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 text-sm font-medium">
+                                        class="px-3 py-1 bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-700 rounded-xl hover:from-indigo-200 hover:to-indigo-300 text-sm font-medium transition-all dark:from-indigo-900 dark:to-indigo-800 dark:text-indigo-300">
                                         {{ __('Restore') }}
                                     </button>
                                 </div>
                             @empty
-                                <div class="text-center text-gray-500 py-8">
+                                <div class="text-center text-gray-500 py-8 dark:text-gray-400">
                                     <i class="fas fa-box-open text-4xl mb-2"></i>
                                     <p>{{ __('No held orders found.') }}</p>
                                 </div>
                             @endforelse
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse dark:bg-gray-700/50">
                         <button type="button" wire:click="$set('showHeldOrdersModal', false)"
-                            class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600">
                             {{ __('Close') }}
                         </button>
                     </div>

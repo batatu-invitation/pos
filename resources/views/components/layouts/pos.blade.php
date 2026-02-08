@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ ($currentTheme ?? 'system') === 'dark' ? 'dark' : '' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +19,7 @@
     </script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -33,7 +34,32 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 h-screen overflow-hidden">
+<body class="bg-gray-50 h-screen overflow-hidden dark:bg-gray-900 dark:text-gray-100" 
+      x-data="{
+          theme: '{{ $currentTheme ?? 'system' }}',
+          setTheme(val) {
+              this.theme = val;
+              localStorage.setItem('theme', val);
+              document.cookie = 'theme=' + val + '; path=/; max-age=31536000; SameSite=Lax';
+              if (val === 'dark' || (val === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+              } else {
+                  document.documentElement.classList.remove('dark');
+              }
+          },
+          init() {
+              if (this.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  document.documentElement.classList.add('dark');
+              }
+              window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                  if (this.theme === 'system') {
+                      if (e.matches) document.documentElement.classList.add('dark');
+                      else document.documentElement.classList.remove('dark');
+                  }
+              });
+          }
+      }" 
+      x-init="init()">
     {{ $slot }}
     <script src="{{ asset('js/main.js') }}" defer></script>
     <script>
