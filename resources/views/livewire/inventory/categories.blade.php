@@ -6,6 +6,7 @@ use Livewire\Attributes\Title;
 use App\Models\Category;
 use App\Models\Emoji;
 use App\Models\Color;
+use App\Models\Product;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
@@ -13,7 +14,9 @@ use App\Exports\CategoriesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ApplicationSetting;
 
-new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kategori - Modern POS')] class extends Component {
+new #[Layout('components.layouts.app')]
+    #[Title('Categories - Modern POS')]
+    class extends Component {
     use WithPagination;
 
     public $name = '';
@@ -21,6 +24,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
     public $color = 'bg-orange-100';
     public $description = '';
     public $editingCategoryId = null;
+    public $search = '';
 
     protected function rules()
     {
@@ -34,10 +38,20 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 
     public function with()
     {
+        $user = auth()->user();
+        
+        $totalCategories = Category::count();
+        $totalProducts = Product::count(); // Global count or scoped? Let's use global for category context usually.
+        
+        $categoriesQuery = Category::withCount('products')
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'));
+
         return [
-            'categories' => Category::select('id', 'name', 'icon', 'color', 'description')->orderBy('id', 'desc')->paginate(12), // Changed to 9 for better grid layout (3x3)
+            'categories' => $categoriesQuery->orderBy('id', 'desc')->paginate(12),
             'emojis' => Emoji::all(),
             'colors' => Color::all(),
+            'totalCategories' => $totalCategories,
+            'totalProducts' => $totalProducts,
         ];
     }
 
@@ -48,7 +62,7 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 
     public function exportPdf()
     {
-        $categories = Category::latest()->get();
+        $categories = Category::withCount('products')->latest()->get();
         $pdf = Pdf::loadView('pdf.categories', compact('categories'));
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
@@ -81,8 +95,6 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 
         $user = auth()->user();
 
-        // $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
-
         $data = [
             'name' => $this->name,
             'icon' => $this->icon,
@@ -114,71 +126,86 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 }; ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
-    <!-- Load jQuery (Select2 not strictly needed for categories but keeping consistency if needed later) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800"></h2>
-        <div class="flex space-x-2">
+    <!-- Header Section -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800 tracking-tight">{{ __('Categories') }}</h2>
+            <p class="text-gray-500 mt-2 text-sm">{{ __('Organize your products into categories for easier management.') }}</p>
+        </div>
+        <div class="flex items-center space-x-3">
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open"
-                    class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                <button @click="open = !open" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <i class="fas fa-file-export mr-2 text-gray-400"></i> {{ __('Export') }}
+                    <i class="fas fa-chevron-down ml-2 text-xs text-gray-400"></i>
                 </button>
-                <div x-show="open" @click.away="open = false"
-                    class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 py-1" style="display: none;">
-                    <button @click="
-                        Swal.fire({
-                            title: 'Export Excel?',
-                            text: 'Do you want to export the categories to Excel?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes, export!'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $wire.exportExcel();
-                            }
-                        })
-                    " class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-excel mr-2 text-green-600"></i> Excel
+                <div x-show="open" 
+                     @click.away="open = false"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-50 py-2 border border-gray-100" 
+                     style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                        <i class="fas fa-file-excel mr-2 text-green-500"></i> {{ __('Export Excel') }}
                     </button>
-                    <button @click="
-                        Swal.fire({
-                            title: '{{ __('Export PDF?') }}',
-                            text: '{{ __('Do you want to export the categories to PDF?') }}',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: '{{ __('Yes, export!') }}',
-                            cancelButtonText: '{{ __('Cancel') }}'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $wire.exportPdf();
-                            }
-                        })
-                    " class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-file-pdf mr-2 text-red-600"></i> PDF
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                        <i class="fas fa-file-pdf mr-2 text-red-500"></i> {{ __('Export PDF') }}
                     </button>
                 </div>
             </div>
-            <button wire:click="create"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+            <button wire:click="create" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all duration-200 hover:-translate-y-0.5">
                 <i class="fas fa-plus mr-2"></i> {{ __('Add Category') }}
             </button>
         </div>
     </div>
 
+    <!-- Stats Overview Bento -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1">{{ __('Total Categories') }}</p>
+                <h3 class="text-3xl font-bold text-gray-800">{{ $totalCategories }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600">
+                <i class="fas fa-th-large text-xl"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1">{{ __('Total Products Linked') }}</p>
+                <h3 class="text-3xl font-bold text-gray-800">{{ $totalProducts }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <i class="fas fa-box-open text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="relative w-full md:w-96">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input wire:model.live.debounce.300ms="search" type="text" class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 sm:text-sm" placeholder="{{ __('Search categories...') }}">
+        </div>
+    </div>
+
+    <!-- Categories Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         @forelse($categories as $category)
-            <div
-                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center text-center group hover:shadow-md transition-shadow relative">
+            <div class="group bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                
+                <!-- Background Decoration -->
+                <div class="absolute top-0 left-0 w-full h-1/2 {{ $category->color }} opacity-20 rounded-b-3xl transform -translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+
                 <!-- Actions (Visible on Hover) -->
-                <div class="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button wire:click="edit('{{ $category->id }}')"
-                        class="text-gray-400 hover:text-indigo-600 transition-colors" title="{{ __('Edit') }}">
+                <div class="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-10">
+                    <button wire:click="edit('{{ $category->id }}')" class="p-2 bg-white text-indigo-600 rounded-xl shadow-md hover:bg-indigo-50 transition-colors" title="{{ __('Edit') }}">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button type="button" x-on:click="$dispatch('swal:confirm', {
@@ -188,30 +215,35 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
                                     method: 'delete',
                                     params: ['{{ $category->id }}'],
                                     componentId: '{{ $this->getId() }}'
-                                })" class="text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Delete') }}">
+                                })" class="p-2 bg-white text-red-500 rounded-xl shadow-md hover:bg-red-50 transition-colors" title="{{ __('Delete') }}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
 
-                <div
-                    class="w-16 h-16 {{ $category->color }} rounded-full flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                <div class="w-20 h-20 {{ $category->color }} rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm relative z-10">
                     {{ $category->icon }}
                 </div>
-                <h3 class="font-bold text-gray-800 text-lg">{{ $category->name }}</h3>
-                <p class="text-gray-500 text-sm mt-1">{{ __('0 Items') }}</p>
+                
+                <h3 class="font-bold text-gray-800 text-lg mb-1 relative z-10">{{ $category->name }}</h3>
+                
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-500 border border-gray-100 mt-2 relative z-10">
+                    <i class="fas fa-box mr-1.5 text-gray-400"></i> {{ $category->products_count }} {{ Str::plural('Product', $category->products_count) }}
+                </div>
+
+                @if($category->description)
+                    <p class="text-xs text-gray-400 mt-3 line-clamp-2 relative z-10">{{ $category->description }}</p>
+                @endif
             </div>
         @empty
-            <div class="col-span-full bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                <div class="mx-auto h-12 w-12 text-gray-400">
-                    <i class="fas fa-folder-open text-4xl"></i>
-                </div>
-                <h3 class="mt-2 text-sm font-semibold text-gray-900">{{ __('No categories') }}</h3>
-                <p class="mt-1 text-sm text-gray-500">{{ __('Get started by creating a new category.') }}</p>
-                <div class="mt-6">
-                    <button wire:click="create"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        <i class="fas fa-plus -ml-0.5 mr-1.5" aria-hidden="true"></i>
-                        {{ __('Add Category') }}
+            <div class="col-span-full">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center">
+                    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400">
+                        <i class="fas fa-folder-open text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ __('No categories found') }}</h3>
+                    <p class="text-gray-500 mb-6">{{ __('Get started by creating a new category.') }}</p>
+                    <button wire:click="create" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all duration-200">
+                        <i class="fas fa-plus mr-2"></i> {{ __('Add Category') }}
                     </button>
                 </div>
             </div>
@@ -225,116 +257,86 @@ new #[Layout('components.layouts.app', ['header' => 'Categories'])] #[Title('Kat
 
     <!-- Category Modal -->
     <x-modal name="category-modal" focusable>
-        <form x-on:submit.prevent="$dispatch('swal:confirm', {
-            title: '{{ $editingCategoryId ? __('Update Category?') : __('Create Category?') }}',
-            text: '{{ $editingCategoryId ? __('Are you sure you want to update this category?') : __('Are you sure you want to create this new category?') }}',
-            icon: 'question',
-            confirmButtonText: '{{ $editingCategoryId ? __('Yes, update it!') : __('Yes, create it!') }}',
-            method: 'save',
-            params: [],
-            componentId: '{{ $this->getId() }}'
-        })" class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-6">
-                {{ $editingCategoryId ? __('Edit Category') : __('Create New Category') }}
-            </h2>
-
-            <div class="space-y-6">
-                <!-- Name -->
-                <div>
-                    <x-input-label for="name" value="{{ __('Name') }}" />
-                    <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text"
-                        placeholder="{{ __('e.g. Food') }}" />
-                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Icon -->
-                    <div>
-                        <x-input-label for="icon" value="{{ __('Icon (Emoji)') }}" />
-                        <select wire:model="icon" id="icon"
-                            class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            @foreach ($emojis as $emoji)
-                                <option value="{{ $emoji->icon }}">{{ ucfirst($emoji->name) }} {{ $emoji->icon }}</option>
-                            @endforeach
-                        </select>
-                        <x-input-error :messages="$errors->get('icon')" class="mt-2" />
-                    </div>
-
-                    <!-- Color -->
-                    <div>
-                        <x-input-label for="color" value="{{ __('Color Theme') }}" />
-                        <select wire:model="color" id="color"
-                            class="block w-full px-4 py-4 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            @foreach ($colors as $colorItem)
-                                <option value="{{ $colorItem->class }}">{{ $colorItem->name }}</option>
-                            @endforeach
-                        </select>
-                        <x-input-error :messages="$errors->get('color')" class="mt-2" />
-                    </div>
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <x-input-label for="description" value="{{ __('Description (Optional)') }}" />
-                    <textarea wire:model="description" id="description"
-                        class="block mt-1 p-4 w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        rows="3">
-                    </textarea>
-                    <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                </div>
+        <div class="bg-white rounded-3xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <h2 class="text-xl font-bold text-gray-800">
+                    {{ $editingCategoryId ? __('Edit Category') : __('Create New Category') }}
+                </h2>
+                <button x-on:click="$dispatch('close-modal', 'category-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
+            <form x-on:submit.prevent="$dispatch('swal:confirm', {
+                title: '{{ $editingCategoryId ? __('Update Category?') : __('Create Category?') }}',
+                text: '{{ $editingCategoryId ? __('Are you sure you want to update this category?') : __('Are you sure you want to create this new category?') }}',
+                icon: 'question',
+                confirmButtonText: '{{ $editingCategoryId ? __('Yes, update it!') : __('Yes, create it!') }}',
+                method: 'save',
+                params: [],
+                componentId: '{{ $this->getId() }}'
+            })" class="p-6">
 
-                <x-primary-button class="ml-3">
-                    {{ $editingCategoryId ? __('Update Category') : __('Create Category') }}
-                </x-primary-button>
-            </div>
-        </form>
+                <div class="space-y-6">
+                    <!-- Name -->
+                    <div>
+                        <x-input-label for="name" :value="__('Category Name')" class="text-gray-700 font-medium mb-1" />
+                        <x-text-input wire:model="name" id="name" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="text"
+                            placeholder="{{ __('e.g. Food & Beverages') }}" />
+                        <x-input-error :messages="$errors->get('name')" class="mt-1" />
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Icon -->
+                        <div>
+                            <x-input-label for="icon" :value="__('Icon (Emoji)')" class="text-gray-700 font-medium mb-1" />
+                            <div class="relative">
+                                <select wire:model="icon" id="icon"
+                                    class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700 font-emoji">
+                                    @foreach ($emojis as $emoji)
+                                        <option value="{{ $emoji->icon }}">{{ $emoji->icon }} {{ ucfirst($emoji->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <x-input-error :messages="$errors->get('icon')" class="mt-1" />
+                        </div>
+
+                        <!-- Color -->
+                        <div>
+                            <x-input-label for="color" :value="__('Color Theme')" class="text-gray-700 font-medium mb-1" />
+                            <div class="relative">
+                                <select wire:model="color" id="color"
+                                    class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700">
+                                    @foreach ($colors as $colorItem)
+                                        <option value="{{ $colorItem->class }}">{{ $colorItem->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <x-input-error :messages="$errors->get('color')" class="mt-1" />
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <x-input-label for="description" :value="__('Description (Optional)')" class="text-gray-700 font-medium mb-1" />
+                        <textarea wire:model="description" id="description"
+                            class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 shadow-sm"
+                            rows="3" placeholder="{{ __('Add a short description...') }}"></textarea>
+                        <x-input-error :messages="$errors->get('description')" class="mt-1" />
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end gap-3">
+                    <button type="button" x-on:click="$dispatch('close-modal', 'category-modal')"
+                        class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm">
+                        {{ __('Cancel') }}
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 font-medium text-sm">
+                        {{ $editingCategoryId ? __('Update Category') : __('Create Category') }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </x-modal>
-
-    <!-- SweetAlert2 Script (Global Listener) -->
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('notify', (message) => {
-                const msg = Array.isArray(message) ? message[0] : message;
-                Swal.fire({
-                    title: '{{ __('Success!') }}',
-                    text: msg,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            });
-
-            Livewire.on('swal:confirm', (data) => {
-                // Handle both array (from backend dispatch) and object (from frontend dispatch)
-                const options = Array.isArray(data) ? data[0] : data;
-
-                Swal.fire({
-                    title: options.title,
-                    text: options.text,
-                    icon: options.icon,
-                    showCancelButton: true,
-                    confirmButtonColor: '#4f46e5',
-                    cancelButtonColor: '#ef4444',
-                    confirmButtonText: options.confirmButtonText || '{{ __('Yes, proceed!') }}'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        if (options.componentId) {
-                            Livewire.find(options.componentId).call(options.method, ...options
-                                .params);
-                        } else {
-                            Livewire.dispatch(options.method, {
-                                id: options.params
-                            });
-                        }
-                    }
-                });
-            });
-        });
-    </script>
 </div>

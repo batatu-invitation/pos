@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Traits\LogsActivityGeneric;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasUuids, SoftDeletes, LogsActivityGeneric;
+    use HasUuids, SoftDeletes, LogsActivityGeneric, HasFactory;
 
     protected $fillable = [
         'name',

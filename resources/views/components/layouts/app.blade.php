@@ -5,10 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Dashboard - Modern POS' }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -17,24 +15,15 @@
             heightAuto: false,
             scrollbarPadding: false
         });
-    </script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: '#4f46e5',
-                        secondary: '#1e293b',
-                    }
-                }
-            }
+
+        // Immediate Theme Application to prevent FOUC
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
         }
     </script>
-   
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
@@ -78,7 +67,7 @@
                         <span class="font-medium">{{ __('POS Terminal') }}</span>
                     </a>
                     @endrole
-                    @role(['Super Admin', 'Manager','Inventory Manager'])
+                    @role(['Super Admin', 'Manager', 'Inventory Manager', 'Analyst'])
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Inventory') }}</p>
                     <a wire:navigate.hover href="{{ route('inventory.products') }}"
@@ -107,12 +96,15 @@
                         <span class="font-medium">{{ __('Colors') }}</span>
                     </a>
                     @endrole
+                    @role(['Super Admin', 'Manager', 'Analyst'])
                     <a wire:navigate.hover href="{{ route('admin.suppliers') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('admin.suppliers') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
                         <i class="fas fa-truck w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Suppliers') }}</span>
                     </a>
+                    @endrole
 
+                    @role(['Super Admin', 'Manager', 'Cashier', 'Analyst'])
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Sales') }}</p>
                     <a wire:navigate.hover href="{{ route('sales.sales') }}"
@@ -120,7 +112,9 @@
                         <i class="fas fa-receipt w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Transactions') }}</span>
                     </a>
+                    @endrole
 
+                    @role(['Super Admin', 'Manager', 'Customer Support'])
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('People') }}</p>
                     <a wire:navigate.hover href="{{ route('people.customers') }}"
@@ -133,7 +127,9 @@
                         <i class="fas fa-user-tie w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Employees') }}</span>
                     </a>
+                    @endrole
 
+                    @role(['Super Admin', 'Manager', 'Analyst'])
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Analytics') }}</p>
                     <a wire:navigate.hover href="{{ route('analytics.overview') }}"
@@ -163,6 +159,7 @@
                         <i class="fas fa-balance-scale w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Balance Sheet') }}</span>
                     </a>
+                    @endrole
                     @role(['Super Admin', 'Manager'])
                     <a wire:navigate.hover href="{{ route('analytics.tax-report') }}"
                         class="flex items-center px-4 py-3 {{ request()->routeIs('analytics.tax-report') ? 'bg-gray-700 text-white border-l-4 border-indigo-500' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }} rounded-lg group transition-colors">
@@ -177,7 +174,7 @@
                         <i class="fas fa-coins w-6 text-center mr-2 text-gray-400 group-hover:text-indigo-400"></i>
                         <span class="font-medium">{{ __('Income & Expense') }}</span>
                     </a>
-                    @endif
+                    @endrole
                     @role('Super Admin')
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                         {{ __('Super Admin') }}</p>
@@ -349,26 +346,26 @@
                     <!-- Theme Switcher -->
                     <div class="relative" x-data="{
                         open: false,
-                        theme: '{{ $currentTheme ?? "system" }}',
+                        theme: localStorage.getItem('theme') || '{{ $currentTheme ?? "system" }}',
                         setTheme(val) {
                             this.theme = val;
                             localStorage.setItem('theme', val);
                             document.cookie = 'theme=' + val + '; path=/; max-age=31536000; SameSite=Lax';
-                            if (val === 'dark' || (val === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                            this.applyTheme();
+                            this.open = false;
+                        },
+                        applyTheme() {
+                            if (this.theme === 'dark' || (this.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                                 document.documentElement.classList.add('dark');
                             } else {
                                 document.documentElement.classList.remove('dark');
                             }
-                            this.open = false;
                         },
                         init() {
-                            if (this.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                                document.documentElement.classList.add('dark');
-                            }
+                            this.applyTheme();
                             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                                 if (this.theme === 'system') {
-                                    if (e.matches) document.documentElement.classList.add('dark');
-                                    else document.documentElement.classList.remove('dark');
+                                    this.applyTheme();
                                 }
                             });
                         }

@@ -22,4 +22,9 @@ class Category extends Model
         'user_id',
         'input_id',
     ];
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
