@@ -223,16 +223,16 @@ new #[Layout('components.layouts.app')]
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6 dark:bg-gray-900">
     <!-- Header Section -->
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
         <div>
-            <h2 class="text-3xl font-bold text-gray-800 tracking-tight">{{ __('Products') }}</h2>
-            <p class="text-gray-500 mt-2 text-sm">{{ __('Manage your inventory, prices, and stock levels.') }}</p>
+            <h2 class="text-3xl font-bold text-gray-800 tracking-tight dark:text-gray-100">{{ __('Products') }}</h2>
+            <p class="text-gray-500 mt-2 text-sm dark:text-gray-400">{{ __('Manage your inventory, prices, and stock levels.') }}</p>
         </div>
         <div class="flex items-center space-x-3">
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <button @click="open = !open" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700">
                     <i class="fas fa-file-export mr-2 text-gray-400"></i> {{ __('Export') }}
                     <i class="fas fa-chevron-down ml-2 text-xs text-gray-400"></i>
                 </button>
@@ -244,12 +244,12 @@ new #[Layout('components.layouts.app')]
                      x-transition:leave="transition ease-in duration-75"
                      x-transition:leave-start="opacity-100 scale-100"
                      x-transition:leave-end="opacity-0 scale-95"
-                     class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-50 py-2 border border-gray-100" 
+                     class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-50 py-2 border border-gray-100 dark:bg-gray-800 dark:border-gray-700" 
                      style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-file-excel mr-2 text-green-500"></i> {{ __('Export Excel') }}
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors dark:text-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-file-pdf mr-2 text-red-500"></i> {{ __('Export PDF') }}
                     </button>
                 </div>
@@ -262,7 +262,7 @@ new #[Layout('components.layouts.app')]
 
     <!-- Stats Overview Bento -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 p-6 rounded-3xl shadow-lg shadow-indigo-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+        <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 p-6 rounded-3xl shadow-lg shadow-indigo-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 dark:shadow-none">
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
             <div class="relative z-10">
                 <p class="text-indigo-100 font-medium mb-1">{{ __('Total Products') }}</p>
@@ -276,7 +276,7 @@ new #[Layout('components.layouts.app')]
             </div>
         </div>
         
-        <div class="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-3xl shadow-lg shadow-green-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-3xl shadow-lg shadow-green-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 dark:shadow-none">
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
             <div class="relative z-10">
                 <p class="text-green-100 font-medium mb-1">{{ __('Active Items') }}</p>
@@ -290,7 +290,7 @@ new #[Layout('components.layouts.app')]
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-3xl shadow-lg shadow-yellow-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+        <div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-3xl shadow-lg shadow-yellow-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 dark:shadow-none">
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
             <div class="relative z-10">
                 <p class="text-yellow-50 font-medium mb-1">{{ __('Low Stock') }}</p>
@@ -304,7 +304,7 @@ new #[Layout('components.layouts.app')]
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-red-500 to-rose-600 p-6 rounded-3xl shadow-lg shadow-red-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+        <div class="bg-gradient-to-br from-red-500 to-rose-600 p-6 rounded-3xl shadow-lg shadow-red-200 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 dark:shadow-none">
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
             <div class="relative z-10">
                 <p class="text-red-100 font-medium mb-1">{{ __('Out of Stock') }}</p>
@@ -320,20 +320,20 @@ new #[Layout('components.layouts.app')]
     </div>
 
     <!-- Search and Filters -->
-    <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 opacity-50"></div>
+    <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+        <div class="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 opacity-50 dark:from-indigo-900/20 dark:to-purple-900/20"></div>
         <div class="relative z-10 w-full md:w-96 group">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
             </div>
-            <input wire:model.live.debounce.300ms="search" type="text" class="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 sm:text-sm shadow-sm group-hover:shadow-md" placeholder="{{ __('Search products by name or SKU...') }}">
+            <input wire:model.live.debounce.300ms="search" type="text" class="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 sm:text-sm shadow-sm group-hover:shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-500" placeholder="{{ __('Search products by name or SKU...') }}">
         </div>
         <div class="relative z-10 flex items-center gap-3 w-full md:w-auto">
             <div class="relative w-full md:w-64 group">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-filter text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
                 </div>
-                <select wire:model.live="categoryFilter" class="block w-full pl-10 pr-10 py-3 text-base border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm rounded-2xl bg-white text-gray-700 shadow-sm group-hover:shadow-md appearance-none transition-all">
+                <select wire:model.live="categoryFilter" class="block w-full pl-10 pr-10 py-3 text-base border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm rounded-2xl bg-white text-gray-700 shadow-sm group-hover:shadow-md appearance-none transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                     <option value="">{{ __('All Categories') }}</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->name }}">{{ $category->name }}</option>
@@ -349,25 +349,25 @@ new #[Layout('components.layouts.app')]
     <!-- Products Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
         @forelse($products as $product)
-            <div class="group bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col relative">
+            <div class="group bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col relative dark:bg-gray-800 dark:border-gray-700">
                 <!-- Status & Stock Badges -->
                 <div class="absolute top-4 left-4 z-10 flex gap-2">
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $product->status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }} border {{ $product->status === 'Active' ? 'border-green-200' : 'border-gray-200' }} shadow-sm">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $product->status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }} border {{ $product->status === 'Active' ? 'border-green-200 dark:border-green-800' : 'border-gray-200 dark:border-gray-600' }} shadow-sm">
                         {{ $product->status }}
                     </span>
                     @if($product->stock <= 0)
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200 shadow-sm">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200 shadow-sm dark:bg-red-900/50 dark:text-red-300 dark:border-red-800">
                             {{ __('Out of Stock') }}
                         </span>
                     @elseif($product->stock < 10)
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200 shadow-sm">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200 shadow-sm dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800">
                             {{ __('Low Stock') }}
                         </span>
                     @endif
                 </div>
 
                 <!-- Product Image/Icon -->
-                <div class="h-48 w-full bg-gray-50 flex items-center justify-center relative overflow-hidden group-hover:bg-indigo-50/30 transition-colors">
+                <div class="h-48 w-full bg-gray-50 flex items-center justify-center relative overflow-hidden group-hover:bg-indigo-50/30 transition-colors dark:bg-gray-700">
                     @if($product->image)
                         <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="h-full w-full object-cover transform group-hover:scale-105 transition-transform duration-500">
                     @else
@@ -378,7 +378,7 @@ new #[Layout('components.layouts.app')]
                     
                     <!-- Quick Actions Overlay -->
                     <div class="absolute bottom-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                         <button wire:click="edit('{{ $product->id }}')" class="p-2 bg-white text-indigo-600 rounded-xl shadow-md hover:bg-indigo-50 transition-colors" title="{{ __('Edit') }}">
+                         <button wire:click="edit('{{ $product->id }}')" class="p-2 bg-white text-indigo-600 rounded-xl shadow-md hover:bg-indigo-50 transition-colors dark:bg-gray-800 dark:text-indigo-400 dark:hover:bg-gray-700" title="{{ __('Edit') }}">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button type="button" x-on:click="$dispatch('swal:confirm', {
@@ -388,7 +388,7 @@ new #[Layout('components.layouts.app')]
                                     method: 'delete',
                                     params: ['{{ $product->id }}'],
                                     componentId: '{{ $this->getId() }}'
-                                })" class="p-2 bg-white text-red-500 rounded-xl shadow-md hover:bg-red-50 transition-colors" title="{{ __('Delete') }}">
+                                })" class="p-2 bg-white text-red-500 rounded-xl shadow-md hover:bg-red-50 transition-colors dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700" title="{{ __('Delete') }}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -396,39 +396,36 @@ new #[Layout('components.layouts.app')]
 
                 <!-- Content -->
                 <div class="p-6 flex flex-col flex-grow">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">
-                            {{ $product->category->name ?? __('Uncategorized') }}
-                        </span>
-                        <span class="text-xs text-gray-400 font-mono">{{ $product->sku }}</span>
-                    </div>
-                    
-                    <h3 class="text-lg font-bold text-gray-900 mb-1 line-clamp-1" title="{{ $product->name }}">{{ $product->name }}</h3>
-                    
-                    <div class="flex items-end justify-between mt-auto pt-4 border-t border-gray-50">
+                    <div class="flex items-start justify-between mb-2">
                         <div>
-                            <p class="text-xs text-gray-500 mb-1">{{ __('Price') }}</p>
-                            <p class="text-xl font-bold text-gray-800">
-                                <span class="text-sm font-normal text-gray-500 align-top mr-0.5">Rp</span>{{ number_format($product->price, 0, ',', '.') }}
-                            </p>
+                             <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg mb-2 inline-block dark:bg-indigo-900/30 dark:text-indigo-300">
+                                {{ $product->category->name ?? __('Uncategorized') }}
+                            </span>
+                            <h3 class="text-lg font-bold text-gray-900 leading-tight mb-1 dark:text-gray-100">{{ $product->name }}</h3>
+                            <p class="text-sm text-gray-500 font-mono dark:text-gray-400">{{ $product->sku }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between dark:border-gray-700">
+                        <div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Price') }}</p>
+                            <p class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($product->price, 0, ',', '.') }}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-xs text-gray-500 mb-1">{{ __('Stock') }}</p>
-                            <p class="text-sm font-bold {{ $product->stock < 10 ? 'text-red-500' : 'text-gray-700' }}">
-                                {{ $product->stock }} <span class="font-normal text-gray-400 text-xs">{{ __('units') }}</span>
-                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Stock') }}</p>
+                            <p class="text-lg font-bold {{ $product->stock < 10 ? 'text-red-500 dark:text-red-400' : 'text-gray-700 dark:text-gray-300' }}">{{ $product->stock }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="col-span-1 md:col-span-2 lg:col-span-3">
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center">
-                    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400">
+            <div class="col-span-full">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center dark:bg-gray-800 dark:border-gray-700">
+                    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400 dark:bg-gray-700 dark:text-gray-300">
                         <i class="fas fa-box-open text-2xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ __('No products found') }}</h3>
-                    <p class="text-gray-500 mb-6">{{ __('Try adjusting your search or filters, or add a new product.') }}</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2 dark:text-gray-100">{{ __('No products found') }}</h3>
+                    <p class="text-gray-500 mb-6 dark:text-gray-400">{{ __('Get started by adding a new product to your inventory.') }}</p>
                     <button wire:click="create" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all duration-200">
                         <i class="fas fa-plus mr-2"></i> {{ __('Add Product') }}
                     </button>
@@ -437,18 +434,19 @@ new #[Layout('components.layouts.app')]
         @endforelse
     </div>
 
+    <!-- Pagination -->
     <div class="mt-6">
         {{ $products->links() }}
     </div>
 
     <!-- Product Modal -->
     <x-modal name="product-modal" focusable>
-        <div class="bg-white rounded-3xl overflow-hidden">
-             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                <h2 class="text-xl font-bold text-gray-800">
+        <div class="bg-white rounded-3xl overflow-hidden dark:bg-gray-800">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 dark:bg-gray-700/50 dark:border-gray-700">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
                     {{ $editingProductId ? __('Edit Product') : __('Create New Product') }}
                 </h2>
-                <button x-on:click="$dispatch('close-modal', 'product-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <button x-on:click="$dispatch('close-modal', 'product-modal')" class="text-gray-400 hover:text-gray-600 transition-colors dark:hover:text-gray-300">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -462,143 +460,105 @@ new #[Layout('components.layouts.app')]
                 params: [],
                 componentId: '{{ $this->getId() }}'
             })" class="p-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Image Upload Section -->
+                    <div class="col-span-1 md:col-span-2 flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-2xl hover:border-indigo-500 transition-colors bg-gray-50 dark:bg-gray-700/50 dark:border-gray-600">
+                        @if ($image)
+                            <img src="{{ $image->temporaryUrl() }}" class="h-32 w-32 object-cover rounded-xl mb-4 shadow-md">
+                        @elseif ($existingImage)
+                            <img src="{{ Storage::url($existingImage) }}" class="h-32 w-32 object-cover rounded-xl mb-4 shadow-md">
+                        @else
+                            <div class="h-32 w-32 bg-gray-100 rounded-xl mb-4 flex items-center justify-center text-gray-400 dark:bg-gray-600">
+                                <i class="fas fa-image text-4xl"></i>
+                            </div>
+                        @endif
 
-                <div class="space-y-6">
-                    <!-- Image Upload -->
-                    <div class="flex flex-col items-center justify-center pb-4 border-b border-gray-100">
-                        <div class="relative group">
-                            @if ($image)
-                                <img src="{{ $image->temporaryUrl() }}"
-                                    class="h-32 w-32 rounded-2xl object-cover border-4 border-white shadow-lg">
-                            @elseif ($existingImage)
-                                <img src="{{ Storage::url($existingImage) }}"
-                                    class="h-32 w-32 rounded-2xl object-cover border-4 border-white shadow-lg">
-                            @else
-                                <div
-                                    class="h-32 w-32 rounded-2xl bg-indigo-50 flex items-center justify-center border-4 border-white shadow-lg text-indigo-300">
-                                    <i class="fas fa-image text-4xl"></i>
-                                </div>
-                            @endif
-
-                            <label for="image"
-                                class="absolute -bottom-2 -right-2 bg-indigo-600 rounded-xl p-3 text-white hover:bg-indigo-700 cursor-pointer shadow-lg shadow-indigo-200 transition-all transform hover:scale-105 active:scale-95">
-                                <i class="fas fa-camera"></i>
-                                <input wire:model="image" id="image" type="file" class="hidden" accept="image/*">
-                            </label>
-                        </div>
-                        <div wire:loading wire:target="image" class="text-xs text-indigo-500 mt-3 font-medium flex items-center">
-                            <i class="fas fa-spinner fa-spin mr-1"></i> {{ __('Uploading...') }}
-                        </div>
-                        <x-input-error :messages="$errors->get('image')" class="mt-2 text-center" />
-                        <p class="text-xs text-gray-400 mt-2">{{ __('Allowed: jpg, png, webp. Max: 2MB') }}</p>
+                        <label for="image" class="cursor-pointer">
+                            <span class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-upload mr-2"></i> {{ __('Select Image') }}
+                            </span>
+                            <input wire:model="image" id="image" type="file" class="hidden" accept="image/*">
+                        </label>
+                        <p class="text-xs text-gray-500 mt-2 dark:text-gray-400">{{ __('PNG, JPG, WebP up to 2MB') }}</p>
                     </div>
 
-                    <!-- Name & SKU -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Product Details -->
+                    <div class="space-y-4">
                         <div>
-                            <x-input-label for="name" :value="__('Product Name')" class="text-gray-700 font-medium mb-1" />
-                            <x-text-input wire:model="name" id="name" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="text"
-                                placeholder="{{ __('e.g. Double Burger') }}" />
+                            <x-input-label for="name" :value="__('Product Name')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                            <x-text-input wire:model="name" id="name" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" placeholder="e.g. Wireless Mouse" />
                             <x-input-error :messages="$errors->get('name')" class="mt-1" />
                         </div>
+
                         <div>
-                            <x-input-label for="sku" :value="__('SKU')" class="text-gray-700 font-medium mb-1" />
-                            <x-text-input wire:model="sku" id="sku" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="text"
-                                placeholder="{{ __('e.g. BUR-001') }}" />
+                            <x-input-label for="sku" :value="__('SKU Code')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                            <x-text-input wire:model="sku" id="sku" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" placeholder="e.g. WM-001" />
                             <x-input-error :messages="$errors->get('sku')" class="mt-1" />
                         </div>
-                    </div>
 
-                    <!-- Category & Icon -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <x-input-label for="category_id" :value="__('Category')" class="text-gray-700 font-medium mb-1" />
+                            <x-input-label for="category_id" :value="__('Category')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                             <div class="relative">
-                                <select wire:model="category_id" id="category_id"
-                                    class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700">
+                                <select wire:model="category_id" id="category_id" class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                                     <option value="">{{ __('Select Category') }}</option>
-                                    @foreach($categories as $category)
+                                    @foreach ($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <x-input-error :messages="$errors->get('category_id')" class="mt-1" />
                         </div>
-                        <div>
-                            <x-input-label for="icon_id" :value="__('Icon (Emoji)')" class="text-gray-700 font-medium mb-1" />
-                            <div class="relative">
-                                <select wire:model="icon_id" id="icon_id"
-                                    class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700">
-                                    <option value="">{{ __('Select Icon') }}</option>
-                                    @foreach($emojis as $emoji)
-                                        <option value="{{ $emoji->id }}">{{ $emoji->icon }} {{ $emoji->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <x-input-error :messages="$errors->get('icon_id')" class="mt-1" />
-                        </div>
                     </div>
 
-                    <!-- Pricing Section -->
-                    <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                        <h4 class="text-sm font-bold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-tag mr-2 text-indigo-500"></i> {{ __('Pricing & Stock') }}
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <x-input-label for="cost" :value="__('Cost Price')" class="text-gray-700 font-medium mb-1" />
+                                <x-input-label for="cost" :value="__('Cost Price')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">Rp</span>
-                                    </div>
-                                    <x-text-input wire:model.live="cost" id="cost" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="text"
-                                        placeholder="0" />
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">Rp</span>
+                                    <x-text-input wire:model.live="cost" id="cost" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" x-mask:dynamic="$money($input, '.')" placeholder="0" />
                                 </div>
                                 <x-input-error :messages="$errors->get('cost')" class="mt-1" />
                             </div>
                             <div>
-                                <x-input-label for="price" :value="__('Selling Price')" class="text-gray-700 font-medium mb-1" />
+                                <x-input-label for="price" :value="__('Selling Price')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">Rp</span>
-                                    </div>
-                                    <x-text-input wire:model.live="price" id="price" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="text"
-                                        placeholder="0" />
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">Rp</span>
+                                    <x-text-input wire:model.live="price" id="price" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" x-mask:dynamic="$money($input, '.')" placeholder="0" />
                                 </div>
                                 <x-input-error :messages="$errors->get('price')" class="mt-1" />
                             </div>
-                            <div>
-                                <x-input-label for="margin" :value="__('Margin (%)')" class="text-gray-700 font-medium mb-1" />
-                                <x-text-input wire:model="margin" id="margin" class="block w-full rounded-xl border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed py-2.5" type="text" readonly />
-                            </div>
                         </div>
-                    </div>
 
-                    <!-- Stock & Status -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <x-input-label for="stock" :value="__('Stock Quantity')" class="text-gray-700 font-medium mb-1" />
-                            <x-text-input wire:model="stock" id="stock" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5" type="number"
-                                placeholder="0" />
-                            <x-input-error :messages="$errors->get('stock')" class="mt-1" />
+                         <div>
+                            <x-input-label for="margin" :value="__('Margin (%)')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                            <x-text-input wire:model="margin" id="margin" class="block w-full rounded-xl border-gray-200 bg-gray-50 text-gray-500 py-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300" type="text" readonly />
                         </div>
-                        <div>
-                            <x-input-label for="status" :value="__('Status')" class="text-gray-700 font-medium mb-1" />
-                            <div class="relative">
-                                <select wire:model="status" id="status"
-                                    class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700">
-                                    <option value="Active">{{ __('Active') }}</option>
-                                    <option value="Inactive">{{ __('Inactive') }}</option>
-                                </select>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <x-input-label for="stock" :value="__('Stock')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                                <x-text-input wire:model="stock" id="stock" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="number" placeholder="0" />
+                                <x-input-error :messages="$errors->get('stock')" class="mt-1" />
                             </div>
-                            <x-input-error :messages="$errors->get('status')" class="mt-1" />
+                             <div>
+                                <x-input-label for="status" :value="__('Status')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                                <div class="relative">
+                                    <select wire:model="status" id="status" class="block w-full px-3 py-2.5 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                                        <option value="Active">{{ __('Active') }}</option>
+                                        <option value="Inactive">{{ __('Inactive') }}</option>
+                                    </select>
+                                </div>
+                                <x-input-error :messages="$errors->get('status')" class="mt-1" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-8 flex justify-end gap-3">
                     <button type="button" x-on:click="$dispatch('close-modal', 'product-modal')"
-                        class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm">
+                        class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600">
                         {{ __('Cancel') }}
                     </button>
                     <button type="submit"

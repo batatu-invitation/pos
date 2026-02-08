@@ -175,41 +175,41 @@ class extends Component
 
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6 dark:bg-gray-900">
 
             <!-- Header Section -->
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
                 <div>
-                    <h2 class="text-3xl font-bold text-gray-800 tracking-tight">{{ __('Roles & Permissions') }}</h2>
-                    <p class="text-gray-500 mt-2 text-sm">{{ __('Manage system access, roles, and security permissions.') }}</p>
+                    <h2 class="text-3xl font-bold text-gray-800 tracking-tight dark:text-gray-100">{{ __('Roles & Permissions') }}</h2>
+                    <p class="text-gray-500 mt-2 text-sm dark:text-gray-400">{{ __('Manage system access, roles, and security permissions.') }}</p>
                 </div>
                 
                 <div class="flex flex-wrap gap-3">
                     <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" @click.away="open = false" class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 hover:border-gray-300 focus:outline-none transition-all duration-200">
+                        <button @click="open = !open" @click.away="open = false" class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 hover:border-gray-300 focus:outline-none transition-all duration-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
                             <i class="fas fa-file-export mr-2 text-gray-400"></i> {{ __('Export') }}
                             <i class="fas fa-chevron-down ml-2 text-xs opacity-50"></i>
                         </button>
-                        <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl z-50 border border-gray-100 py-2" style="display: none;"
+                        <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl z-50 border border-gray-100 py-2 dark:bg-gray-800 dark:border-gray-700" style="display: none;"
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:enter-start="opacity-0 scale-95"
                              x-transition:enter-end="opacity-100 scale-100"
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="opacity-100 scale-100"
                              x-transition:leave-end="opacity-0 scale-95">
-                            <button wire:click="exportExcel" @click="open = false" class="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <button wire:click="exportExcel" @click="open = false" class="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors dark:text-gray-300 dark:hover:bg-gray-700">
                                 <i class="fas fa-file-excel text-green-600 mr-3 w-4 text-center"></i> {{ __('Export Excel') }}
                             </button>
-                            <button wire:click="exportPdf" @click="open = false" class="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <button wire:click="exportPdf" @click="open = false" class="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors dark:text-gray-300 dark:hover:bg-gray-700">
                                 <i class="fas fa-file-pdf text-red-600 mr-3 w-4 text-center"></i> {{ __('Export PDF') }}
                             </button>
                         </div>
                     </div>
 
-                    <button wire:click="createPermission" class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 hover:border-gray-300 focus:outline-none transition-all duration-200">
+                    <button wire:click="createPermission" class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 hover:border-gray-300 focus:outline-none transition-all duration-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
                         <i class="fas fa-key mr-2 text-indigo-500"></i> {{ __('New Permission') }}
                     </button>
-                    <button wire:click="createRole" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all duration-200 hover:-translate-y-0.5">
+                    <button wire:click="createRole" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all duration-200 hover:-translate-y-0.5 dark:shadow-none">
                         <i class="fas fa-user-shield mr-2"></i> {{ __('New Role') }}
                     </button>
                 </div>
@@ -217,32 +217,32 @@ class extends Component
 
             <!-- Stats Overview Bento -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between dark:bg-gray-800 dark:border-gray-700">
                     <div>
-                        <p class="text-sm font-medium text-gray-500 mb-1">{{ __('Total Roles') }}</p>
-                        <h3 class="text-3xl font-bold text-gray-800">{{ $roles->count() }}</h3>
+                        <p class="text-sm font-medium text-gray-500 mb-1 dark:text-gray-400">{{ __('Total Roles') }}</p>
+                        <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ $roles->count() }}</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
                         <i class="fas fa-user-shield text-xl"></i>
                     </div>
                 </div>
                 
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between dark:bg-gray-800 dark:border-gray-700">
                     <div>
-                        <p class="text-sm font-medium text-gray-500 mb-1">{{ __('Total Permissions') }}</p>
-                        <h3 class="text-3xl font-bold text-gray-800">{{ $permissions->count() }}</h3>
+                        <p class="text-sm font-medium text-gray-500 mb-1 dark:text-gray-400">{{ __('Total Permissions') }}</p>
+                        <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ $permissions->count() }}</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                         <i class="fas fa-key text-xl"></i>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between dark:bg-gray-800 dark:border-gray-700">
                     <div>
-                        <p class="text-sm font-medium text-gray-500 mb-1">{{ __('Users with Roles') }}</p>
-                        <h3 class="text-3xl font-bold text-gray-800">{{ $roles->sum('users_count') }}</h3>
+                        <p class="text-sm font-medium text-gray-500 mb-1 dark:text-gray-400">{{ __('Users with Roles') }}</p>
+                        <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ $roles->sum('users_count') }}</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                         <i class="fas fa-users text-xl"></i>
                     </div>
                 </div>
@@ -251,16 +251,16 @@ class extends Component
             <!-- Roles Bento Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                 <!-- Add New Role Card (First in the grid for visibility) -->
-                <button wire:click="createRole" class="group relative flex flex-col items-center justify-center p-6 rounded-3xl border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 h-full min-h-[180px]">
-                    <div class="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition-colors">
-                        <i class="fas fa-plus text-gray-400 group-hover:text-indigo-600 text-xl transition-colors"></i>
+                <button wire:click="createRole" class="group relative flex flex-col items-center justify-center p-6 rounded-3xl border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 h-full min-h-[180px] dark:border-gray-600 dark:hover:border-indigo-400 dark:hover:bg-indigo-900/20">
+                    <div class="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition-colors dark:bg-gray-700 dark:group-hover:bg-indigo-800">
+                        <i class="fas fa-plus text-gray-400 group-hover:text-indigo-600 text-xl transition-colors dark:text-gray-300 dark:group-hover:text-indigo-300"></i>
                     </div>
-                    <span class="font-semibold text-gray-600 group-hover:text-indigo-700">{{ __('Create New Role') }}</span>
-                    <span class="text-xs text-gray-400 mt-1">{{ __('Define a new access level') }}</span>
+                    <span class="font-semibold text-gray-600 group-hover:text-indigo-700 dark:text-gray-400 dark:group-hover:text-indigo-300">{{ __('Create New Role') }}</span>
+                    <span class="text-xs text-gray-400 mt-1 dark:text-gray-500">{{ __('Define a new access level') }}</span>
                 </button>
 
                 @foreach($roles as $role)
-                    <div class="group relative bg-white p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 flex flex-col justify-between overflow-hidden {{ $role->name === 'Super Admin' ? 'md:col-span-2 bg-gradient-to-br from-indigo-600 to-purple-700 text-white border-transparent' : '' }}">
+                    <div class="group relative bg-white p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 flex flex-col justify-between overflow-hidden {{ $role->name === 'Super Admin' ? 'md:col-span-2 bg-gradient-to-br from-indigo-600 to-purple-700 text-white border-transparent' : 'dark:bg-gray-800 dark:border-gray-700' }}">
                         
                         <!-- Decorative background blob for Super Admin -->
                         @if($role->name === 'Super Admin')
@@ -270,12 +270,12 @@ class extends Component
 
                         <div class="relative z-10">
                             <div class="flex justify-between items-start mb-4">
-                                <div class="p-3 {{ $role->name === 'Super Admin' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600' }} rounded-2xl">
+                                <div class="p-3 {{ $role->name === 'Super Admin' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' }} rounded-2xl">
                                     <i class="fas {{ $role->name === 'Super Admin' ? 'fa-crown' : 'fa-user-shield' }} text-xl"></i>
                                 </div>
                                 @if($role->name !== 'Super Admin')
                                     <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button wire:click="editRole({{ $role->id }})" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                        <button wire:click="editRole({{ $role->id }})" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                             <i class="fas fa-pen text-sm"></i>
                                         </button>
                                         <button type="button" x-on:click="$dispatch('swal:confirm', {
@@ -285,7 +285,7 @@ class extends Component
                                             method: 'deleteRole',
                                             params: [{{ $role->id }}],
                                             componentId: '{{ $this->getId() }}'
-                                        })" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                        })" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors dark:hover:bg-red-900/30 dark:hover:text-red-400">
                                             <i class="fas fa-trash text-sm"></i>
                                         </button>
                                     </div>
@@ -296,25 +296,25 @@ class extends Component
                                 @endif
                             </div>
                             
-                            <h3 class="font-bold text-lg {{ $role->name === 'Super Admin' ? 'text-white' : 'text-gray-800' }} mb-1">{{ $role->name }}</h3>
-                            <p class="text-sm {{ $role->name === 'Super Admin' ? 'text-indigo-100' : 'text-gray-500' }}">
+                            <h3 class="font-bold text-lg {{ $role->name === 'Super Admin' ? 'text-white' : 'text-gray-800 dark:text-gray-100' }} mb-1">{{ $role->name }}</h3>
+                            <p class="text-sm {{ $role->name === 'Super Admin' ? 'text-indigo-100' : 'text-gray-500 dark:text-gray-400' }}">
                                 {{ $role->permissions->count() }} {{ __('permissions granted') }}
                             </p>
                         </div>
 
-                        <div class="relative z-10 mt-6 pt-4 {{ $role->name === 'Super Admin' ? 'border-t border-white/10' : 'border-t border-gray-50' }} flex justify-between items-center">
+                        <div class="relative z-10 mt-6 pt-4 {{ $role->name === 'Super Admin' ? 'border-t border-white/10' : 'border-t border-gray-50 dark:border-gray-700' }} flex justify-between items-center">
                             <div class="flex -space-x-2">
                                 @if($role->users_count > 0)
-                                    <div class="w-8 h-8 rounded-full border-2 {{ $role->name === 'Super Admin' ? 'border-indigo-600 bg-white text-indigo-600' : 'border-white bg-indigo-100 text-indigo-600' }} flex items-center justify-center text-xs font-bold">
+                                    <div class="w-8 h-8 rounded-full border-2 {{ $role->name === 'Super Admin' ? 'border-indigo-600 bg-white text-indigo-600' : 'border-white bg-indigo-100 text-indigo-600 dark:border-gray-800 dark:bg-indigo-900/50 dark:text-indigo-300' }} flex items-center justify-center text-xs font-bold">
                                         {{ $role->users_count }}
                                     </div>
-                                    <span class="ml-4 text-xs {{ $role->name === 'Super Admin' ? 'text-indigo-100' : 'text-gray-400' }} self-center">{{ __('users assigned') }}</span>
+                                    <span class="ml-4 text-xs {{ $role->name === 'Super Admin' ? 'text-indigo-100' : 'text-gray-400 dark:text-gray-500' }} self-center">{{ __('users assigned') }}</span>
                                 @else
-                                    <span class="text-xs text-gray-400">{{ __('No users') }}</span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ __('No users') }}</span>
                                 @endif
                             </div>
                             
-                            <button wire:click="configureRole({{ $role->id }})" class="flex items-center text-sm font-medium {{ $role->name === 'Super Admin' ? 'text-white hover:text-indigo-100' : 'text-indigo-600 hover:text-indigo-700' }} transition-colors">
+                            <button wire:click="configureRole({{ $role->id }})" class="flex items-center text-sm font-medium {{ $role->name === 'Super Admin' ? 'text-white hover:text-indigo-100' : 'text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300' }} transition-colors">
                                 {{ __('Configure') }} <i class="fas fa-arrow-right ml-1 text-xs"></i>
                             </button>
                         </div>
@@ -324,29 +324,29 @@ class extends Component
 
             <!-- Permissions List -->
             <div class="mt-10">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Available Permissions') }}</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4 dark:text-gray-100">{{ __('Available Permissions') }}</h3>
                 
                 @if($groupedPermissions->isEmpty())
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-200 text-center text-gray-500">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-200 text-center text-gray-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
                         {{ __('No permissions found.') }}
                     </div>
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach($groupedPermissions as $group => $perms)
-                            <div class="bg-white rounded-3xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden transition-all duration-300 flex flex-col h-full">
-                                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                                    <h4 class="font-bold text-gray-800">{{ $group }}</h4>
-                                    <span class="text-xs px-2.5 py-1 bg-white border border-gray-200 rounded-full text-gray-600 font-medium">{{ $perms->count() }}</span>
+                            <div class="bg-white rounded-3xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden transition-all duration-300 flex flex-col h-full dark:bg-gray-800 dark:border-gray-700">
+                                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center dark:bg-gray-700/50 dark:border-gray-700">
+                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">{{ $group }}</h4>
+                                    <span class="text-xs px-2.5 py-1 bg-white border border-gray-200 rounded-full text-gray-600 font-medium dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">{{ $perms->count() }}</span>
                                 </div>
                                 <div class="p-6 space-y-3 flex-1">
                                     @foreach($perms as $permission)
-                                        <div class="flex items-center justify-between group p-2 hover:bg-gray-50 rounded-xl transition-colors -mx-2">
+                                        <div class="flex items-center justify-between group p-2 hover:bg-gray-50 rounded-xl transition-colors -mx-2 dark:hover:bg-gray-700/50">
                                             <div class="flex items-center">
-                                                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 mr-3 group-hover:bg-indigo-500 transition-colors"></div>
-                                                <span class="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">{{ $permission->name }}</span>
+                                                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 mr-3 group-hover:bg-indigo-500 transition-colors dark:bg-gray-600"></div>
+                                                <span class="text-sm text-gray-600 group-hover:text-gray-900 transition-colors dark:text-gray-400 dark:group-hover:text-gray-200">{{ $permission->name }}</span>
                                             </div>
                                             <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button wire:click="editPermission({{ $permission->id }})" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                                <button wire:click="editPermission({{ $permission->id }})" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors dark:hover:bg-gray-600 dark:hover:text-indigo-400">
                                                     <i class="fas fa-pen text-xs"></i>
                                                 </button>
                                                 <button type="button" x-on:click="$dispatch('swal:confirm', {
@@ -356,7 +356,7 @@ class extends Component
                                                     method: 'deletePermission',
                                                     params: [{{ $permission->id }}],
                                                     componentId: '{{ $this->getId() }}'
-                                                })" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                })" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors dark:hover:bg-red-900/30 dark:hover:text-red-400">
                                                     <i class="fas fa-trash text-xs"></i>
                                                 </button>
                                             </div>

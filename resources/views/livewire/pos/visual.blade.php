@@ -458,33 +458,33 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     <!-- Left Section: Products -->
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         <!-- Header -->
-        <header class="bg-white p-4 shadow-sm z-10 flex items-center justify-between">
+        <header class="bg-white p-4 shadow-sm z-10 flex items-center justify-between dark:bg-gray-800 dark:border-b dark:border-gray-700">
             <div class="flex items-center space-x-4 w-full">
-                <a wire:navigate href="{{ route('dashboard') }}"
-                    class="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
+                <a  href="{{ route('dashboard') }}"
+                    class="p-2 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 hover:from-indigo-100 hover:to-indigo-200 transition-all shadow-sm dark:from-indigo-900/30 dark:to-indigo-800/30 dark:text-indigo-400">
                     <i class="fas fa-arrow-left"></i>
                 </a>
 
                 <div class="relative flex-1 max-w-lg">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <i class="fas fa-search text-gray-400"></i>
+                        <i class="fas fa-search text-gray-400 dark:text-gray-500"></i>
                     </span>
                     <input type="text" wire:model.live.debounce.300ms="search"
-                        class="w-full py-2.5 pl-10 pr-4 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 transition-colors"
+                        class="w-full py-2.5 pl-10 pr-4 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-colors dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500"
                         placeholder="{{ __('Scan barcode or search products...') }}">
                     <span class="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <i class="fas fa-barcode text-gray-500 cursor-pointer"></i>
+                        <i class="fas fa-barcode text-gray-500 dark:text-gray-400 cursor-pointer"></i>
                     </span>
                 </div>
                 <livewire:components.device-toolbar />
                 <div class="hidden md:flex space-x-2 overflow-x-auto no-scrollbar">
 
                     <button wire:click="filterCategory(null)"
-                        class="px-4 py-2 {{ is_null($categoryFilter) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }} rounded-lg text-sm font-medium whitespace-nowrap shadow-sm transition-colors">{{ __('All Items') }}</button>
+                        class="px-4 py-2 {{ is_null($categoryFilter) ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600' }} rounded-xl text-sm font-medium whitespace-nowrap shadow-sm transition-all">{{ __('All Items') }}</button>
                     <div class="flex flex-nowrap space-x-2 overflow-x-auto no-scrollbar md:max-w-[440px]">
                         @foreach ($categories as $category)
                             <button wire:click="filterCategory('{{ $category->id }}')"
-                                class="px-4 py-2 {{ $categoryFilter == $category->id ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }} rounded-lg text-sm font-medium whitespace-nowrap transition-colors">{{ $category->name }}</button>
+                                class="px-4 py-2 {{ $categoryFilter == $category->id ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600' }} rounded-xl text-sm font-medium whitespace-nowrap transition-all">{{ $category->name }}</button>
                         @endforeach
                     </div>
                 </div>
@@ -496,29 +496,29 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 @forelse($products as $product)
                     <div wire:click="addToCart('{{ $product->id }}')"
-                        class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group">
-                        <div class="relative h-32 overflow-hidden bg-gray-100">
+                        class="group bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative transform hover:-translate-y-1 dark:bg-gray-800 dark:border-gray-700">
+                        <div class="relative h-32 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
                             @if ($product->image)
                                 <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}"
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                             @else
-                                <div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400 dark:from-gray-600 dark:to-gray-500">
                                     <i class="fas fa-image text-3xl"></i>
                                 </div>
                             @endif
                             <span
-                                class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">Rp.
+                                class="absolute top-2 right-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-2 py-1 rounded-xl shadow-lg shadow-indigo-200/30 dark:shadow-none">Rp.
                                 {{ number_format($product->price, 0, ',', '.') }}</span>
                         </div>
                         <div class="p-3">
-                            <h3 class="text-sm font-bold text-gray-800 truncate">{{ $product->name }}</h3>
-                            <p class="text-xs text-gray-500 mt-1">
+                            <h3 class="text-sm font-bold text-gray-800 truncate dark:text-gray-100">{{ $product->name }}</h3>
+                            <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">
                                 {{ $product->stock > 0 ? $product->stock . ' ' . __('in stock') : __('Out of stock') }}
                             </p>
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-full text-center py-10 text-gray-500">
+                    <div class="col-span-full text-center py-10 text-gray-500 dark:text-gray-400">
                         <i class="fas fa-box-open text-4xl mb-2"></i>
                         <p>{{ __('No products found.') }}</p>
                     </div>
@@ -533,100 +533,100 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
     </div>
 
     <!-- Right Section: Cart -->
-    <div class="w-96 bg-white border-l border-gray-200 flex flex-col h-full shadow-xl z-20">
+    <div class="w-96 bg-white border-l border-gray-200 flex flex-col h-full shadow-xl z-20 dark:bg-gray-800 dark:border-gray-700">
         <!-- Customer & Options -->
-        <div class="p-4 border-b border-gray-200 bg-gray-50">
+        <div class="p-4 border-b border-gray-200 bg-gray-50 dark:bg-gray-700/50 dark:border-gray-600">
             <div class="flex items-center justify-between mb-3 relative">
-                <div class="flex items-center space-x-2 bg-white px-3 py-2.5 rounded-lg border border-gray-300 cursor-pointer hover:border-indigo-500 transition-colors flex-1 mr-2"
+                <div class="flex items-center space-x-2 bg-white px-3 py-2.5 rounded-xl border border-gray-300 cursor-pointer hover:border-indigo-500 transition-colors flex-1 mr-2 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-indigo-400"
                     x-data="{ open: false }" @click.outside="open = false">
 
                     <div class="flex items-center flex-1" @click="open = !open">
-                        <i class="fas fa-user text-indigo-600 mr-2"></i>
-                        <span class="text-sm font-medium text-gray-700 truncate">{{ $selectedCustomerName }}</span>
+                        <i class="fas fa-user text-indigo-600 mr-2 dark:text-indigo-400"></i>
+                        <span class="text-sm font-medium text-gray-700 truncate dark:text-gray-300">{{ $selectedCustomerName }}</span>
                     </div>
                     @if ($selectedCustomerId)
-                        <button wire:click="removeCustomer" class="text-gray-400 hover:text-red-500"><i
+                        <button wire:click="removeCustomer" class="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"><i
                                 class="fas fa-times"></i></button>
                     @endif
 
                     <!-- Customer Search Dropdown -->
                     <div x-show="open"
-                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-2"
+                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-2 dark:bg-gray-800 dark:border-gray-700"
                         style="display: none;">
                         <input type="text" wire:model.live.debounce.300ms="customerSearch"
-                            class="w-full text-sm p-4 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 mb-2"
+                            class="w-full text-sm p-4 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                             placeholder="{{ __('Search customer...') }}">
                         <ul class="max-h-40 overflow-y-auto">
                             @foreach ($customers as $customer)
                                 <li wire:click="selectCustomer('{{ $customer->id }}', '{{ $customer->name }}')"
-                                    class="p-2 hover:bg-gray-50 cursor-pointer rounded flex items-center">
+                                    class="p-2 hover:bg-gray-50 cursor-pointer rounded-lg flex items-center dark:hover:bg-gray-700">
                                     <div
-                                        class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-2 font-bold text-xs">
+                                        class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center text-indigo-600 mr-2 font-bold text-xs dark:from-indigo-900 dark:to-indigo-800 dark:text-indigo-300">
                                         {{ substr($customer->name, 0, 1) }}
                                     </div>
-                                    <span class="text-sm text-gray-700">{{ $customer->name }}</span>
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ $customer->name }}</span>
                                 </li>
                             @endforeach
                             @if (empty($customers) && $customerSearch)
-                                <li class="p-2 text-xs text-gray-500 text-center">{{ __('No customers found') }}</li>
+                                <li class="p-2 text-xs text-gray-500 text-center dark:text-gray-400">{{ __('No customers found') }}</li>
                             @endif
                         </ul>
                     </div>
                 </div>
 
                 <button wire:click="$set('showCreateCustomerModal', true)"
-                    class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-indigo-600">
+                    class="p-2 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 text-indigo-600 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
             <div class="grid grid-cols-3 gap-2">
                 <button wire:click="$set('showNoteModal', true)"
-                    class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
+                    class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                     <i class="fas fa-sticky-note mr-1"></i> {{ __('Note') }}
                 </button>
                 <button wire:click="$set('showShippingModal', true)"
-                    class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
+                    class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                     <i class="fas fa-truck mr-1"></i> {{ __('Shipping') }}
                 </button>
                 <button wire:click="$set('showDiscountModal', true)"
-                    class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-50">
+                    class="flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                     <i class="fas fa-percent mr-1"></i> {{ __('Discount') }}
                 </button>
             </div>
         </div>
 
         <!-- Cart Items -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 dark:bg-gray-800">
             @forelse($cart as $item)
-                <div class="flex items-start justify-between pb-3 border-b border-gray-100">
+                <div class="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
                     <div class="flex items-start space-x-3">
                         @if ($item['image'])
-                            <img src="{{ Storage::url($item['image']) }}" class="w-12 h-12 rounded-lg object-cover" alt="Item">
+                            <img src="{{ Storage::url($item['image']) }}" class="w-12 h-12 rounded-xl object-cover shadow-sm" alt="Item">
                         @else
-                            <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-400 shadow-sm dark:from-gray-600 dark:to-gray-700">
                                 <i class="fas fa-image"></i>
                             </div>
                         @endif
                         <div>
-                            <h4 class="text-sm font-bold text-gray-800 truncate max-w-[120px]">{{ $item['name'] }}
+                            <h4 class="text-sm font-bold text-gray-800 truncate max-w-[120px] dark:text-gray-100">{{ $item['name'] }}
                             </h4>
-                            <p class="text-xs text-gray-500">Rp. {{ number_format($item['price'], 0, ',', '.') }} </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Rp. {{ number_format($item['price'], 0, ',', '.') }} </p>
                         </div>
                     </div>
                     <div class="flex flex-col items-end">
-                        <span class="text-sm font-bold text-gray-800">Rp.
+                        <span class="text-sm font-bold text-gray-800 dark:text-gray-100">Rp.
                             {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
-                        <div class="flex items-center mt-1 bg-gray-100 rounded-lg">
+                        <div class="flex items-center mt-1 bg-gray-100 rounded-xl shadow-sm dark:bg-gray-700">
                             <button wire:click="updateQuantity('{{ $item['id'] }}', -1)"
-                                class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors">-</button>
-                            <span class="text-xs font-medium w-4 text-center">{{ $item['quantity'] }}</span>
+                                class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">-</button>
+                            <span class="text-xs font-medium w-4 text-center dark:text-gray-300">{{ $item['quantity'] }}</span>
                             <button wire:click="updateQuantity('{{ $item['id'] }}', 1)"
-                                class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-green-500 transition-colors">+</button>
+                                class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-green-500 transition-colors dark:text-gray-400">+</button>
                         </div>
                     </div>
                 </div>
             @empty
-                <div class="h-full flex flex-col items-center justify-center text-gray-400">
+                <div class="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
                     <i class="fas fa-shopping-cart text-4xl mb-2"></i>
                     <p class="text-sm">{{ __('Cart is empty. Scan an item to start.') }}</p>
                 </div>
@@ -634,24 +634,24 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         </div>
 
         <!-- Footer / Totals -->
-        <div class="bg-gray-50 p-4 border-t border-gray-200">
+        <div class="bg-gray-50 p-4 border-t border-gray-200 dark:bg-gray-700/50 dark:border-gray-600">
             <div class="space-y-2 mb-4">
-                <div class="flex justify-between text-sm text-gray-600">
+                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                     <span>{{ __('Subtotal') }}</span>
                     <span>Rp. {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                 </div>
                 @if ($this->discount > 0)
-                    <div class="flex justify-between text-sm text-red-500">
+                    <div class="flex justify-between text-sm text-red-500 dark:text-red-400">
                         <span>{{ __('Discount') }}</span>
                         <span>-Rp. {{ number_format($this->discount, 0, ',', '.') }}</span>
                     </div>
                 @endif
-                <div class="flex justify-between items-center text-sm text-gray-600">
+                <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
                     <div class="flex items-center">
                         <span class="mr-2">{{ __('Tax') }}</span>
                         @if($taxes->count() > 1)
                             <select wire:model.live="selectedTaxId"
-                                class="text-xs border-gray-300 rounded p-1 pr-6 py-0 focus:ring-indigo-500 focus:border-indigo-500">
+                                class="text-xs border-gray-300 rounded-lg p-1 pr-6 py-0 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                                 @foreach($taxes as $t)
                                     <option value="{{ $t->id }}">{{ $t->name }} ({{ number_format($t->rate, 0) }}%)</option>
                                 @endforeach
@@ -663,12 +663,12 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     <span>Rp. {{ number_format($this->tax, 0, ',', '.') }}</span>
                 </div>
                 @if ($this->shipping > 0)
-                    <div class="flex justify-between text-sm text-gray-600">
+                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                         <span>{{ __('Shipping') }}</span>
                         <span>Rp. {{ number_format($this->shipping, 0, ',', '.') }}</span>
                     </div>
                 @endif
-                <div class="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2">
+                <div class="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2 dark:text-gray-100 dark:border-gray-600">
                     <span>{{ __('Total Payable') }}</span>
                     <span>Rp. {{ number_format($this->total, 0, ',', '.') }}</span>
                 </div>
@@ -676,17 +676,17 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
 
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <button wire:click="$set('cart', [])"
-                    class="py-3 rounded-lg border border-red-200 text-red-600 font-medium text-sm hover:bg-red-50 transition-colors">
+                    class="py-3 rounded-xl border border-red-200 text-red-600 font-medium text-sm hover:bg-red-50 transition-colors dark:bg-red-900/20 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30">
                     {{ __('Cancel') }}
                 </button>
                 <button wire:click="holdOrder"
-                    class="py-3 rounded-lg border border-indigo-200 text-indigo-600 font-medium text-sm hover:bg-indigo-50 transition-colors">
+                    class="py-3 rounded-xl border border-indigo-200 text-indigo-600 font-medium text-sm hover:bg-indigo-50 transition-colors dark:bg-indigo-900/20 dark:border-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
                     {{ __('Held Orders') }}
                 </button>
             </div>
 
             <button wire:click="checkout" wire:loading.attr="disabled"
-                class="block w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                class="block w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-indigo-400 disabled:to-purple-400 text-white rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 dark:shadow-none">
                 <span wire:loading.remove>{{ __('Pay Now') }} Rp. {{ number_format($this->total, 0, ',', '.') }}</span>
                 <span wire:loading>{{ __('Processing...') }}</span>
             </button>
@@ -702,18 +702,18 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     wire:click="$set('showNoteModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Order Note') }}</h3>
+                        class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full dark:bg-gray-800">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">{{ __('Order Note') }}</h3>
                         <div class="mt-2">
                             <textarea wire:model="note" rows="4"
-                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm px-4 py-2 border border-gray-300 rounded-md"
+                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm px-4 py-2 border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                                 placeholder="{{ __('Add a note to this order...') }}"></textarea>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse dark:bg-gray-700/50">
                         <button type="button" wire:click="$set('showNoteModal', false)"
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-medium text-white hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                             {{ __('Save Note') }}
                         </button>
                     </div>
@@ -731,24 +731,24 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                     wire:click="$set('showShippingModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">{{ __('Shipping Cost') }}
+                    class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full dark:bg-gray-800">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">{{ __('Shipping Cost') }}
                         </h3>
                         <div class="mt-2">
                             <div class="relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">Rp. </span>
+                                    <span class="text-gray-500 sm:text-sm dark:text-gray-400">Rp. </span>
                                 </div>
                                 <input type="text" wire:model.live.="shipping" step="0.01"
-                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9  p-4 sm:text-sm border border-gray-300 rounded-md"
+                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9 p-4 sm:text-sm border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                                     placeholder="0.00">
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse dark:bg-gray-700/50">
                         <button type="button" wire:click="$set('showShippingModal', false)"
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-medium text-white hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                             {{ __('Close') }}
                         </button>
                     </div>

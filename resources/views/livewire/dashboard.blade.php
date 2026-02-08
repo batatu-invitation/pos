@@ -38,13 +38,14 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Card 1 -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-3xl"></div>
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('Total Sales') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">$12,426</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Sales') }}</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">$12,426</h3>
                 </div>
-                <div class="p-3 bg-indigo-50 rounded-full text-indigo-600">
+                <div class="p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl text-indigo-600 shadow-lg shadow-indigo-200/30 dark:from-indigo-900/30 dark:to-indigo-800/30 dark:text-indigo-400">
                     <i class="fas fa-dollar-sign text-xl"></i>
                 </div>
             </div>
@@ -52,18 +53,19 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                 <span class="text-green-500 flex items-center font-medium">
                     <i class="fas fa-arrow-up mr-1"></i> 12%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
+                <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
         </div>
 
         <!-- Card 2 -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-3xl"></div>
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('Total Orders') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">1,240</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Orders') }}</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">1,240</h3>
                 </div>
-                <div class="p-3 bg-blue-50 rounded-full text-blue-600">
+                <div class="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl text-blue-600 shadow-lg shadow-blue-200/30 dark:from-blue-900/30 dark:to-blue-800/30 dark:text-blue-400">
                     <i class="fas fa-shopping-bag text-xl"></i>
                 </div>
             </div>
@@ -71,18 +73,19 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                 <span class="text-green-500 flex items-center font-medium">
                     <i class="fas fa-arrow-up mr-1"></i> 8%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
+                <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
         </div>
 
         <!-- Card 3 -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-500/10 to-transparent rounded-bl-3xl"></div>
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('Total Products') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">845</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Products') }}</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">845</h3>
                 </div>
-                <div class="p-3 bg-orange-50 rounded-full text-orange-600">
+                <div class="p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl text-orange-600 shadow-lg shadow-orange-200/30 dark:from-orange-900/30 dark:to-orange-800/30 dark:text-orange-400">
                     <i class="fas fa-box text-xl"></i>
                 </div>
             </div>
@@ -90,18 +93,19 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                 <span class="text-red-500 flex items-center font-medium">
                     <i class="fas fa-arrow-down mr-1"></i> 2%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
+                <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
         </div>
 
         <!-- Card 4 -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-teal-500/10 to-transparent rounded-bl-3xl"></div>
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">{{ __('Total Customers') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-800">3,200</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Customers') }}</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">3,200</h3>
                 </div>
-                <div class="p-3 bg-teal-50 rounded-full text-teal-600">
+                <div class="p-3 bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl text-teal-600 shadow-lg shadow-teal-200/30 dark:from-teal-900/30 dark:to-teal-800/30 dark:text-teal-400">
                     <i class="fas fa-users text-xl"></i>
                 </div>
             </div>
@@ -109,7 +113,7 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                 <span class="text-green-500 flex items-center font-medium">
                     <i class="fas fa-arrow-up mr-1"></i> 14%
                 </span>
-                <span class="text-gray-400 ml-2">{{ __('vs last month') }}</span>
+                <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
         </div>
     </div>
@@ -117,11 +121,11 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
     <!-- Charts & Recent Sales -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Chart -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:col-span-2">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 lg:col-span-2 hover:shadow-lg transition-all duration-300 dark:bg-gray-800 dark:border-gray-700">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold text-gray-800">{{ __('Sales Overview') }}</h3>
+                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">{{ __('Sales Overview') }}</h3>
                 <select
-                    class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2">
+                    class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                     <option>{{ __('Last 7 Days') }}</option>
                     <option>{{ __('Last 30 Days') }}</option>
                     <option>{{ __('This Year') }}</option>
@@ -133,39 +137,39 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
         </div>
 
         <!-- Top Products -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('Top Selling Products') }}</h3>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 dark:text-gray-100">{{ __('Top Selling Products') }}</h3>
             <div class="space-y-4">
                 @foreach ($topProducts as $product)
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between group p-2 rounded-xl hover:bg-gray-50 transition-colors dark:hover:bg-gray-700/50">
                         <div class="flex items-center">
-                            <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl mr-3">
+                            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-xl mr-4 shadow-sm dark:from-gray-700 dark:to-gray-600">
                                 {{ $product['icon'] }}</div>
                             <div>
-                                <p class="text-sm font-medium text-gray-800">{{ $product['name'] }}</p>
-                                <p class="text-xs text-gray-500">{{ $product['sales'] }} {{ __('sales') }}</p>
+                                <p class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ $product['name'] }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $product['sales'] }} {{ __('sales') }}</p>
                             </div>
                         </div>
                         <span
-                            class="text-sm font-bold text-gray-800">${{ number_format($product['revenue'], 0) }}</span>
+                            class="text-sm font-bold text-gray-800 dark:text-gray-100">${{ number_format($product['revenue'], 0) }}</span>
                     </div>
                 @endforeach
             </div>
             <button
-                class="w-full mt-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">{{ __('View All Products') }}</button>
+                class="w-full mt-6 py-3 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl text-sm font-medium text-indigo-700 hover:from-indigo-100 hover:to-blue-100 transition-all duration-300 dark:from-indigo-900/30 dark:to-blue-900/30 dark:border-indigo-700 dark:text-indigo-300">{{ __('View All Products') }}</button>
         </div>
     </div>
 
     <!-- Recent Transactions -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">{{ __('Recent Transactions') }}</h3>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 dark:bg-gray-800 dark:border-gray-700">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">{{ __('Recent Transactions') }}</h3>
             <a href="#"
-                class="text-indigo-600 text-sm font-medium hover:text-indigo-800">{{ __('View All') }}</a>
+                class="text-indigo-600 text-sm font-medium hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">{{ __('View All') }}</a>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
+            <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+                <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500 dark:bg-gray-700/50 dark:text-gray-400">
                     <tr>
                         <th class="px-6 py-4">{{ __('Order ID') }}</th>
                         <th class="px-6 py-4">{{ __('Customer') }}</th>
@@ -176,21 +180,21 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                         <th class="px-6 py-4">{{ __('Action') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @foreach ($recentTransactions as $transaction)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 font-medium text-gray-800">{{ $transaction['id'] }}</td>
+                        <tr class="hover:bg-gray-50 transition-colors dark:hover:bg-gray-700/50">
+                            <td class="px-6 py-4 font-medium text-gray-800 dark:text-gray-100">{{ $transaction['id'] }}</td>
                             <td class="px-6 py-4">{{ $transaction['customer'] }}</td>
                             <td class="px-6 py-4">{{ $transaction['date'] }}</td>
                             <td class="px-6 py-4">{{ $transaction['items'] }}</td>
-                            <td class="px-6 py-4 font-bold text-gray-800">
+                            <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-100">
                                 ${{ number_format($transaction['total'], 2) }}</td>
                             <td class="px-6 py-4">
                                 <span
-                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-{{ $transaction['status_color'] }}-100 text-{{ $transaction['status_color'] }}-800">{{ $transaction['status'] }}</span>
+                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-{{ $transaction['status_color'] }}-100 text-{{ $transaction['status_color'] }}-800 dark:bg-{{ $transaction['status_color'] }}-900/30 dark:text-{{ $transaction['status_color'] }}-300">{{ $transaction['status'] }}</span>
                             </td>
                             <td class="px-6 py-4">
-                                <button class="text-gray-400 hover:text-indigo-600"><i class="fas fa-eye"></i></button>
+                                <button class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"><i class="fas fa-eye"></i></button>
                             </td>
                         </tr>
                     @endforeach
