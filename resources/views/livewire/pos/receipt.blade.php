@@ -90,7 +90,7 @@ class extends Component {
             @foreach($receiptItems as $item)
             <div class="flex justify-between">
                 <span>{{ $item['quantity'] }} x {{ $item['name'] }}</span>
-                <span>Rp. {{ number_format($item['quantity'] * $item['price'], 2) }}</span>
+                <span>Rp. {{ number_format($item['quantity'] * $item['price'], 0, ',', '.') }}</span>
             </div>
             @endforeach
         </div>
@@ -99,11 +99,11 @@ class extends Component {
 
         <div class="flex justify-between font-bold text-sm">
             <span>{{ __('TOTAL') }}</span>
-            <span>Rp. {{ number_format($this->grandTotal, 2) }}</span>
+            <span>Rp. {{ number_format($this->grandTotal, 0, ',', '.') }}</span>
         </div>
         <div class="flex justify-between text-xs mt-1">
             <span>{{ __('CASH') }}</span>
-            <span>Rp. {{ number_format($this->grandTotal, 2) }}</span>
+            <span>Rp. {{ number_format($this->grandTotal, 0, ',', '.') }}</span>
         </div>
         <div class="flex justify-between text-xs mt-1">
             <span>{{ __('CHANGE') }}</span>
@@ -137,7 +137,7 @@ class extends Component {
             <div class="p-8">
                 <div class="text-center mb-6">
                     <p class="text-gray-500 text-sm">{{ __('Total Paid') }}</p>
-                    <p class="text-3xl font-bold text-gray-900">Rp. 39.60</p>
+                    <p class="text-3xl font-bold text-gray-900">Rp. 50.000</p>
                     <p class="text-gray-400 text-xs mt-1">{{ __('Via Cash') }}</p>
                 </div>
 

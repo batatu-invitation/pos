@@ -97,20 +97,20 @@ new class extends Component {
                         <tr>
                             <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ $line['code'] }} - {{ $line['name'] }}</td>
                             <td class="px-4 py-2 text-sm text-right text-gray-900 dark:text-white">
-                                {{ $line['debit'] > 0 ? number_format($line['debit'], 2) : '-' }}
+                                {{ $line['debit'] > 0 ? 'Rp. ' . number_format($line['debit'], 0, ',', '.') : '-' }}
                             </td>
                             <td class="px-4 py-2 text-sm text-right text-gray-900 dark:text-white">
-                                {{ $line['credit'] > 0 ? number_format($line['credit'], 2) : '-' }}
+                                {{ $line['credit'] > 0 ? 'Rp. ' . number_format($line['credit'], 0, ',', '.') : '-' }}
                             </td>
                         </tr>
                     @endforeach
                     <tr class="bg-gray-50 dark:bg-gray-900/50 font-bold">
                         <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-right">Total</td>
                         <td class="px-4 py-3 text-sm text-right text-gray-900 dark:text-white">
-                            {{ number_format($report['total_debit'], 2) }}
+                            Rp. {{ number_format($report['total_debit'], 0, ',', '.') }}
                         </td>
                         <td class="px-4 py-3 text-sm text-right text-gray-900 dark:text-white">
-                            {{ number_format($report['total_credit'], 2) }}
+                            Rp. {{ number_format($report['total_credit'], 0, ',', '.') }}
                         </td>
                     </tr>
                 </tbody>

@@ -143,7 +143,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         $this->taxRate = $selectedTax ? $selectedTax->rate : 0;
 
         return [
-            'products' => $productsQuery->where('stock', '>', 0)->latest()->paginate(15),
+            'products' => $productsQuery->where('stock', '>', 0)->latest()->paginate(20),
             'categories' => Category::all(),
             'customers' => $customers,
             'taxes' => $taxes,

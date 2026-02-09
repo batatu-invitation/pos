@@ -16,6 +16,12 @@ class Account extends Model
         'type',
         'subtype',
         'description',
+        'user_id',
         'is_active',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

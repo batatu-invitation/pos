@@ -25,7 +25,7 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
                 'employees' => User::with('roles')
                     ->where('id', '!=', auth()->id())
                     ->latest()
-                    ->get(),
+                    ->paginate(20),
                 'availableRoles' => Role::whereNotIn('name', ['Super Admin', 'Manager', 'Customer Support'])->get(),
             ];
         }

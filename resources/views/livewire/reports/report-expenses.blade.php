@@ -123,7 +123,7 @@ class extends Component
                                 <td class="px-6 py-4">{{ $expense->date->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 font-medium text-gray-800">{{ $expense->description }}</td>
                                 <td class="px-6 py-4">{{ $expense->category }}</td>
-                                <td class="px-6 py-4 font-bold text-gray-800">{{ number_format($expense->amount, 2) }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-800">Rp. {{ number_format($expense->amount, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $expense->status === 'paid' || $expense->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                         {{ ucfirst($expense->status) }}

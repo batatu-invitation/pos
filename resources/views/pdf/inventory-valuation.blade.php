@@ -35,16 +35,16 @@
                     <td>{{ $product->name }}</td>
                     <td>{{ $product->category->name ?? 'Uncategorized' }}</td>
                     <td class="amount">{{ $product->stock }}</td>
-                    <td class="amount">{{ number_format($product->cost, 2) }}</td>
-                    <td class="amount">{{ number_format($product->price, 2) }}</td>
-                    <td class="amount">{{ number_format($product->stock * $product->cost, 2) }}</td>
-                    <td class="amount">{{ number_format($product->stock * $product->price, 2) }}</td>
+                    <td class="amount">Rp. {{ number_format($product->cost, 0, ',', '.') }}</td>
+                    <td class="amount">Rp. {{ number_format($product->price, 0, ',', '.') }}</td>
+                    <td class="amount">Rp. {{ number_format($product->stock * $product->cost, 0, ',', '.') }}</td>
+                    <td class="amount">Rp. {{ number_format($product->stock * $product->price, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
             <tr style="font-weight: bold; background-color: #f9f9f9;">
                 <td colspan="5" style="text-align: right;">Totals</td>
-                <td class="amount">{{ number_format($totalCostValue, 2) }}</td>
-                <td class="amount">{{ number_format($totalSalesValue, 2) }}</td>
+                <td class="amount">Rp. {{ number_format($totalCostValue, 0, ',', '.') }}</td>
+                <td class="amount">Rp. {{ number_format($totalSalesValue, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>

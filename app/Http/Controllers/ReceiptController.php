@@ -183,32 +183,32 @@ class ReceiptController extends Controller
             // Items
             foreach ($sale->items as $item) {
                 $printer->text($item->product_name . "\n");
-                $qtyPrice = sprintf("%sx %s", $item->quantity, number_format($item->price, 0, ',', '.'));
-                $subtotal = number_format($item->quantity * $item->price, 0, ',', '.');
+                $qtyPrice = sprintf("%sx Rp. %s", $item->quantity, number_format($item->price, 0, ',', '.'));
+                $subtotal = "Rp. " . number_format($item->quantity * $item->price, 0, ',', '.');
                 $this->printRow($printer, $qtyPrice, $subtotal);
             }
 
             $printer->text("--------------------------------\n");
 
             // Totals
-            $this->printRow($printer, __('Subtotal'), number_format($sale->subtotal, 0, ',', '.'));
+            $this->printRow($printer, __('Subtotal'), "Rp. " . number_format($sale->subtotal, 0, ',', '.'));
 
             if ($sale->tax > 0) {
-                $this->printRow($printer, __('Tax'), number_format($sale->tax, 0, ',', '.'));
+                $this->printRow($printer, __('Tax'), "Rp. " . number_format($sale->tax, 0, ',', '.'));
             }
 
             if ($sale->discount > 0) {
-                $this->printRow($printer, __('Discount'), "-" . number_format($sale->discount, 0, ',', '.'));
+                $this->printRow($printer, __('Discount'), "-Rp. " . number_format($sale->discount, 0, ',', '.'));
             }
 
             $printer->setEmphasis(true);
-            $this->printRow($printer, __('TOTAL'), number_format($sale->total_amount, 0, ',', '.'));
+            $this->printRow($printer, __('TOTAL'), "Rp. " . number_format($sale->total_amount, 0, ',', '.'));
             $printer->setEmphasis(false);
 
             $printer->text("--------------------------------\n");
 
-            $this->printRow($printer, __('Pay'), number_format($sale->cash_received, 0, ',', '.'));
-            $this->printRow($printer, __('Change'), number_format($sale->change_amount, 0, ',', '.'));
+            $this->printRow($printer, __('Pay'), "Rp. " . number_format($sale->cash_received, 0, ',', '.'));
+            $this->printRow($printer, __('Change'), "Rp. " . number_format($sale->change_amount, 0, ',', '.'));
 
             // Footer
             $printer->feed(2);

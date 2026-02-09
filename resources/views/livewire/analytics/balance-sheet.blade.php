@@ -114,12 +114,12 @@ new class extends Component {
                         @foreach($report['assets'] as $asset)
                             <tr>
                                 <td class="py-2 text-sm text-gray-700 dark:text-gray-300">{{ $asset['code'] }} - {{ $asset['name'] }}</td>
-                                <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">{{ number_format($asset['balance'], 2) }}</td>
+                                <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">Rp. {{ number_format($asset['balance'], 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                         <tr class="border-t-2 border-gray-300 dark:border-gray-600">
                             <td class="py-3 text-base font-bold text-gray-900 dark:text-white">Total Assets</td>
-                            <td class="py-3 text-base font-bold text-right text-gray-900 dark:text-white">{{ number_format($report['total_assets'], 2) }}</td>
+                            <td class="py-3 text-base font-bold text-right text-gray-900 dark:text-white">Rp. {{ number_format($report['total_assets'], 0, ',', '.') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -139,12 +139,12 @@ new class extends Component {
                             @foreach($report['liabilities'] as $liab)
                                 <tr>
                                     <td class="py-2 text-sm text-gray-700 dark:text-gray-300">{{ $liab['code'] }} - {{ $liab['name'] }}</td>
-                                    <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">{{ number_format($liab['balance'], 2) }}</td>
+                                    <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">Rp. {{ number_format($liab['balance'], 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                             <tr class="border-t-2 border-gray-300 dark:border-gray-600">
                                 <td class="py-3 text-base font-bold text-gray-900 dark:text-white">Total Liabilities</td>
-                                <td class="py-3 text-base font-bold text-right text-gray-900 dark:text-white">{{ number_format($report['total_liabilities'], 2) }}</td>
+                                <td class="py-3 text-base font-bold text-right text-gray-900 dark:text-white">Rp. {{ number_format($report['total_liabilities'], 0, ',', '.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -162,12 +162,12 @@ new class extends Component {
                             @foreach($report['equity'] as $eq)
                                 <tr>
                                     <td class="py-2 text-sm text-gray-700 dark:text-gray-300">{{ $eq['code'] }} - {{ $eq['name'] }}</td>
-                                    <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">{{ number_format($eq['balance'], 2) }}</td>
+                                    <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">Rp. {{ number_format($eq['balance'], 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                             <tr class="border-t-2 border-gray-300 dark:border-gray-600">
                                 <td class="py-3 text-base font-bold text-gray-900 dark:text-white">Total Equity</td>
-                                <td class="py-3 text-base font-bold text-right text-gray-900 dark:text-white">{{ number_format($report['total_equity'], 2) }}</td>
+                                <td class="py-3 text-base font-bold text-right text-gray-900 dark:text-white">Rp. {{ number_format($report['total_equity'], 0, ',', '.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -178,7 +178,7 @@ new class extends Component {
              <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                  <div class="flex justify-between items-center">
                      <span class="text-lg font-bold text-gray-900 dark:text-white">Total Liabilities & Equity</span>
-                     <span class="text-lg font-bold text-gray-900 dark:text-white">{{ number_format($report['total_liabilities'] + $report['total_equity'], 2) }}</span>
+                     <span class="text-lg font-bold text-gray-900 dark:text-white">Rp. {{ number_format($report['total_liabilities'] + $report['total_equity'], 0, ',', '.') }}</span>
                  </div>
              </div>
         </div>

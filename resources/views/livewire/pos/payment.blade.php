@@ -50,7 +50,7 @@ new #[Layout('components.layouts.pos')] #[Title('Payment - Modern POS')] class e
         }
 
         // Initialize received amount with total
-        $this->receivedAmount = number_format($this->totalAmount, 2, '.', '');
+        $this->receivedAmount = number_format($this->totalAmount, 0, '', '');
     }
 
     public function selectPaymentMethod($methodId)
@@ -60,7 +60,7 @@ new #[Layout('components.layouts.pos')] #[Title('Payment - Modern POS')] class e
 
     public function setReceivedAmount($amount)
     {
-        $this->receivedAmount = number_format($amount, 2, '.', '');
+        $this->receivedAmount = number_format($amount, 0, '', '');
     }
 
     public function getChangeProperty()
@@ -144,9 +144,9 @@ new #[Layout('components.layouts.pos')] #[Title('Payment - Modern POS')] class e
                 <div class="flex justify-between items-center">
                     <div>
                         <p class="font-medium text-gray-800">{{ $item['name'] }}</p>
-                        <p class="text-sm text-gray-500">{{ $item['quantity'] }} x Rp. {{ number_format($item['price'], 2) }}</p>
+                        <p class="text-sm text-gray-500">{{ $item['quantity'] }} x Rp. {{ number_format($item['price'], 0, ',', '.') }}</p>
                     </div>
-                    <span class="font-bold text-gray-800">Rp. {{ number_format($item['quantity'] * $item['price'], 2) }}</span>
+                    <span class="font-bold text-gray-800">Rp. {{ number_format($item['quantity'] * $item['price'], 0, ',', '.') }}</span>
                 </div>
                 @endforeach
             </div>
@@ -154,27 +154,27 @@ new #[Layout('components.layouts.pos')] #[Title('Payment - Modern POS')] class e
             <div class="border-t border-gray-200 pt-4 mt-4 space-y-2">
                 <div class="flex justify-between text-gray-600">
                     <span>{{ __('Subtotal') }}</span>
-                    <span>Rp. {{ number_format($subtotal, 2) }}</span>
+                    <span>Rp. {{ number_format($subtotal, 0, ',', '.') }}</span>
                 </div>
                 @if($discount > 0)
                 <div class="flex justify-between text-red-500">
                     <span>{{ __('Discount') }}</span>
-                    <span>-Rp. {{ number_format($discount, 2) }}</span>
+                    <span>-Rp. {{ number_format($discount, 0, ',', '.') }}</span>
                 </div>
                 @endif
                 <div class="flex justify-between text-gray-600">
                     <span>{{ __('Tax') }}</span>
-                    <span>Rp. {{ number_format($taxAmount, 2) }}</span>
+                    <span>Rp. {{ number_format($taxAmount, 0, ',', '.') }}</span>
                 </div>
                 @if($shipping > 0)
                 <div class="flex justify-between text-gray-600">
                     <span>{{ __('Shipping') }}</span>
-                    <span>Rp. {{ number_format($shipping, 2) }}</span>
+                    <span>Rp. {{ number_format($shipping, 0, ',', '.') }}</span>
                 </div>
                 @endif
                 <div class="flex justify-between text-2xl font-bold text-gray-900 pt-2">
                     <span>{{ __('Total') }}</span>
-                    <span>Rp. {{ number_format($totalAmount, 2) }}</span>
+                    <span>Rp. {{ number_format($totalAmount, 0, ',', '.') }}</span>
                 </div>
             </div>
 
@@ -204,20 +204,20 @@ new #[Layout('components.layouts.pos')] #[Title('Payment - Modern POS')] class e
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Received Amount') }}</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 text-xl font-bold">Rp.</span>
-                        <input type="number" step="0.01" wire:model.live="receivedAmount" class="w-full pl-16 pr-4 py-4 text-3xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __('Enter cash received...') }}">
+                        <input type="number" step="1" wire:model.live="receivedAmount" class="w-full pl-16 pr-4 py-4 text-3xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __('Enter cash received...') }}">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-4 gap-3 mb-6">
                     <button wire:click="setReceivedAmount({{ $totalAmount }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">{{ __('Exact') }}</button>
-                    <button wire:click="setReceivedAmount({{ ceil($totalAmount / 10) * 10 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">Rp. {{ number_format(ceil($totalAmount / 10) * 10, 0) }}</button>
-                    <button wire:click="setReceivedAmount({{ ceil($totalAmount / 50) * 50 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">Rp. {{ number_format(ceil($totalAmount / 50) * 50, 0) }}</button>
-                    <button wire:click="setReceivedAmount({{ ceil($totalAmount / 100) * 100 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">Rp. {{ number_format(ceil($totalAmount / 100) * 100, 0) }}</button>
+                    <button wire:click="setReceivedAmount({{ ceil($totalAmount / 10) * 10 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">Rp. {{ number_format(ceil($totalAmount / 10) * 10, 0, ',', '.') }}</button>
+                    <button wire:click="setReceivedAmount({{ ceil($totalAmount / 50) * 50 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">Rp. {{ number_format(ceil($totalAmount / 50) * 50, 0, ',', '.') }}</button>
+                    <button wire:click="setReceivedAmount({{ ceil($totalAmount / 100) * 100 }})" class="py-2 px-4 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">Rp. {{ number_format(ceil($totalAmount / 100) * 100, 0, ',', '.') }}</button>
                 </div>
 
                 <div class="bg-green-50 rounded-xl p-4 flex justify-between items-center mb-8 border border-green-100">
                     <span class="text-green-800 font-medium">{{ __('Change Return') }}</span>
-                    <span class="text-2xl font-bold text-green-700">Rp. {{ number_format($this->change, 2) }}</span>
+                    <span class="text-2xl font-bold text-green-700">Rp. {{ number_format($this->change, 0, ',', '.') }}</span>
                 </div>
 
                 <button onclick="confirmPayment()" wire:loading.attr="disabled" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold text-xl text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">

@@ -26,38 +26,13 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
         $this->loadSettings();
 
         $this->currencies = [
-            'USD ($)' => __('United States Dollar'),
-            'EUR (€)' => __('Euro'),
-            'GBP (£)' => __('British Pound'),
-            'JPY (¥)' => __('Japanese Yen'),
-            'CAD ($)' => __('Canadian Dollar'),
-            'AUD ($)' => __('Australian Dollar'),
-            'CNY (¥)' => __('Chinese Yuan'),
-            'INR (₹)' => __('Indian Rupee'),
-            'BRL (R$)' => __('Brazilian Real'),
-            'RUB (₽)' => __('Russian Ruble'),
-            'KRW (₩)' => __('South Korean Won'),
-            'SGD ($)' => __('Singapore Dollar'),
             'IDR (Rp)' => __('Indonesian Rupiah'),
         ];
 
         $this->timezones = [
-            'UTC-12:00' => __('International Date Line West'),
-            'UTC-11:00' => __('Midway Island, Samoa'),
-            'UTC-10:00' => __('Hawaii'),
-            'UTC-09:00' => __('Alaska'),
-            'UTC-08:00' => __('Pacific Time (US & Canada)'),
-            'UTC-07:00' => __('Mountain Time (US & Canada)'),
-            'UTC-06:00' => __('Central Time (US & Canada)'),
-            'UTC-05:00' => __('Eastern Time (US & Canada)'),
-            'UTC-04:00' => __('Atlantic Time (Canada)'),
-            'UTC-03:00' => __('Brasilia, Buenos Aires'),
-            'UTC-02:00' => __('Mid-Atlantic'),
-            'UTC-01:00' => __('Azores, Cape Verde Is.'),
-            'UTC+00:00' => __('London, Dublin, Edinburgh'),
-            'UTC+07:00' => __('Bangkok, Hanoi, Jakarta'),
-            'UTC+08:00' => __('Beijing, Perth, Singapore, Hong Kong'),
-            'UTC+09:00' => __('Tokyo, Seoul, Osaka, Sapporo, Yakutsk'),
+            'UTC+07:00' => __('WIB - Waktu Indonesia Barat (Jakarta)'),
+            'UTC+08:00' => __('WITA - Waktu Indonesia Tengah (Makassar)'),
+            'UTC+09:00' => __('WIT - Waktu Indonesia Timur (Jayapura)'),
         ];
 
         // Try to load real activity logs if Spatie Activitylog is installed and table exists
@@ -96,12 +71,12 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
             $this->currency = $settings['currency'] ?? 'IDR (Rp)';
         }
 
-        $this->phone = $settings['store_phone'] ?? '+1 234 567 890';
-        $this->email = $settings['store_email'] ?? 'support@modernpos.com';
+        $this->phone = $settings['store_phone'] ?? '+62 812 3456 7890';
+        $this->email = $settings['store_email'] ?? 'support@tokoanda.com';
         $this->code_transaction = $settings['code_transaction'] ?? 'TRX';
-        $this->streetAddress = $settings['store_address'] ?? '123 Main St';
-        $this->city = $settings['store_city'] ?? 'New York';
-        $this->zipCode = $settings['store_zip'] ?? '10001';
+        $this->streetAddress = $settings['store_address'] ?? 'Jl. Jendral Sudirman No. 1';
+        $this->city = $settings['store_city'] ?? 'Jakarta';
+        $this->zipCode = $settings['store_zip'] ?? '10220';
     }
 
     public function save()

@@ -101,7 +101,7 @@ new class extends Component {
         $remaining = $this->selectedSale->total_amount - $this->selectedSale->cash_received;
 
         if ($this->paymentAmount > $remaining) {
-            $this->addError('paymentAmount', 'Amount cannot exceed remaining balance of ' . number_format($remaining, 2));
+            $this->addError('paymentAmount', 'Amount cannot exceed remaining balance of Rp. ' . number_format($remaining, 0, ',', '.'));
             return;
         }
 
@@ -183,7 +183,7 @@ new class extends Component {
         <div class="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800">
             <span class="text-sm font-medium text-blue-600 dark:text-blue-300">Total Receivables</span>
             <div class="text-2xl font-bold text-blue-800 dark:text-blue-100">
-                {{ number_format($totalReceivable, 2) }}
+                Rp. {{ number_format($totalReceivable, 0, ',', '.') }}
             </div>
         </div>
     </div>
@@ -248,13 +248,13 @@ new class extends Component {
                                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ $sale->customer->phone ?? '' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
-                                {{ number_format($sale->total_amount, 2) }}
+                                Rp. {{ number_format($sale->total_amount, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600 dark:text-green-400">
-                                {{ number_format($sale->cash_received, 2) }}
+                                Rp. {{ number_format($sale->cash_received, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-red-600 dark:text-red-400">
-                                {{ number_format($sale->total_amount - $sale->cash_received, 2) }}
+                                Rp. {{ number_format($sale->total_amount - $sale->cash_received, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -312,7 +312,7 @@ new class extends Component {
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Balance Due</label>
                                         <div class="mt-1 text-lg font-bold text-red-600 dark:text-red-400">
-                                            {{ number_format($selectedSale->total_amount - $selectedSale->cash_received, 2) }}
+                                            Rp. {{ number_format($selectedSale->total_amount - $selectedSale->cash_received, 0, ',', '.') }}
                                         </div>
                                     </div>
 

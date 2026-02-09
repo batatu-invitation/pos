@@ -155,7 +155,7 @@ class extends Component
                             @endif
                         </td>
                         <td class="px-6 py-4 capitalize">{{ $transaction->payment_method }}</td>
-                        <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-100">${{ number_format($transaction->total_amount, 2) }}</td>
+                        <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-100">Rp. {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
                         <td class="px-6 py-4">
                             @php
                                 $statusColor = match($transaction->status) {
@@ -252,8 +252,8 @@ class extends Component
                                 <tr>
                                     <td class="py-2 text-sm text-gray-900 dark:text-gray-100">{{ $item->product_name }}</td>
                                     <td class="py-2 text-right text-sm text-gray-900 dark:text-gray-100">{{ $item->quantity }}</td>
-                                    <td class="py-2 text-right text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($item->price, 2) }}</td>
-                                    <td class="py-2 text-right text-sm text-gray-900 dark:text-gray-100">Rp {{ number_format($item->total_price, 2) }}</td>
+                                    <td class="py-2 text-right text-sm text-gray-900 dark:text-gray-100">Rp. {{ number_format($item->price, 0, ',', '.') }}</td>
+                                    <td class="py-2 text-right text-sm text-gray-900 dark:text-gray-100">Rp. {{ number_format($item->total_price, 0, ',', '.') }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -263,19 +263,19 @@ class extends Component
                     <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
-                            <span class="font-medium text-gray-900 dark:text-gray-100">Rp {{ number_format($selectedSale->subtotal, 2) }}</span>
+                            <span class="font-medium text-gray-900 dark:text-gray-100">Rp. {{ number_format($selectedSale->subtotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600 dark:text-gray-400">Tax</span>
-                            <span class="font-medium text-gray-900 dark:text-gray-100">Rp {{ number_format($selectedSale->tax, 2) }}</span>
+                            <span class="font-medium text-gray-900 dark:text-gray-100">Rp. {{ number_format($selectedSale->tax, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600 dark:text-gray-400">Discount</span>
-                            <span class="font-medium text-gray-900 dark:text-gray-100">- Rp {{ number_format($selectedSale->discount, 2) }}</span>
+                            <span class="font-medium text-gray-900 dark:text-gray-100">- Rp. {{ number_format($selectedSale->discount, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold">
                             <span class="text-gray-900 dark:text-gray-100">Total</span>
-                            <span class="text-indigo-600 dark:text-indigo-400">Rp {{ number_format($selectedSale->total_amount, 2) }}</span>
+                            <span class="text-indigo-600 dark:text-indigo-400">Rp. {{ number_format($selectedSale->total_amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>

@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             EmojiSeeder::class,
             ProductSeeder::class,
             ColorSeeder::class,
+            AccountSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 }

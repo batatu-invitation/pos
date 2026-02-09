@@ -277,10 +277,10 @@ new class extends Component {
                                             {{ $item->account->code }} - {{ $item->account->name }}
                                         </td>
                                         <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                            {{ $item->debit > 0 ? number_format($item->debit, 2) : '' }}
+                                            {{ $item->debit > 0 ? 'Rp. ' . number_format($item->debit, 0, ',', '.') : '' }}
                                         </td>
                                         <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                            {{ $item->credit > 0 ? number_format($item->credit, 2) : '' }}
+                                            {{ $item->credit > 0 ? 'Rp. ' . number_format($item->credit, 0, ',', '.') : '' }}
                                         </td>
                                     </tr>
                                 @endforeach
@@ -366,8 +366,8 @@ new class extends Component {
                                     </div>
 
                                     <div class="flex justify-end mt-4 gap-8 font-bold text-sm">
-                                        <div class="text-gray-600 dark:text-gray-400">Total Debit: <span class="{{ $this->totalDebit != $this->totalCredit ? 'text-red-500' : 'text-green-600' }}">{{ number_format($this->totalDebit, 2) }}</span></div>
-                                        <div class="text-gray-600 dark:text-gray-400">Total Credit: <span class="{{ $this->totalDebit != $this->totalCredit ? 'text-red-500' : 'text-green-600' }}">{{ number_format($this->totalCredit, 2) }}</span></div>
+                                        <div class="text-gray-600 dark:text-gray-400">Total Debit: <span class="{{ $this->totalDebit != $this->totalCredit ? 'text-red-500' : 'text-green-600' }}">Rp. {{ number_format($this->totalDebit, 0, ',', '.') }}</span></div>
+                                        <div class="text-gray-600 dark:text-gray-400">Total Credit: <span class="{{ $this->totalDebit != $this->totalCredit ? 'text-red-500' : 'text-green-600' }}">Rp. {{ number_format($this->totalCredit, 0, ',', '.') }}</span></div>
                                     </div>
                                 </div>
                             </div>

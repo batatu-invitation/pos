@@ -173,7 +173,7 @@ class extends Component
                     </div>
 
                     <div class="mt-6 flex items-baseline">
-                        <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($tax->rate, 2) }}</span>
+                        <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($tax->rate, 2, ',', '.') }}</span>
                         <span class="ml-1 text-gray-500 dark:text-gray-400 font-medium">%</span>
                     </div>
 

@@ -98,20 +98,20 @@ new class extends Component {
                                             {{ $item->account->code }} - {{ $item->account->name }}
                                         </td>
                                         <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                            {{ $item->debit > 0 ? number_format($item->debit, 2) : '' }}
+                                            {{ $item->debit > 0 ? 'Rp. ' . number_format($item->debit, 0, ',', '.') : '' }}
                                         </td>
                                         <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                            {{ $item->credit > 0 ? number_format($item->credit, 2) : '' }}
+                                            {{ $item->credit > 0 ? 'Rp. ' . number_format($item->credit, 0, ',', '.') : '' }}
                                         </td>
                                     </tr>
                                 @endforeach
                                 <tr class="bg-gray-50 dark:bg-gray-900/50 font-bold">
                                     <td class="px-4 py-2 text-sm text-gray-900 dark:text-white text-right">Total</td>
                                     <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                        {{ number_format($entry->items->sum('debit'), 2) }}
+                                        Rp. {{ number_format($entry->items->sum('debit'), 0, ',', '.') }}
                                     </td>
                                     <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                        {{ number_format($entry->items->sum('credit'), 2) }}
+                                        Rp. {{ number_format($entry->items->sum('credit'), 0, ',', '.') }}
                                     </td>
                                 </tr>
                             </tbody>

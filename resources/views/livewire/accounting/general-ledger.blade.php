@@ -128,7 +128,7 @@ new class extends Component {
                 <div class="text-right">
                     <p class="text-sm text-gray-500">Opening Balance</p>
                     <p class="text-lg font-bold {{ $openingBalance < 0 ? 'text-red-600' : 'text-gray-900' }}">
-                        {{ number_format($openingBalance, 2) }}
+                        Rp. {{ number_format($openingBalance, 0, ',', '.') }}
                     </p>
                 </div>
             </div>
@@ -153,7 +153,7 @@ new class extends Component {
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Opening Balance</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">-</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">-</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-gray-900">{{ number_format($openingBalance, 2) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-gray-900">Rp. {{ number_format($openingBalance, 0, ',', '.') }}</td>
                         </tr>
 
                         @forelse($ledgerItems as $item)
@@ -162,13 +162,13 @@ new class extends Component {
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item['reference'] }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{{ $item['description'] }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                    {{ $item['debit'] > 0 ? number_format($item['debit'], 2) : '-' }}
+                                    {{ $item['debit'] > 0 ? 'Rp. ' . number_format($item['debit'], 0, ',', '.') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                    {{ $item['credit'] > 0 ? number_format($item['credit'], 2) : '-' }}
+                                    {{ $item['credit'] > 0 ? 'Rp. ' . number_format($item['credit'], 0, ',', '.') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-gray-900">
-                                    {{ number_format($item['balance'], 2) }}
+                                    Rp. {{ number_format($item['balance'], 0, ',', '.') }}
                                 </td>
                             </tr>
                         @empty
@@ -181,9 +181,9 @@ new class extends Component {
                         @if(count($ledgerItems) > 0)
                             <tr class="bg-gray-100 font-bold">
                                 <td colspan="3" class="px-6 py-4 text-right text-gray-900">Totals</td>
-                                <td class="px-6 py-4 text-right text-gray-900">{{ number_format(collect($ledgerItems)->sum('debit'), 2) }}</td>
-                                <td class="px-6 py-4 text-right text-gray-900">{{ number_format(collect($ledgerItems)->sum('credit'), 2) }}</td>
-                                <td class="px-6 py-4 text-right text-gray-900">{{ number_format(end($ledgerItems)['balance'], 2) }}</td>
+                                <td class="px-6 py-4 text-right text-gray-900">Rp. {{ number_format(collect($ledgerItems)->sum('debit'), 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-right text-gray-900">Rp. {{ number_format(collect($ledgerItems)->sum('credit'), 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-right text-gray-900">Rp. {{ number_format(end($ledgerItems)['balance'], 0, ',', '.') }}</td>
                             </tr>
                         @endif
                     </tbody>

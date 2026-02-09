@@ -137,8 +137,8 @@
                 <td class="text-left" colspan="2">{{ $item->product_name }}</td>
             </tr>
             <tr>
-                <td class="text-left">{{ $item->quantity }} x Rp. {{ number_format($item->price, 2) }}</td>
-                <td class="text-right">Rp. {{ number_format($item->total_price, 2) }}</td>
+                <td class="text-left">{{ $item->quantity }} x Rp. {{ number_format($item->price, 0, ',', '.') }}</td>
+                <td class="text-right">Rp. {{ number_format($item->total_price, 0, ',', '.') }}</td>
             </tr>
         @endforeach
     </table>
@@ -148,18 +148,18 @@
     <table class="w-full font-bold text-sm">
         <tr>
             <td class="text-left">TOTAL</td>
-            <td class="text-right">Rp. {{ number_format($sale->total_amount, 2) }}</td>
+            <td class="text-right">Rp. {{ number_format($sale->total_amount, 0, ',', '.') }}</td>
         </tr>
     </table>
 
     <table class="w-full text-xs mt-4">
         <tr>
             <td class="text-left">CASH</td>
-            <td class="text-right">Rp. {{ number_format($sale->cash_received, 2) }}</td>
+            <td class="text-right">Rp. {{ number_format($sale->cash_received, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td class="text-left">CHANGE</td>
-            <td class="text-right">Rp. {{ number_format($sale->change_amount, 2) }}</td>
+            <td class="text-right">Rp. {{ number_format($sale->change_amount, 0, ',', '.') }}</td>
         </tr>
     </table>
 

@@ -199,7 +199,7 @@ new #[Layout('components.layouts.app')] #[Title('Cash & Bank Records')] class ex
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $entry->reference }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $entry->description }}</td>
                         <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">
-                            {{ number_format($entry->items->sum('debit') / 2 + $entry->items->sum('credit') / 2, 2) }}
+                            Rp. {{ number_format($entry->items->sum('debit') / 2 + $entry->items->sum('credit') / 2, 0, ',', '.') }}
                             <!-- Approximation since total debit = total credit -->
                         </td>
                     </tr>

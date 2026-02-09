@@ -102,12 +102,12 @@ new class extends Component {
                         @foreach($report['income'] as $inc)
                             <tr>
                                 <td class="py-2 text-sm text-gray-700 dark:text-gray-300">{{ $inc['code'] }} - {{ $inc['name'] }}</td>
-                                <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">{{ number_format($inc['balance'], 2) }}</td>
+                                <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">Rp. {{ number_format($inc['balance'], 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                         <tr class="bg-green-50 dark:bg-green-900/20">
                             <td class="py-3 pl-2 text-base font-bold text-gray-900 dark:text-white">Total Income</td>
-                            <td class="py-3 pr-2 text-base font-bold text-right text-gray-900 dark:text-white">{{ number_format($report['total_income'], 2) }}</td>
+                            <td class="py-3 pr-2 text-base font-bold text-right text-gray-900 dark:text-white">Rp. {{ number_format($report['total_income'], 0, ',', '.') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -121,12 +121,12 @@ new class extends Component {
                         @foreach($report['expenses'] as $exp)
                             <tr>
                                 <td class="py-2 text-sm text-gray-700 dark:text-gray-300">{{ $exp['code'] }} - {{ $exp['name'] }}</td>
-                                <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">{{ number_format($exp['balance'], 2) }}</td>
+                                <td class="py-2 text-sm text-right font-medium text-gray-900 dark:text-white">Rp. {{ number_format($exp['balance'], 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                         <tr class="bg-red-50 dark:bg-red-900/20">
                             <td class="py-3 pl-2 text-base font-bold text-gray-900 dark:text-white">Total Expenses</td>
-                            <td class="py-3 pr-2 text-base font-bold text-right text-gray-900 dark:text-white">{{ number_format($report['total_expenses'], 2) }}</td>
+                            <td class="py-3 pr-2 text-base font-bold text-right text-gray-900 dark:text-white">Rp. {{ number_format($report['total_expenses'], 0, ',', '.') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -136,7 +136,7 @@ new class extends Component {
             <div class="border-t-4 border-gray-300 dark:border-gray-600 pt-4">
                 <div class="flex justify-between items-center p-4 rounded-lg {{ $report['net_profit'] >= 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200' }}">
                     <span class="text-xl font-bold">Net Profit</span>
-                    <span class="text-xl font-bold">{{ number_format($report['net_profit'], 2) }}</span>
+                    <span class="text-xl font-bold">Rp. {{ number_format($report['net_profit'], 0, ',', '.') }}</span>
                 </div>
             </div>
         </div>

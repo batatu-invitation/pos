@@ -72,7 +72,7 @@ class extends Component
              <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">Inventory Valuation</h2>
-                    <p class="text-sm text-gray-500 mt-1">Total Stock Value (Cost): <span class="font-bold text-gray-800">{{ number_format($this->totalCostValue, 2) }}</span></p>
+                    <p class="text-sm text-gray-500 mt-1">Total Stock Value (Cost): <span class="font-bold text-gray-800">Rp. {{ number_format($this->totalCostValue, 0, ',', '.') }}</span></p>
                 </div>
                 
                 <div class="flex gap-2" x-data="{ open: false }">
@@ -101,11 +101,11 @@ class extends Component
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <p class="text-sm text-gray-500">Total Sales Value</p>
-                    <h3 class="text-2xl font-bold text-gray-800">{{ number_format($this->totalSalesValue, 2) }}</h3>
+                    <h3 class="text-2xl font-bold text-gray-800">Rp. {{ number_format($this->totalSalesValue, 0, ',', '.') }}</h3>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <p class="text-sm text-gray-500">Total Cost Value</p>
-                    <h3 class="text-2xl font-bold text-gray-800">{{ number_format($this->totalCostValue, 2) }}</h3>
+                    <h3 class="text-2xl font-bold text-gray-800">Rp. {{ number_format($this->totalCostValue, 0, ',', '.') }}</h3>
                 </div>
             </div>
 
@@ -129,18 +129,18 @@ class extends Component
                                 <td class="px-6 py-4 font-medium text-gray-800">{{ $product->name }}</td>
                                 <td class="px-6 py-4">{{ $product->category->name ?? 'Uncategorized' }}</td>
                                 <td class="px-6 py-4 text-right font-bold {{ $product->stock <= 10 ? 'text-red-600' : 'text-gray-800' }}">{{ $product->stock }}</td>
-                                <td class="px-6 py-4 text-right">{{ number_format($product->cost, 2) }}</td>
-                                <td class="px-6 py-4 text-right">{{ number_format($product->price, 2) }}</td>
-                                <td class="px-6 py-4 text-right font-medium">{{ number_format($product->stock * $product->cost, 2) }}</td>
-                                <td class="px-6 py-4 text-right font-medium">{{ number_format($product->stock * $product->price, 2) }}</td>
+                                <td class="px-6 py-4 text-right">Rp. {{ number_format($product->cost, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-right">Rp. {{ number_format($product->price, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-right font-medium">Rp. {{ number_format($product->stock * $product->cost, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-right font-medium">Rp. {{ number_format($product->stock * $product->price, 0, ',', '.') }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="bg-gray-50 font-bold">
                             <tr>
                                 <td colspan="5" class="px-6 py-4 text-right">Totals:</td>
-                                <td class="px-6 py-4 text-right">{{ number_format($this->totalCostValue, 2) }}</td>
-                                <td class="px-6 py-4 text-right">{{ number_format($this->totalSalesValue, 2) }}</td>
+                                <td class="px-6 py-4 text-right">Rp. {{ number_format($this->totalCostValue, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-right">Rp. {{ number_format($this->totalSalesValue, 0, ',', '.') }}</td>
                             </tr>
                         </tfoot>
                     </table>

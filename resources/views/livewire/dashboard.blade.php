@@ -135,7 +135,7 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                     </div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Balance') }}</p>
                     <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-                        ${{ number_format($balance, 2) }}
+                        Rp. {{ number_format($balance, 0, ',', '.') }}
                     </h3>
                 </div>
                 
@@ -157,7 +157,7 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Sales') }}</p>
-                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">$12,426</h3>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Rp. 12.426.000</h3>
                 </div>
                 <div class="p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl text-indigo-600 shadow-lg shadow-indigo-200/30 dark:from-indigo-900/30 dark:to-indigo-800/30 dark:text-indigo-400">
                     <i class="fas fa-dollar-sign text-xl"></i>
@@ -265,7 +265,7 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                             </div>
                         </div>
                         <span
-                            class="text-sm font-bold text-gray-800 dark:text-gray-100">${{ number_format($product['revenue'], 0) }}</span>
+                            class="text-sm font-bold text-gray-800 dark:text-gray-100">Rp. {{ number_format($product['revenue'], 0, ',', '.') }}</span>
                     </div>
                 @endforeach
             </div>
@@ -302,9 +302,9 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                             <td class="px-6 py-4">{{ $transaction['date'] }}</td>
                             <td class="px-6 py-4">{{ $transaction['items'] }}</td>
                             <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-100">
-                                ${{ number_format($transaction['total'], 2) }}</td>
-                            <td class="px-6 py-4">
-                                <span
+                                Rp. {{ number_format($transaction['total'], 0, ',', '.') }}</td>
+                        <td class="px-6 py-4">
+                            <span
                                     class="px-2 py-1 text-xs font-semibold rounded-full bg-{{ $transaction['status_color'] }}-100 text-{{ $transaction['status_color'] }}-800 dark:bg-{{ $transaction['status_color'] }}-900/30 dark:text-{{ $transaction['status_color'] }}-300">{{ $transaction['status'] }}</span>
                             </td>
                             <td class="px-6 py-4">
@@ -339,8 +339,8 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                     data: {
                         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                         datasets: [{
-                            label: 'Sales ($)',
-                            data: [1200, 1900, 3000, 2500, 2200, 3200, 4000],
+                            label: 'Sales (Rp)',
+                            data: [1200000, 1900000, 3000000, 2500000, 2200000, 3200000, 4000000],
                             borderColor: '#4f46e5',
                             backgroundColor: 'rgba(79, 70, 229, 0.1)',
                             tension: 0.4,

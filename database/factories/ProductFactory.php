@@ -20,7 +20,7 @@ class ProductFactory extends Factory
     {
         return [
             'name' => fake()->word(),
-            'sku' => fake()->unique()->ean8(),
+            'sku' => 'SKU-' . fake()->unique()->numerify('##########'),
             'price' => fake()->randomFloat(2, 10, 1000),
             'cost' => fake()->randomFloat(2, 5, 500),
             'stock' => fake()->numberBetween(1, 100),

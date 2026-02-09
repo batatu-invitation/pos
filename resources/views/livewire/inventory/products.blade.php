@@ -121,7 +121,7 @@ new #[Layout('components.layouts.app')]
 
         if ($price > 0) {
             // Margin formula: ((Price - Cost) / Price) * 100
-            $this->margin = number_format((($price - $cost) / $price) * 100, 2);
+            $this->margin = number_format((($price - $cost) / $price) * 100, 2, ',', '.');
         } else {
             $this->margin = 0;
         }
@@ -409,7 +409,7 @@ new #[Layout('components.layouts.app')]
                     <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between dark:border-gray-700">
                         <div>
                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Price') }}</p>
-                            <p class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($product->price, 0, ',', '.') }}</p>
+                            <p class="text-lg font-bold text-indigo-600 dark:text-indigo-400">Rp. {{ number_format($product->price, 0, ',', '.') }}</p>
                         </div>
                         <div class="text-right">
                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Stock') }}</p>

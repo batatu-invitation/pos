@@ -100,19 +100,19 @@ new class extends Component {
             <div class="bg-green-100 dark:bg-green-900 p-4 rounded-lg shadow-sm border border-green-200 dark:border-green-800">
                 <span class="text-sm font-medium text-green-600 dark:text-green-300">Total In (Debit)</span>
                 <div class="text-xl font-bold text-green-800 dark:text-green-100">
-                    {{ number_format($totalIn, 2) }}
+                    Rp. {{ number_format($totalIn, 0, ',', '.') }}
                 </div>
             </div>
             <div class="bg-red-100 dark:bg-red-900 p-4 rounded-lg shadow-sm border border-red-200 dark:border-red-800">
                 <span class="text-sm font-medium text-red-600 dark:text-red-300">Total Out (Credit)</span>
                 <div class="text-xl font-bold text-red-800 dark:text-red-100">
-                    {{ number_format($totalOut, 2) }}
+                    Rp. {{ number_format($totalOut, 0, ',', '.') }}
                 </div>
             </div>
             <div class="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800">
                 <span class="text-sm font-medium text-blue-600 dark:text-blue-300">Net Change</span>
                 <div class="text-xl font-bold text-blue-800 dark:text-blue-100">
-                    {{ number_format($totalIn - $totalOut, 2) }}
+                    Rp. {{ number_format($totalIn - $totalOut, 0, ',', '.') }}
                 </div>
             </div>
         </div>
@@ -176,10 +176,10 @@ new class extends Component {
                                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ $item->journalEntry->description }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium {{ $item->debit > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400' }}">
-                                {{ $item->debit > 0 ? number_format($item->debit, 2) : '-' }}
+                                {{ $item->debit > 0 ? 'Rp. ' . number_format($item->debit, 0, ',', '.') : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium {{ $item->credit > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400' }}">
-                                {{ $item->credit > 0 ? number_format($item->credit, 2) : '-' }}
+                                {{ $item->credit > 0 ? 'Rp. ' . number_format($item->credit, 0, ',', '.') : '-' }}
                             </td>
                         </tr>
                     @empty

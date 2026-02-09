@@ -152,7 +152,7 @@ new class extends Component {
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     <tr class="bg-gray-50 dark:bg-gray-800 font-medium">
                         <td colspan="5" class="px-6 py-4 text-gray-900 dark:text-white text-right">Opening Balance</td>
-                        <td class="px-6 py-4 text-right text-gray-900 dark:text-white">{{ number_format($openingBalance, 2) }}</td>
+                        <td class="px-6 py-4 text-right text-gray-900 dark:text-white">Rp. {{ number_format($openingBalance, 0, ',', '.') }}</td>
                     </tr>
                     @forelse($ledgerItems as $item)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -166,13 +166,13 @@ new class extends Component {
                                 {{Str::limit($item['description'], 50)}}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
-                                {{ $item['debit'] > 0 ? number_format($item['debit'], 2) : '-' }}
+                                {{ $item['debit'] > 0 ? 'Rp. ' . number_format($item['debit'], 0, ',', '.') : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
-                                {{ $item['credit'] > 0 ? number_format($item['credit'], 2) : '-' }}
+                                {{ $item['credit'] > 0 ? 'Rp. ' . number_format($item['credit'], 0, ',', '.') : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
-                                {{ number_format($item['balance'], 2) }}
+                                Rp. {{ number_format($item['balance'], 0, ',', '.') }}
                             </td>
                         </tr>
                     @empty

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('type', ['asset', 'liability', 'equity', 'revenue', 'expense']);
             $table->string('subtype')->nullable(); // e.g., 'Current Asset', 'Long-term Liability'
             $table->text('description')->nullable();
+            $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

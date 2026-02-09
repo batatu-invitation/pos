@@ -25,7 +25,7 @@ class extends Component
         ['id' => 4, 'type' => 'Security', 'message' => 'New login from IP 192.168.1.5', 'date' => '2023-10-24 09:15 AM', 'status' => 'Read'],
         ['id' => 5, 'type' => 'Inventory', 'message' => 'Low stock alert: Bread (White) - 500g', 'date' => '2023-10-23 03:45 PM', 'status' => 'Read'],
         ['id' => 6, 'type' => 'System', 'message' => 'Software update v2.1.0 available', 'date' => '2023-10-23 10:00 AM', 'status' => 'Unread'],
-        ['id' => 7, 'type' => 'Sales', 'message' => 'High value transaction detected: $540.00', 'date' => '2023-10-22 02:20 PM', 'status' => 'Read'],
+        ['id' => 7, 'type' => 'Sales', 'message' => 'High value transaction detected: Rp. 8.500.000', 'date' => '2023-10-22 02:20 PM', 'status' => 'Read'],
         ['id' => 8, 'type' => 'System', 'message' => 'Database optimization completed', 'date' => '2023-10-22 03:00 AM', 'status' => 'Read'],
         ['id' => 9, 'type' => 'Inventory', 'message' => 'Stock adjustment: +50 units (Apples)', 'date' => '2023-10-21 11:30 AM', 'status' => 'Read'],
         ['id' => 10, 'type' => 'User', 'message' => 'New user created: cashier_02', 'date' => '2023-10-21 09:00 AM', 'status' => 'Read'],

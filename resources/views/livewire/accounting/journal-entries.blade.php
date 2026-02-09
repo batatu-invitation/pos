@@ -219,8 +219,8 @@ new #[Layout('components.layouts.app')] #[Title('Journal Entries')] class extend
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">
-                            {{ number_format($entry->items->sum('debit'), 2) }}
-                        </td>
+                                Rp. {{ number_format($entry->items->sum('debit'), 0, ',', '.') }}
+                            </td>
                         <td class="px-6 py-4 text-right space-x-2">
                             <button wire:click="view('{{ $entry->id }}')" class="text-indigo-600 hover:text-indigo-900">
                                 View
@@ -284,14 +284,14 @@ new #[Layout('components.layouts.app')] #[Title('Journal Entries')] class extend
                         @foreach($viewingEntry->items as $item)
                             <tr>
                                 <td class="px-4 py-2 text-sm text-gray-900">{{ $item->account->code }} - {{ $item->account->name }}</td>
-                                <td class="px-4 py-2 text-sm text-right">{{ $item->debit > 0 ? number_format($item->debit, 2) : '-' }}</td>
-                                <td class="px-4 py-2 text-sm text-right">{{ $item->credit > 0 ? number_format($item->credit, 2) : '-' }}</td>
+                                <td class="px-4 py-2 text-sm text-right">{{ $item->debit > 0 ? 'Rp. ' . number_format($item->debit, 0, ',', '.') : '-' }}</td>
+                                <td class="px-4 py-2 text-sm text-right">{{ $item->credit > 0 ? 'Rp. ' . number_format($item->credit, 0, ',', '.') : '-' }}</td>
                             </tr>
                         @endforeach
                         <tr class="bg-gray-50 font-bold">
                             <td class="px-4 py-2 text-right">Totals</td>
-                            <td class="px-4 py-2 text-right">{{ number_format($viewingEntry->items->sum('debit'), 2) }}</td>
-                            <td class="px-4 py-2 text-right">{{ number_format($viewingEntry->items->sum('credit'), 2) }}</td>
+                            <td class="px-4 py-2 text-right">Rp. {{ number_format($viewingEntry->items->sum('debit'), 0, ',', '.') }}</td>
+                            <td class="px-4 py-2 text-right">Rp. {{ number_format($viewingEntry->items->sum('credit'), 0, ',', '.') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -375,10 +375,10 @@ new #[Layout('components.layouts.app')] #[Title('Journal Entries')] class extend
                                     </button>
                                 </td>
                                 <td class="px-4 py-2 text-right {{ !$this->isBalanced ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ number_format($this->totalDebit, 2) }}
+                                    Rp. {{ number_format($this->totalDebit, 0, ',', '.') }}
                                 </td>
                                 <td class="px-4 py-2 text-right {{ !$this->isBalanced ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ number_format($this->totalCredit, 2) }}
+                                    Rp. {{ number_format($this->totalCredit, 0, ',', '.') }}
                                 </td>
                                 <td></td>
                             </tr>
@@ -386,7 +386,7 @@ new #[Layout('components.layouts.app')] #[Title('Journal Entries')] class extend
                     </table>
                     @error('items') <p class="text-red-500 text-sm px-4 py-2">{{ $message }}</p> @enderror
                     @if(!$this->isBalanced)
-                        <p class="text-red-500 text-sm px-4 py-2">Entries must be balanced (Difference: {{ number_format(abs($this->totalDebit - $this->totalCredit), 2) }})</p>
+                        <p class="text-red-500 text-sm px-4 py-2">Entries must be balanced (Difference: Rp. {{ number_format(abs($this->totalDebit - $this->totalCredit), 0, ',', '.') }})</p>
                     @endif
                 </div>
 

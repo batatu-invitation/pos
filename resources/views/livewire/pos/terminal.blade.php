@@ -9,6 +9,8 @@ use App\Models\SaleItem;
 use App\Models\Customer;
 use App\Models\Tax;
 use App\Models\ApplicationSetting;
+use App\Models\User;
+use App\Models\BalanceHistory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
@@ -306,6 +308,22 @@ class extends Component
                     $product->decrement('stock', $item['quantity']);
                 }
             }
+
+            // Deduct transaction fee from manager
+            $managerId = $user->created_by ? $user->created_by : $user->id;
+            $manager = User::find($managerId);
+
+            if ($manager) {
+                $manager->decrement('balance', 10);
+
+                BalanceHistory::create([
+                    'user_id' => $manager->id,
+                    'amount' => -10,
+                    'type' => 'debit',
+                    'description' => 'Transaction Fee - ' . $sale->invoice_number,
+                ]);
+            }
+
             return $sale;
         });
 
@@ -721,9 +739,9 @@ class extends Component
                                            class="w-16 p-1 text-right border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
                                            onclick="event.stopPropagation()">
                                 </td>
-                                <td class="p-3 text-right font-mono">Rp. {{ number_format($item['price'], 0, '.', ',') }}</td>
-                                <td class="p-3 text-right text-red-500">Rp. {{ number_format($item['discount'], 0, '.', ',') }}</td>
-                                <td class="p-3 text-right font-bold font-mono">Rp. {{ number_format($item['subtotal'], 0, '.', ',') }}</td>
+                                <td class="p-3 text-right font-mono">Rp. {{ number_format($item['price'], 0, ',', '.') }}</td>
+                                <td class="p-3 text-right text-red-500">Rp. {{ number_format($item['discount'], 0, ',', '.') }}</td>
+                                <td class="p-3 text-right font-bold font-mono">Rp. {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                                 <td class="p-3 text-center">
                                     <button wire:click.stop="removeItem('{{ $item['id'] }}')" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
                                 </td>
@@ -748,7 +766,7 @@ class extends Component
                 <div class="bg-secondary text-white p-6 text-right">
                     <div class="text-sm text-gray-400 uppercase mb-1">{{ __('Total Amount') }}</div>
                     <div class="text-4xl font-bold font-mono tracking-wider">
-                        {{ number_format($this->total, 0, '.', ',') }}
+                        Rp. {{ number_format($this->total, 0, ',', '.') }}
                     </div>
                 </div>
 
@@ -830,7 +848,7 @@ class extends Component
                 </div>
                 <div class="flex justify-between text-lg text-green-600">
                     <span>{{ __('Change:') }}</span>
-                    <span class="font-bold font-mono">{{ number_format($this->change, 0, '.', ',') }}</span>
+                    <span class="font-bold font-mono">Rp. {{ number_format($this->change, 0, ',', '.') }}</span>
                 </div>
             </div>
             <div class="mt-6 flex justify-end space-x-3">

@@ -33,13 +33,13 @@
                     <td>{{ $expense->date->format('d/m/Y') }}</td>
                     <td>{{ $expense->description }}</td>
                     <td>{{ $expense->category }}</td>
-                    <td class="amount">{{ number_format($expense->amount, 2) }}</td>
+                    <td class="amount">Rp. {{ number_format($expense->amount, 0, ',', '.') }}</td>
                     <td>{{ ucfirst($expense->status) }}</td>
                 </tr>
             @endforeach
             <tr style="font-weight: bold; background-color: #f9f9f9;">
                 <td colspan="3" style="text-align: right;">Total Expenses</td>
-                <td class="amount">{{ number_format($totalAmount, 2) }}</td>
+                <td class="amount">Rp. {{ number_format($totalAmount, 0, ',', '.') }}</td>
                 <td></td>
             </tr>
         </tbody>
