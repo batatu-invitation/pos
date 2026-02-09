@@ -77,9 +77,24 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::middleware(['role:Super Admin|Manager|Analyst'])->group(function () {
             Volt::route('/analytics/growth', 'analytics.growth')->name('analytics.growth');
             Volt::route('/analytics/overview', 'analytics.overview')->name('analytics.overview');
-            Volt::route('/analytics/profit-loss', 'analytics.profit-loss')->name('analytics.profit-loss');
-            Volt::route('/analytics/cash-flow', 'analytics.cash-flow')->name('analytics.cash-flow');
+            
+            // Financial Statements
+            Volt::route('/analytics/profit-loss', 'analytics.profit-and-loss')->name('analytics.profit-loss');
             Volt::route('/analytics/balance-sheet', 'analytics.balance-sheet')->name('analytics.balance-sheet');
+            Volt::route('/analytics/trial-balance', 'analytics.trial-balance')->name('analytics.trial-balance');
+            
+            // Financial Records
+            Volt::route('/analytics/cash-bank-records', 'analytics.cash-bank-records')->name('analytics.cash-bank-records');
+            Volt::route('/analytics/accounts-receivable', 'analytics.accounts-receivable')->name('analytics.accounts-receivable');
+            Volt::route('/analytics/accounts-payable', 'analytics.accounts-payable')->name('analytics.accounts-payable');
+            
+            // Bookkeeping
+            Volt::route('/analytics/chart-of-accounts', 'analytics.chart-of-accounts')->name('analytics.chart-of-accounts');
+            Volt::route('/analytics/journal', 'analytics.journal')->name('analytics.journal');
+            Volt::route('/analytics/general-ledger', 'analytics.general-ledger')->name('analytics.general-ledger');
+            Volt::route('/analytics/memo', 'analytics.memo')->name('analytics.memo');
+
+            Volt::route('/analytics/cash-flow', 'analytics.cash-flow')->name('analytics.cash-flow');
 
             Volt::route('/reports/sales', 'reports.report-sales')->name('reports.sales');
             Volt::route('/reports/inventory', 'reports.report-inventory')->name('reports.inventory');
