@@ -23,6 +23,8 @@ class Sale extends Model
         'change_amount',
         'payment_method',
         'status',
+        'payment_status',
+        'due_date',
         'notes',
         'tenant_id',
         'input_id'

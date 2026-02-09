@@ -10,6 +10,8 @@ use Carbon\Carbon;
 new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class extends Component {
     public $welcomeMessage = '';
     public $balance = 0;
+    public $userBalance = 0;
+    public $isManager = false;
 
     public function mount()
     {
@@ -20,6 +22,13 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
         // Welcome Message Logic
         $user = auth()->user();
         if ($user) {
+            $this->isManager = $user->hasRole('Manager');
+            // dd($this->isManager);
+            if ($this->isManager) {
+                $this->userBalance = $user->balance;
+                // dd($this->userBalance);
+            }
+
             $createdAt = Carbon::parse($user->created_at);
             if ($createdAt->diffInDays(now()) > 1) {
                 $this->welcomeMessage = __('Welcome back') . ', ' . $user->name;
@@ -83,6 +92,34 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
         </div>
 
         <!-- Balance Card -->
+        @if($isManager)
+        <div class="md:col-span-1 bg-white rounded-3xl shadow-sm p-8 border border-gray-100 hover:shadow-lg transition-all duration-300 relative overflow-hidden dark:bg-gray-800 dark:border-gray-700 group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 dark:bg-indigo-900/20"></div>
+            
+            <div class="relative z-10 h-full flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-indigo-50 rounded-2xl text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                            <i class="fas fa-wallet text-2xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg dark:bg-indigo-900/30 dark:text-indigo-400">
+                            {{ __('My Balance') }}
+                        </span>
+                    </div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Current Balance') }}</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">
+                        Rp. {{ number_format($userBalance, 0, ",", ".") }}
+                    </h3>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        {{ __('Personal Balance') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        @else
         <div class="md:col-span-1 bg-white rounded-3xl shadow-sm p-8 border border-gray-100 hover:shadow-lg transition-all duration-300 relative overflow-hidden dark:bg-gray-800 dark:border-gray-700 group">
             <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 dark:bg-emerald-900/20"></div>
             
@@ -109,6 +146,7 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Stats Cards -->

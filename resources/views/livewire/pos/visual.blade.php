@@ -9,6 +9,8 @@ use App\Models\Customer;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Tax;
+use App\Models\User;
+use App\Models\BalanceHistory;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
@@ -421,6 +423,21 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
                 if ($product) {
                     $product->decrement('stock', $item['quantity']);
                 }
+            }
+
+            // Deduct transaction fee from manager
+            $managerId = $user->created_by ? $user->created_by : $user->id;
+            $manager = User::find($managerId);
+
+            if ($manager) {
+                $manager->decrement('balance', 10);
+
+                BalanceHistory::create([
+                    'user_id' => $manager->id,
+                    'amount' => -10,
+                    'type' => 'debit',
+                    'description' => 'Transaction Fee - ' . $sale->invoice_number,
+                ]);
             }
 
             return $sale;

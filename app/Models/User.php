@@ -33,6 +33,7 @@ class User extends Authenticatable
         'avatar',
         'password',
         'created_by',
+        'balance',
     ];
 
     /**
@@ -72,7 +73,12 @@ class User extends Authenticatable
     //     return $this->created_by ?? $this->id;
     // }
     public function getKey()
-{
-    return $this->created_by ?? $this->attributes['id'];
-}
+    {
+        return $this->created_by ?? $this->attributes['id'];
+    }
+
+    public function balanceHistories()
+    {
+        return $this->hasMany(BalanceHistory::class);
+    }
 }
