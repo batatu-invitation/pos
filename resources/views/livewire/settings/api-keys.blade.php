@@ -46,59 +46,49 @@ class extends Component
     }
 }; ?>
 
-<div class="max-w-5xl mx-auto">
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Developer API Keys</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">{{ __('Developer API Keys') }}</h2>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div class="flex border-b border-gray-200 overflow-x-auto">
-            <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">General</a>
-            <a href="{{ route('settings.receipt') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Receipt</a>
-            <a href="{{ route('settings.payment') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Payment Methods</a>
-            <a href="{{ route('settings.notifications') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Notifications</a>
-            <a href="{{ route('settings.integrations') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Integrations</a>
-            <button class="px-6 py-3 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm whitespace-nowrap">API Keys</button>
-            <a href="{{ route('settings.backup') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Backups</a>
-            <a href="{{ route('settings.taxes') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Taxes</a>
-            <a href="{{ route('settings.profile') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">My Profile</a>
-        </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+
 
         <div class="p-6">
             <div class="mb-8">
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Manage Access Tokens</h3>
-                <p class="text-gray-500 text-sm">Create and manage API tokens for accessing the API.</p>
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ __('Manage Access Tokens') }}</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm">{{ __('Create and manage API tokens for accessing the API.') }}</p>
             </div>
 
             <!-- Create Form -->
-            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8">
-                <h4 class="text-base font-semibold text-gray-900 mb-4">Generate New Token</h4>
+            <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-600 mb-8">
+                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">{{ __('Generate New Token') }}</h4>
                 <form wire:submit="createToken" class="flex flex-col sm:flex-row gap-4">
                     <div class="flex-1">
-                        <x-text-input wire:model="name" type="text" placeholder="Token Name (e.g. Mobile App)" class="w-full" />
+                        <x-text-input wire:model="name" type="text" placeholder="Token Name (e.g. Mobile App)" class="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" />
                         <x-input-error :messages="$errors->get('name')" class="mt-1" />
                     </div>
                     <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all shadow-sm whitespace-nowrap">
-                        Generate Token
+                        {{ __('Generate Token') }}
                     </button>
                 </form>
             </div>
 
             <!-- Token List -->
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3">Name</th>
-                            <th class="px-6 py-3">Last Used</th>
-                            <th class="px-6 py-3">Created</th>
-                            <th class="px-6 py-3 text-right">Actions</th>
+                            <th class="px-6 py-3">{{ __('Name') }}</th>
+                            <th class="px-6 py-3">{{ __('Last Used') }}</th>
+                            <th class="px-6 py-3">{{ __('Created') }}</th>
+                            <th class="px-6 py-3 text-right">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($tokens as $token)
-                            <tr class="bg-white border-b hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ $token->name }}</td>
+                            <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $token->name }}</td>
                                 <td class="px-6 py-4">
                                     {{ $token->last_used_at ? $token->last_used_at->diffForHumans() : 'Never' }}
                                 </td>
@@ -114,17 +104,17 @@ class extends Component
                                             params: ['{{ $token->id }}'],
                                             componentId: '{{ $this->getId() }}'
                                         })"
-                                        class="text-red-600 hover:text-red-900 font-medium">
-                                        Delete
+                                        class="text-red-600 hover:text-red-400 font-medium">
+                                        {{ __('Delete') }}
                                     </button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                     <div class="flex flex-col items-center justify-center">
-                                        <i class="fas fa-key text-gray-300 text-4xl mb-3"></i>
-                                        <p>No API keys found. Generate one to get started.</p>
+                                        <i class="fas fa-key text-gray-300 dark:text-gray-600 text-4xl mb-3"></i>
+                                        <p>{{ __('No API keys found. Generate one to get started.') }}</p>
                                     </div>
                                 </td>
                             </tr>
@@ -137,23 +127,23 @@ class extends Component
 
     <!-- Token Modal -->
     <x-modal name="token-modal" :show="$plainTextToken" focusable>
-        <div class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">
-                API Token Generated
+        <div class="p-6 bg-white dark:bg-gray-800">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                {{ __('API Token Generated') }}
             </h2>
-            <p class="text-sm text-gray-600 mb-4">
-                Please copy your new API token. For your security, it won't be shown again.
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {{ __('Please copy your new API token. For your security, it won\'t be shown again.') }}
             </p>
 
             <div class="relative group">
-                <div class="bg-gray-100 p-4 rounded-lg break-all font-mono text-sm mb-6 select-all border border-gray-200">
+                <div class="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg break-all font-mono text-sm mb-6 select-all border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200">
                     {{ $plainTextToken }}
                 </div>
             </div>
 
             <div class="flex justify-end">
-                <x-secondary-button wire:click="closeTokenModal">
-                    Close
+                <x-secondary-button wire:click="closeTokenModal" class="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                    {{ __('Close') }}
                 </x-secondary-button>
             </div>
         </div>

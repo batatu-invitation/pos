@@ -62,6 +62,7 @@
       x-init="init()">
     {{ $slot }}
     <script src="{{ asset('js/main.js') }}" defer></script>
+    <script src="{{ asset('js/pos-devices.js') }}" defer></script>
     <script>
         document.addEventListener('livewire:navigated', () => {
             initSweetAlert();

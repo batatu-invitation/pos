@@ -97,95 +97,96 @@ class extends Component
 
 <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Backup & Restore</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">{{ __('Backup & Restore') }}</h2>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div class="flex border-b border-gray-200 overflow-x-auto">
-            <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">General</a>
-            <a href="{{ route('settings.payment') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Payment Methods</a>
-            <a href="{{ route('settings.receipt') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Receipt</a>
-            <a href="{{ route('settings.notifications') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Notifications</a>
-            <a href="{{ route('settings.integrations') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">Integrations</a>
-            <a href="{{ route('settings.api-keys') }}" wire:navigate class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">API Keys</a>
-            <button class="px-6 py-3 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm whitespace-nowrap">Backup</button>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+            <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('General') }}</a>
+            <a href="{{ route('settings.payment') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Payment Methods') }}</a>
+            <a href="{{ route('settings.receipt') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Receipt') }}</a>
+            <a href="{{ route('settings.notifications') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Notifications') }}</a>
+            <a href="{{ route('settings.integrations') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Integrations') }}</a>
+            <a href="{{ route('settings.api-keys') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('API Keys') }}</a>
+            <button class="px-6 py-3 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 font-medium text-sm whitespace-nowrap">{{ __('Backup') }}</button>
+            <a href="{{ route('settings.taxes') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Taxes') }}</a>
         </div>
 
         <div class="p-6">
             @if (session()->has('message'))
-                <div class="mb-4 p-4 text-green-700 bg-green-100 rounded-lg">
+                <div class="mb-4 p-4 text-green-700 bg-green-100 dark:bg-green-900 dark:text-green-300 rounded-lg">
                     {{ session('message') }}
                 </div>
             @endif
             @if (session()->has('error'))
-                <div class="mb-4 p-4 text-red-700 bg-red-100 rounded-lg">
+                <div class="mb-4 p-4 text-red-700 bg-red-100 dark:bg-red-900 dark:text-red-300 rounded-lg">
                     {{ session('error') }}
                 </div>
             @endif
 
             <div class="flex justify-between items-center mb-8">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-800">Manage Backups</h3>
-                    <p class="text-gray-500 text-sm">Manage your data backups and restoration points.</p>
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ __('Manage Backups') }}</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">{{ __('Manage your data backups and restoration points.') }}</p>
                 </div>
                 <button wire:click="createBackup" wire:loading.attr="disabled" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center disabled:opacity-50">
                     <i class="fas fa-cloud-download-alt mr-2" wire:loading.remove></i>
                     <i class="fas fa-spinner fa-spin mr-2" wire:loading></i>
-                    <span wire:loading.remove>Create Backup</span>
-                    <span wire:loading>Creating...</span>
+                    <span wire:loading.remove>{{ __('Create Backup') }}</span>
+                    <span wire:loading>{{ __('Creating...') }}</span>
                 </button>
             </div>
 
             <!-- Auto Backup Settings -->
-            <div class="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-8">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Automatic Backup Settings</h3>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-6 mb-8">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('Automatic Backup Settings') }}</h3>
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-700">Daily Cloud Backup</p>
-                        <p class="text-xs text-gray-500">Automatically backup data to the cloud every day at midnight.</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Daily Cloud Backup') }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Automatically backup data to the cloud every day at midnight.') }}</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" wire:model.live="dailyBackup" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
             </div>
 
             <!-- Backup History -->
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3">Date & Time</th>
-                            <th class="px-6 py-3">Size</th>
-                            <th class="px-6 py-3">Type</th>
-                            <th class="px-6 py-3">Status</th>
-                            <th class="px-6 py-3 text-right">Actions</th>
+                            <th class="px-6 py-3">{{ __('Date & Time') }}</th>
+                            <th class="px-6 py-3">{{ __('Size') }}</th>
+                            <th class="px-6 py-3">{{ __('Type') }}</th>
+                            <th class="px-6 py-3">{{ __('Status') }}</th>
+                            <th class="px-6 py-3 text-right">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($backupHistory as $index => $backup)
-                            <tr class="bg-white border-b hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ $backup['date'] }}</td>
+                            <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $backup['date'] }}</td>
                                 <td class="px-6 py-4">{{ $backup['size'] }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $backup['type'] === 'Auto' ? 'text-blue-700 bg-blue-100' : 'text-purple-700 bg-purple-100' }}">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $backup['type'] === 'Auto' ? 'text-blue-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-300' : 'text-purple-700 bg-purple-100 dark:bg-purple-900 dark:text-purple-300' }}">
                                         {{ $backup['type'] }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $backup['status'] === 'Completed' ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100' }}">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $backup['status'] === 'Completed' ? 'text-green-700 bg-green-100 dark:bg-green-900 dark:text-green-300' : 'text-red-700 bg-red-100 dark:bg-red-900 dark:text-red-300' }}">
                                         {{ $backup['status'] }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right space-x-2">
-                                    <button wire:click="download({{ $index }})" class="text-indigo-600 hover:text-indigo-900"><i class="fas fa-download"></i></button>
-                                    <button wire:click="delete({{ $index }})" wire:confirm="Are you sure you want to delete this backup?" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    <button wire:click="download({{ $index }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"><i class="fas fa-download"></i></button>
+                                    <button wire:click="delete({{ $index }})" wire:confirm="Are you sure you want to delete this backup?" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">No backups found.</td>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">{{ __('No backups found.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

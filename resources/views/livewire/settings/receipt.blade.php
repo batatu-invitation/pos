@@ -90,7 +90,7 @@ new #[Layout('components.layouts.app')]
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
-    <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6" x-data="{
+    <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6" x-data="{
         cropper: null,
         cropping: false,
         imageToCrop: null,
@@ -150,15 +150,15 @@ new #[Layout('components.layouts.app')]
         <div x-show="cropping" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                    <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
                 </div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div
-                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                    <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
                                     {{ __('Crop Image') }}
                                 </h3>
                                 <div class="mt-2">
@@ -169,13 +169,13 @@ new #[Layout('components.layouts.app')]
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" @click="saveCrop"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                             {{ __('Crop & Upload') }}
                         </button>
                         <button type="button" @click="cancelCrop"
-                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                             {{ __('Cancel') }}
                         </button>
                     </div>
@@ -184,39 +184,39 @@ new #[Layout('components.layouts.app')]
         </div>
 
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">{{ __('Settings') }}</h2>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">{{ __('Settings') }}</h2>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
             <div class="p-6">
                 <form wire:submit="save" class="space-y-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Receipt Header') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Receipt Header') }}</label>
                         <textarea wire:model="header"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                            class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                             rows="3"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Receipt Footer') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Receipt Footer') }}</label>
                         <textarea wire:model="footer"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                            class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                             rows="3"></textarea>
                     </div>
 
                     <div class="flex items-center">
                         <input id="show-logo" type="checkbox" wire:model.live="showLogo"
-                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700">
                         <label for="show-logo"
-                            class="ml-2 block text-sm text-gray-900">{{ __('Show Logo on Receipt') }}</label>
+                            class="ml-2 block text-sm text-gray-900 dark:text-white">{{ __('Show Logo on Receipt') }}</label>
                     </div>
 
                     @if($showLogo)
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Upload Logo') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Upload Logo') }}</label>
                             <div class="flex items-center justify-center w-full">
                                 <label for="logo-upload"
-                                    class="flex flex-col items-center justify-center w-full h-80 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all relative overflow-hidden group">
+                                    class="flex flex-col items-center justify-center w-full h-80 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all relative overflow-hidden group">
                                     @if ($logo)
                                         <img src="{{ $logo->temporaryUrl() }}"
                                             class="absolute inset-0 w-full h-full object-contain p-2 z-10">
@@ -234,10 +234,10 @@ new #[Layout('components.layouts.app')]
                                     @else
                                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                             <i
-                                                class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-4 group-hover:text-indigo-600 transition-colors"></i>
-                                            <p class="mb-2 text-lg text-gray-500"><span
-                                                    class="font-medium text-gray-700">{{ __('Click to upload') }}</span></p>
-                                            <p class="text-sm text-gray-400">{{ __('PNG, JPG (MAX. 1MB)') }}</p>
+                                                class="fas fa-cloud-upload-alt text-5xl text-gray-400 dark:text-gray-500 mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"></i>
+                                            <p class="mb-2 text-lg text-gray-500 dark:text-gray-400"><span
+                                                    class="font-medium text-gray-700 dark:text-gray-300">{{ __('Click to upload') }}</span></p>
+                                            <p class="text-sm text-gray-400 dark:text-gray-500">{{ __('PNG, JPG (MAX. 1MB)') }}</p>
                                         </div>
                                     @endif
                                     <input id="logo-upload" type="file" @change="startCropping" class="hidden"

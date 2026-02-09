@@ -3,6 +3,13 @@
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Customer;
+use App\Models\Tax;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
 
 new
 #[Layout('components.layouts.pos')]
@@ -10,33 +17,33 @@ new
 class extends Component
 {
     public $barcode = '';
+    public $cart = []; // [productId => [id, code, name, price, qty, discount, subtotal, stock]]
+    public $selectedCustomerId = null;
+    public $selectedCustomerName = 'Walk-in Customer';
+    
+    // Transaction Data
+    public $taxRate = 0;
+    public $discountBill = 0;
+    public $note = '';
+    
+    // Payment
+    public $receivedAmount = '';
+    public $changeAmount = 0;
+    public $showPaymentModal = false;
 
-    public $cart = [
-        ['code' => '8993001', 'name' => 'Indomie Goreng', 'qty' => 5, 'price' => 2500, 'discount' => 0, 'subtotal' => 12500],
-        ['code' => '8993002', 'name' => 'Coca Cola 330ml', 'qty' => 2, 'price' => 5000, 'discount' => 0, 'subtotal' => 10000],
-        ['code' => '8993003', 'name' => 'Chitato BBQ', 'qty' => 1, 'price' => 9500, 'discount' => 0, 'subtotal' => 9500],
-    ];
-
-    public $functionKeys = [
-        ['key' => 'F1', 'label' => 'New Trans', 'action' => 'newTransaction', 'color' => 'indigo'],
-        ['key' => 'F2', 'label' => 'Search Item', 'action' => 'searchItem', 'color' => 'indigo'],
-        ['key' => 'F3', 'label' => 'Qty', 'action' => 'editQty', 'color' => 'indigo'],
-        ['key' => 'F4', 'label' => 'Disc Item', 'action' => 'discountItem', 'color' => 'indigo'],
-        ['key' => 'F5', 'label' => 'Disc Bill', 'action' => 'discountBill', 'color' => 'indigo'],
-        ['key' => 'F6', 'label' => 'Void Item', 'action' => 'voidItem', 'color' => 'indigo'],
-        ['key' => 'F7', 'label' => 'Member', 'action' => 'selectMember', 'color' => 'indigo'],
-        ['key' => 'F8', 'label' => 'Pending', 'action' => 'pendingTransaction', 'color' => 'indigo'],
-        ['key' => 'F9', 'label' => 'Recall', 'action' => 'recallTransaction', 'color' => 'indigo'],
-        ['key' => 'F10', 'label' => 'Drawer', 'action' => 'openDrawer', 'color' => 'indigo'],
-        ['key' => 'F11', 'label' => 'Reprint', 'action' => 'reprintReceipt', 'color' => 'indigo'],
-        ['key' => 'F12', 'label' => 'Payment', 'action' => 'processPayment', 'color' => 'indigo'], // Handled by big button usually, but keeping in list for completeness if needed
-    ];
+    public $functionKeys = [];
 
     public function mount()
     {
+        $this->initializeFunctionKeys();
+        $this->loadDefaultTax();
+    }
+
+    public function initializeFunctionKeys()
+    {
         $this->functionKeys = [
             ['key' => 'F1', 'label' => __('New Trans'), 'action' => 'newTransaction', 'color' => 'indigo'],
-            ['key' => 'F2', 'label' => __('Search Item'), 'action' => 'searchItem', 'color' => 'indigo'],
+            ['key' => 'F2', 'label' => __('Search Item'), 'action' => 'focusSearch', 'color' => 'indigo'],
             ['key' => 'F3', 'label' => __('Qty'), 'action' => 'editQty', 'color' => 'indigo'],
             ['key' => 'F4', 'label' => __('Disc Item'), 'action' => 'discountItem', 'color' => 'indigo'],
             ['key' => 'F5', 'label' => __('Disc Bill'), 'action' => 'discountBill', 'color' => 'indigo'],
@@ -50,19 +57,236 @@ class extends Component
         ];
     }
 
-    public function newTransaction() {
-        // Logic for new transaction
+    public function loadDefaultTax()
+    {
+        $tax = Tax::where('user_id', auth()->id())->where('is_active', true)->first();
+        $this->taxRate = $tax ? $tax->rate : 0;
     }
 
-    public function searchItem() {
-        // Logic for search item
+    // Modals & Selection
+    public $showProductSearchModal = false;
+    public $showDiscountModal = false;
+    public $showMemberModal = false;
+    public $discountType = 'item'; // 'item' or 'bill'
+    public $selectedItemId = null; // For item actions
+    public $tempDiscount = 0; // For modal input
+    
+    // Member Search
+    public $memberSearch = '';
+    public $memberResults = [];
+
+    // --- Core POS Logic ---
+
+    // Triggered by Enter on barcode input or scanner
+    public function scanItem()
+    {
+        if (empty($this->barcode)) return;
+
+        // 1. Try Exact SKU/Barcode Match
+        $product = Product::where('sku', $this->barcode)->orWhere('id', $this->barcode)->first();
+
+        if ($product) {
+            $this->addToCart($product);
+            $this->barcode = ''; 
+            $this->dispatch('notify', ['message' => __('Item added'), 'type' => 'success']);
+            return;
+        }
+
+        // 2. Try Name Search (Partial)
+        $results = Product::where('name', 'like', '%' . $this->barcode . '%')
+            ->orWhere('sku', 'like', '%' . $this->barcode . '%')
+            ->take(20)
+            ->get();
+
+        if ($results->count() === 1) {
+            $this->addToCart($results->first());
+            $this->barcode = '';
+            $this->dispatch('notify', ['message' => __('Item added'), 'type' => 'success']);
+        } elseif ($results->count() > 1) {
+            $this->searchResults = $results->toArray(); // Convert to array for Livewire
+            $this->showProductSearchModal = true;
+        } else {
+            $this->dispatch('notify', ['message' => __('Product not found!'), 'type' => 'error']);
+        }
     }
 
-    // ... other methods placeholders
+    public function selectProduct($productId)
+    {
+        $product = Product::find($productId);
+        if ($product) {
+            $this->addToCart($product);
+            $this->showProductSearchModal = false;
+            $this->barcode = '';
+            $this->searchResults = [];
+            $this->dispatch('notify', ['message' => __('Item added'), 'type' => 'success']);
+            $this->dispatch('focus-input', 'barcode-input');
+        }
+    }
+
+    public function addToCart($product, $qty = 1)
+    {
+        if ($product->stock < $qty) {
+            $this->dispatch('notify', ['message' => __('Not enough stock!'), 'type' => 'error']);
+            return;
+        }
+
+        if (isset($this->cart[$product->id])) {
+            $this->cart[$product->id]['qty'] += $qty;
+            $this->cart[$product->id]['subtotal'] = $this->calculateItemSubtotal($this->cart[$product->id]);
+        } else {
+            $this->cart[$product->id] = [
+                'id' => $product->id,
+                'code' => $product->sku,
+                'name' => $product->name,
+                'price' => $product->price,
+                'qty' => $qty,
+                'discount' => 0,
+                'subtotal' => $product->price * $qty,
+                'stock' => $product->stock
+            ];
+        }
+    }
+
+    public function calculateItemSubtotal($item)
+    {
+        return ($item['price'] * $item['qty']) - $item['discount'];
+    }
+
+    public function removeItem($productId)
+    {
+        unset($this->cart[$productId]);
+    }
+
+    public function updateQty($productId, $qty)
+    {
+        if (isset($this->cart[$productId])) {
+            if ($qty <= 0) {
+                $this->removeItem($productId);
+            } elseif ($qty <= $this->cart[$productId]['stock']) {
+                $this->cart[$productId]['qty'] = $qty;
+                $this->cart[$productId]['subtotal'] = $this->calculateItemSubtotal($this->cart[$productId]);
+            } else {
+                $this->dispatch('notify', ['message' => __('Not enough stock!'), 'type' => 'error']);
+            }
+        }
+    }
+
+    // --- Computeds ---
+
+    public function getSubtotalProperty()
+    {
+        return collect($this->cart)->sum('subtotal');
+    }
+
+    public function getTaxAmountProperty()
+    {
+        return ($this->subtotal - $this->discountBill) * ($this->taxRate / 100);
+    }
+
+    public function getTotalProperty()
+    {
+        return max(0, $this->subtotal - $this->discountBill + $this->taxAmount);
+    }
+
+    // --- Actions ---
+
+    public function newTransaction()
+    {
+        $this->reset(['cart', 'barcode', 'selectedCustomerId', 'selectedCustomerName', 'discountBill', 'receivedAmount', 'changeAmount']);
+        $this->dispatch('notify', ['message' => __('New transaction started'), 'type' => 'info']);
+    }
+
+    public function focusSearch()
+    {
+        $this->dispatch('focus-input', 'barcode-input');
+    }
+
+    public function processPayment()
+    {
+        if (empty($this->cart)) {
+            $this->dispatch('notify', ['message' => __('Cart is empty!'), 'type' => 'warning']);
+            return;
+        }
+        $this->showPaymentModal = true;
+        $this->receivedAmount = ''; // Reset or set to total
+    }
+    
+    public function updatedReceivedAmount()
+    {
+        $received = floatval($this->receivedAmount);
+        $this->changeAmount = max(0, $received - $this->total);
+    }
+
+    public function completePayment()
+    {
+        if (empty($this->cart)) return;
+        
+        $user = auth()->user();
+
+        DB::transaction(function () use ($user) {
+            $sale = Sale::create([
+                'invoice_number' => 'INV-' . strtoupper(uniqid()),
+                'user_id' => $user->created_by ?? $user->id,
+                'input_id' => $user->id,
+                'customer_id' => $this->selectedCustomerId, // Will be null for walk-in if not set
+                'subtotal' => $this->subtotal,
+                'tax_id' => null, // Needs logic
+                'tax' => $this->taxAmount,
+                'discount' => $this->discountBill,
+                'total_amount' => $this->total,
+                'cash_received' => floatval($this->receivedAmount),
+                'change_amount' => $this->changeAmount,
+                'payment_method' => 'cash', // Default to cash for terminal for now
+                'status' => 'completed',
+                'notes' => $this->note,
+            ]);
+
+            foreach ($this->cart as $item) {
+                SaleItem::create([
+                    'sale_id' => $sale->id,
+                    'product_id' => $item['id'],
+                    'product_name' => $item['name'],
+                    'quantity' => $item['qty'],
+                    'price' => $item['price'],
+                    'total_price' => $item['subtotal'],
+                ]);
+
+                $product = Product::find($item['id']);
+                if ($product) {
+                    $product->decrement('stock', $item['qty']);
+                }
+            }
+        });
+
+        $this->showPaymentModal = false;
+        $this->newTransaction();
+        $this->dispatch('notify', ['message' => __('Payment Successful!'), 'type' => 'success']);
+    }
+
+    public function editQty()
+    {
+        if (empty($this->cart)) return;
+        
+        // Get the last item's ID
+        $lastItem = end($this->cart);
+        if ($lastItem) {
+            $this->dispatch('focus-input', 'qty-' . $lastItem['id']);
+        }
+    }
+
+    public function discountItem() {}
+    public function discountBill() {}
+    public function voidItem() {}
+    public function selectMember() {}
+    public function pendingTransaction() {}
+    public function recallTransaction() {}
+    public function openDrawer() {}
+    public function reprintReceipt() {}
+
 };
 ?>
 
-<div class="flex flex-col h-full bg-gray-100 font-sans text-gray-800">
+<div x-data="deviceManager" class="flex flex-col h-full bg-gray-100 font-sans text-gray-800">
     <style>
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -115,15 +339,15 @@ class extends Component
                     <i class="fas fa-expand text-xl"></i>
                 </button>
                 <div class="h-8 w-px bg-gray-600 mx-2"></div>
-                <button onclick="connectDevice('printer')" id="btn-printer" class="relative text-gray-300 hover:text-white transition-colors group flex items-center" title="Connect Printer">
-                    <i class="fas fa-print text-xl mr-2"></i>
+                <button @click="connectPrinter" id="btn-printer" class="relative text-gray-300 hover:text-white transition-colors group flex items-center" title="Connect Printer">
+                    <i class="fas fa-print text-xl mr-2" :class="{'text-green-400': printerStatus.startsWith('Connected')}"></i>
                     <span class="text-sm font-medium hidden lg:inline">{{ __('Printer') }}</span>
-                    <span id="status-printer" class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-slate-800"></span>
+                    <span class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-slate-800" :class="printerStatus.startsWith('Connected') ? 'bg-green-500' : 'bg-red-500'"></span>
                 </button>
-                <button onclick="connectDevice('scanner')" id="btn-scanner" class="relative text-gray-300 hover:text-white transition-colors group flex items-center" title="Connect Scanner">
-                    <i class="fas fa-barcode text-xl mr-2"></i>
+                <button @click="connectScanner" id="btn-scanner" class="relative text-gray-300 hover:text-white transition-colors group flex items-center" title="Connect Scanner">
+                    <i class="fas fa-barcode text-xl mr-2" :class="{'text-green-400': scannerStatus.startsWith('Connected')}"></i>
                     <span class="text-sm font-medium hidden lg:inline">{{ __('Scanner') }}</span>
-                    <span id="status-scanner" class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-slate-800"></span>
+                    <span class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-slate-800" :class="scannerStatus.startsWith('Connected') ? 'bg-green-500' : 'bg-red-500'"></span>
                 </button>
             </div>
 
@@ -159,7 +383,7 @@ class extends Component
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <i class="fas fa-barcode text-gray-500"></i>
                         </span>
-                        <input type="text" wire:model="barcode" id="barcode-input" class="w-full py-3 pl-10 pr-4 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="{{ __('Scan Item or Enter Code (F2)...') }}" autofocus>
+                        <input type="text" wire:model="barcode" wire:keydown.enter="scanItem" id="barcode-input" class="w-full py-3 pl-10 pr-4 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="{{ __('Scan Item or Enter Code (F2)...') }}" autofocus>
                     </div>
                 </div>
 
@@ -179,31 +403,33 @@ class extends Component
                             </tr>
                         </thead>
                         <tbody id="cart-table-body" class="text-sm">
-                            @foreach($cart as $index => $item)
-                            <tr class="border-b border-gray-200">
-                                <td class="p-3 text-gray-500">{{ $index + 1 }}</td>
+                            @forelse($cart as $item)
+                            <tr class="border-b border-gray-200" wire:key="cart-item-{{ $item['id'] }}">
+                                <td class="p-3 text-gray-500">{{ $loop->iteration }}</td>
                                 <td class="p-3 font-mono text-gray-600">{{ $item['code'] }}</td>
                                 <td class="p-3 font-medium text-gray-900">{{ $item['name'] }}</td>
                                 <td class="p-3 text-right">
-                                    <input type="number" value="{{ $item['qty'] }}" class="w-16 p-1 text-right border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500">
+                                    <input type="number" 
+                                           id="qty-{{ $item['id'] }}"
+                                           value="{{ $item['qty'] }}" 
+                                           wire:change="updateQty('{{ $item['id'] }}', $event.target.value)"
+                                           class="w-16 p-1 text-right border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500">
                                 </td>
                                 <td class="p-3 text-right font-mono">Rp. {{ number_format($item['price'], 0, '.', ',') }}</td>
                                 <td class="p-3 text-right text-red-500">Rp. {{ number_format($item['discount'], 0, '.', ',') }}</td>
                                 <td class="p-3 text-right font-bold font-mono">Rp. {{ number_format($item['subtotal'], 0, '.', ',') }}</td>
                                 <td class="p-3 text-center">
-                                    <button class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                    <button wire:click="removeItem('{{ $item['id'] }}')" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
-                            @endforeach
-                            <!-- Empty State if needed -->
-                            @if(empty($cart))
+                            @empty
                             <tr>
                                 <td colspan="8" class="p-8 text-center text-gray-400">
                                     <i class="fas fa-shopping-basket text-4xl mb-3"></i>
                                     <p>{{ __('Cart is empty. Scan an item to start.') }}</p>
                                 </td>
                             </tr>
-                            @endif
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -216,7 +442,7 @@ class extends Component
                 <div class="bg-secondary text-white p-6 text-right">
                     <div class="text-sm text-gray-400 uppercase mb-1">{{ __('Total Amount') }}</div>
                     <div class="text-4xl font-bold font-mono tracking-wider">
-                        {{ number_format(collect($cart)->sum('subtotal'), 0, '.', ',') }}
+                        {{ number_format($this->total, 0, '.', ',') }}
                     </div>
                 </div>
 
@@ -224,15 +450,15 @@ class extends Component
                 <div class="p-4 space-y-2 bg-white border-b border-gray-200">
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">{{ __('Subtotal') }}</span>
-                        <span class="font-bold">{{ number_format(collect($cart)->sum('subtotal'), 0, '.', ',') }}</span>
+                        <span class="font-bold">{{ number_format($this->subtotal, 0, '.', ',') }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">{{ __('Tax') }}</span>
-                        <span class="font-bold">0</span>
+                        <span class="font-bold">{{ number_format($this->taxAmount, 0, '.', ',') }}</span>
                     </div>
                     <div class="flex justify-between text-sm text-red-500">
                         <span class="text-red-500">{{ __('Discount') }}</span>
-                        <span class="font-bold">-0</span>
+                        <span class="font-bold">-{{ number_format($this->discountBill, 0, '.', ',') }}</span>
                     </div>
                 </div>
 
@@ -269,6 +495,41 @@ class extends Component
 
     </div>
 
+    <!-- Payment Modal -->
+    @if($showPaymentModal)
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <h2 class="text-2xl font-bold mb-4">{{ __('Payment') }}</h2>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between text-lg">
+                    <span>{{ __('Total Due:') }}</span>
+                    <span class="font-bold font-mono">{{ number_format($this->total, 0, '.', ',') }}</span>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ __('Cash Received') }}</label>
+                    <input type="number" wire:model.live="receivedAmount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg p-2" autofocus>
+                </div>
+
+                <div class="flex justify-between text-lg text-green-600">
+                    <span>{{ __('Change:') }}</span>
+                    <span class="font-bold font-mono">{{ number_format($this->changeAmount, 0, '.', ',') }}</span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button wire:click="$set('showPaymentModal', false)" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    {{ __('Cancel') }} (Esc)
+                </button>
+                <button wire:click="completePayment" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700">
+                    {{ __('Complete Payment') }} (Enter)
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <script>
         // Set current date
         const dateOptions = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -281,11 +542,44 @@ class extends Component
                 document.getElementById('barcode-input').focus();
             } else if (event.key === 'F12') {
                 event.preventDefault();
-                // Trigger Livewire action or navigation
-                // Livewire.dispatch('processPayment');
-                // For now, let's just log or alert
-                console.log('Payment triggered');
+                // Trigger Livewire action
+                @this.call('processPayment');
             }
         });
-    </script>
-</div>
+
+        // Handle Focus Event
+        document.addEventListener('livewire:initialized', () => {
+            @this.on('focus-input', (inputId) => {
+                setTimeout(() => {
+                    document.getElementById(inputId).focus();
+                }, 50);
+            });
+
+            @this.on('notify', (data) => {
+                // Use SweetAlert or Toastr if available, otherwise simple alert or console
+                // Assuming SweetAlert2 is available globally as Swal (standard in this stack)
+                if (typeof Swal !== 'undefined') {
+                    const toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                    });
+                    toast.fire({
+                        icon: data[0].type || 'info',
+                        title: data[0].message
+                    });
+                } else {
+                    console.log(data[0].message);
+                }
+            });
+        });
+        
+        // Listen for barcode scans from pos-devices.js
+        window.addEventListener('barcode-scanned', (event) => {
+             @this.set('barcode', event.detail);
+             @this.call('scanItem');
+         });
+     </script>
+ </div>

@@ -151,9 +151,9 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
 };
 ?>
 
-<main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+<main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Employees</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Employees</h2>
 
         <div class="flex gap-2" x-data="{ open: false }">
             <div class="relative">
@@ -161,11 +161,11 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
                     <i class="fas fa-file-export"></i> Export
                     <i class="fas fa-chevron-down text-xs"></i>
                 </button>
-                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border py-1" style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border dark:border-gray-700 py-1" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         <i class="fas fa-file-excel text-green-600 mr-2"></i> Export Excel
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         <i class="fas fa-file-pdf text-red-600 mr-2"></i> Export PDF
                     </button>
                 </div>
@@ -179,10 +179,10 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
 
     <!-- Employee Stats -->
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
+            <table class="w-full text-left text-sm text-gray-600 dark:text-gray-300">
+                <thead class="bg-gray-50 dark:bg-gray-700 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
                     <tr>
                         <th class="px-6 py-4">{{ __('Name') }}</th>
                         <th class="px-6 py-4">{{ __('Role') }}</th>
@@ -191,28 +191,28 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
                         <th class="px-6 py-4 text-right">{{ __('Action') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse($employees as $employee)
-                        <tr class="hover:bg-gray-50 transition-colors group">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group">
                             <td class="px-6 py-4 flex items-center">
                                 @if ($employee->avatar)
                                     <img src="{{ $employee->avatar }}" class="w-8 h-8 rounded-full mr-3 object-cover"
                                         alt="Avatar">
                                 @else
                                     <div
-                                        class="w-8 h-8 rounded-full mr-3 bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
+                                        class="w-8 h-8 rounded-full mr-3 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
                                         {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
                                     </div>
                                 @endif
                                 <div>
-                                    <div class="font-medium text-gray-800">{{ $employee->name }}</div>
-                                    <div class="text-xs text-gray-500">{{ $employee->phone }}</div>
+                                    <div class="font-medium text-gray-800 dark:text-gray-100">{{ $employee->name }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $employee->phone }}</div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 @foreach ($employee->roles as $role)
                                     <span
-                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 border border-gray-200">
+                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
                                         {{ $role->name }}
                                     </span>
                                 @endforeach
@@ -221,18 +221,18 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
                             <td class="px-6 py-4">
                                 @if ($employee->status === 'active' || $employee->status === 'Active')
                                     <span
-                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                                         {{ ucfirst($employee->status) }}
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                                         {{ ucfirst($employee->status) }}
                                     </span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <button wire:click="editEmployee('{{ $employee->id }}')"
-                                    class="text-indigo-600 hover:text-indigo-900 mr-3 transition-colors">
+                                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3 transition-colors">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button type="button"
@@ -244,16 +244,16 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
                                 params: ['{{ $employee->id }}'],
                                 componentId: '{{ $this->getId() }}'
                             })"
-                                    class="text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100">
+                                    class="text-red-400 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors opacity-0 group-hover:opacity-100">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                 <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
+                                    <i class="fas fa-users text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
                                     <p>{{ __('No employees found.') }}</p>
                                     <p class="text-xs mt-1">{{ __('Start by adding a new employee to your team.') }}
                                     </p>
@@ -279,7 +279,7 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
             componentId: '{{ $this->getId() }}'
         })"
             class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                 {{ $editingUserId ? __('Edit Employee') : __('Create New Employee') }}
             </h2>
 
@@ -314,7 +314,7 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
                 <div>
                     <x-input-label for="role" value="{{ __('Role') }}" />
                     <select wire:model="role" id="role"
-                        class="border border-gray-300 focus:border-indigo-500 p-4 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
+                        class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-300 focus:border-indigo-500 p-4 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                         <option value="">{{ __('Select Role') }}</option>
                         @foreach ($availableRoles as $roleOption)
                             <option value="{{ $roleOption->name }}">{{ $roleOption->name }}</option>
@@ -325,7 +325,7 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
                 <div>
                     <x-input-label for="status" value="{{ __('Status') }}" />
                     <select wire:model="status" id="status"
-                        class="border border-gray-300 p-4 focus:border-indigo-500 p-4 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
+                        class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-300 p-4 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                         <option value="active">{{ __('Active') }}</option>
                         <option value="inactive">{{ __('Inactive') }}</option>
                     </select>

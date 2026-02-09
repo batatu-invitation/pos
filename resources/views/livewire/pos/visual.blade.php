@@ -460,7 +460,7 @@ new #[Layout('components.layouts.pos')] #[Title('Visual POS - Modern POS')] clas
         <!-- Header -->
         <header class="bg-white p-4 shadow-sm z-10 flex items-center justify-between dark:bg-gray-800 dark:border-b dark:border-gray-700">
             <div class="flex items-center space-x-4 w-full">
-                <a  href="{{ route('dashboard') }}"
+                <a wire:navigate href="{{ route('dashboard') }}"
                     class="p-2 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 hover:from-indigo-100 hover:to-indigo-200 transition-all shadow-sm dark:from-indigo-900/30 dark:to-indigo-800/30 dark:text-indigo-400">
                     <i class="fas fa-arrow-left"></i>
                 </a>

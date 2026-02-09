@@ -110,20 +110,20 @@ class extends Component
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Customers</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Customers</h2>
         <div class="flex space-x-3">
              <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" @click.away="open = false" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
                     <i class="fas fa-file-export mr-2"></i> Export
                     <i class="fas fa-chevron-down ml-2 text-xs"></i>
                 </button>
-                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 border border-gray-100" style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-green-600">
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border border-gray-100 dark:border-gray-700" style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600">
                         <i class="fas fa-file-excel mr-2"></i> Export to Excel
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-red-600">
+                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-red-600">
                         <i class="fas fa-file-pdf mr-2"></i> Export to PDF
                     </button>
                 </div>
@@ -134,19 +134,19 @@ class extends Component
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-4 border-b border-gray-200">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
             <div class="relative max-w-sm w-full">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                     <i class="fas fa-search text-gray-400"></i>
                 </span>
-                <input wire:model.live="search" type="text" class="w-full py-2 pl-10 pr-4 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-500" placeholder="Search customers...">
+                <input wire:model.live="search" type="text" class="w-full py-2 pl-10 pr-4 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-indigo-500" placeholder="Search customers...">
             </div>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
+            <table class="w-full text-left text-sm text-gray-600 dark:text-gray-300">
+                <thead class="bg-gray-50 dark:bg-gray-700 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
                     <tr>
                         <th class="px-6 py-4">Name</th>
                         <th class="px-6 py-4">Email</th>
@@ -154,17 +154,17 @@ class extends Component
                         <th class="px-6 py-4 text-right">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse($customers as $customer)
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800 flex items-center">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <td class="px-6 py-4 font-medium text-gray-800 dark:text-gray-100 flex items-center">
                             <img src="{{ $customer->avatar }}" class="w-8 h-8 rounded-full mr-3" alt="Avatar">
                             {{ $customer->name }}
                         </td>
                         <td class="px-6 py-4">{{ $customer->email ?? '-' }}</td>
                         <td class="px-6 py-4">{{ $customer->phone ?? '-' }}</td>
                         <td class="px-6 py-4 text-right">
-                            <button wire:click="edit('{{ $customer->id }}')" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                            <button wire:click="edit('{{ $customer->id }}')" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"><i class="fas fa-edit"></i></button>
                             <button type="button"
                                 x-on:click="$dispatch('swal:confirm', {
                                     title: 'Delete Customer?',
@@ -174,18 +174,18 @@ class extends Component
                                     params: ['{{ $customer->id }}'],
                                     componentId: '{{ $this->getId() }}'
                                 })"
-                                class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No customers found.</td>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No customers found.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             {{ $customers->links() }}
         </div>
     </div>
@@ -203,7 +203,7 @@ class extends Component
                 componentId: '{{ $this->getId() }}'
             })"
             class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">
                 {{ $editingCustomerId ? 'Edit Customer' : 'Create New Customer' }}
             </h2>
 

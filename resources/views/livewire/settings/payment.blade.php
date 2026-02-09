@@ -125,32 +125,37 @@ new #[Layout('components.layouts.app')]
 }; ?>
 
 <div class="max-w-4xl mx-auto">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ __('Settings') }}</h2>
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">{{ __('Payment Settings') }}</h2>
+    </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="flex border-b border-gray-200 overflow-x-auto">
-            <a href="{{ route('settings.general') }}" class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('General') }}</a>
-            <a href="{{ route('settings.payment') }}" class="px-6 py-3 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm whitespace-nowrap">{{ __('Payment Methods') }}</a>
-            <a href="{{ route('settings.receipt') }}" class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('Receipt') }}</a>
-            <a href="{{ route('settings.notifications') }}" class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('Notifications') }}</a>
-            <a href="{{ route('settings.integrations') }}" class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">{{ __('Integrations') }}</a>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+            <a href="{{ route('settings.general') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('General') }}</a>
+            <button class="px-6 py-3 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 font-medium text-sm whitespace-nowrap">{{ __('Payment Methods') }}</button>
+            <a href="{{ route('settings.receipt') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Receipt') }}</a>
+            <a href="{{ route('settings.notifications') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Notifications') }}</a>
+            <a href="{{ route('settings.integrations') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Integrations') }}</a>
+            <a href="{{ route('settings.api-keys') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('API Keys') }}</a>
+            <a href="{{ route('settings.backup') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Backup') }}</a>
+            <a href="{{ route('settings.taxes') }}" wire:navigate class="px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium text-sm whitespace-nowrap">{{ __('Taxes') }}</a>
         </div>
 
         <div class="p-6">
             <div class="space-y-4">
                 @foreach($paymentMethods as $method)
-                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <div class="flex items-center">
                         <i class="fas {{ $method['icon'] }} text-2xl {{ $method['color'] }} mr-4 w-8 text-center"></i>
                         <div>
-                            <h4 class="font-bold text-gray-800">{{ $method['name'] }}</h4>
-                            <p class="text-sm text-gray-500">{{ $method['description'] }}</p>
+                            <h4 class="font-bold text-gray-800 dark:text-white">{{ $method['name'] }}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $method['description'] }}</p>
                         </div>
                     </div>
                     <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                         <button wire:click="toggleMethod('{{ $method['id'] }}')"
                                 class="relative focus:outline-none" x-data="{ toggle: @entangle('paymentMethods.' . $loop->index . '.enabled') }">
-                            <div class="w-10 h-6 bg-gray-200 rounded-full shadow-inner" :class="{ 'bg-indigo-600': toggle }"></div>
+                            <div class="w-10 h-6 bg-gray-200 dark:bg-gray-600 rounded-full shadow-inner" :class="{ 'bg-indigo-600': toggle }"></div>
                             <div class="absolute top-0 left-0 w-6 h-6 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out" :class="{ 'translate-x-4': toggle }"></div>
                         </button>
                     </div>

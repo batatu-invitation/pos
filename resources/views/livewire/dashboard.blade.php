@@ -3,17 +3,38 @@
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
+use App\Models\Sale;
+use App\Models\Transaction;
+use Carbon\Carbon;
 
 new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class extends Component {
+    public $welcomeMessage = '';
+    public $balance = 0;
+
     public function mount()
     {
         if (!session()->has('locale')) {
             session(['locale' => 'id']);
         }
 
+        // Welcome Message Logic
+        $user = auth()->user();
+        if ($user) {
+            $createdAt = Carbon::parse($user->created_at);
+            if ($createdAt->diffInDays(now()) > 1) {
+                $this->welcomeMessage = __('Welcome back') . ', ' . $user->name;
+            } else {
+                $this->welcomeMessage = __('Welcome') . ', ' . $user->name;
+            }
+        }
 
+        // Balance Logic (Cash on Hand)
+        $cashInSales = Sale::where('status', 'completed')->sum('total_amount');
+        $cashInTrans = Transaction::where('type', 'income')->where('status', 'completed')->sum('amount');
+        $cashOutTrans = Transaction::where('type', 'expense')->where('status', 'completed')->sum('amount');
+        $this->balance = ($cashInSales + $cashInTrans) - $cashOutTrans;
     }
-    public $topProducts = [['name' => 'Double Burger', 'sales' => 120, 'revenue' => 1200, 'icon' => '🍔'], ['name' => 'French Fries', 'sales' => 85, 'revenue' => 425, 'icon' => '🍟'], ['name' => 'Cola Zero', 'sales' => 70, 'revenue' => 210, 'icon' => '🥤'], ['name' => 'Ice Coffee', 'sales' => 54, 'revenue' => 270, 'icon' => '☕'], ['name' => 'Chicken Nuggets', 'sales' => 45, 'revenue' => 225, 'icon' => '🍗'], ['name' => 'Vanilla Shake', 'sales' => 40, 'revenue' => 200, 'icon' => '🍦'], ['name' => 'Cheese Sandwich', 'sales' => 35, 'revenue' => 175, 'icon' => '🥪'], ['name' => 'Hot Dog', 'sales' => 30, 'revenue' => 150, 'icon' => '🌭'], ['name' => 'Onion Rings', 'sales' => 25, 'revenue' => 125, 'icon' => '🧅'], ['name' => 'Caesar Salad', 'sales' => 20, 'revenue' => 140, 'icon' => '🥗'], ['name' => 'Apple Pie', 'sales' => 15, 'revenue' => 75, 'icon' => '🥧'], ['name' => 'Mineral Water', 'sales' => 10, 'revenue' => 20, 'icon' => '💧']];
+    public $topProducts = [['name' => 'Double Burger', 'sales' => 120, 'revenue' => 1200, 'icon' => '🍔'], ['name' => 'French Fries', 'sales' => 85, 'revenue' => 425, 'icon' => '🍟'], ['name' => 'Cola Zero', 'sales' => 70, 'revenue' => 210, 'icon' => '🥤']];
 
     public $recentTransactions = [
         ['id' => '#ORD-001', 'customer' => 'John Doe', 'date' => 'Today, 10:45 AM', 'items' => '3 Items', 'total' => 45.0, 'status' => 'Completed', 'status_color' => 'green'],
@@ -34,6 +55,61 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
 
 <div>
     <x-slot name="header">{{ __('Dashboard') }}</x-slot>
+
+    <!-- Welcome & Balance Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Welcome Card -->
+        <div class="md:col-span-2 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl shadow-lg p-8 relative overflow-hidden text-white group hover:shadow-indigo-500/30 transition-all duration-300">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:blur-2xl transition-all duration-500"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+            
+            <div class="relative z-10 h-full flex flex-col justify-center">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                        <i class="fas fa-hand-sparkles text-2xl text-yellow-300"></i>
+                    </div>
+                    <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium border border-white/10">
+                        {{ now()->format('l, d F Y') }}
+                    </span>
+                </div>
+                
+                <h1 class="text-3xl md:text-4xl font-bold mb-2 tracking-tight">
+                    {{ $welcomeMessage }} <span class="animate-pulse">👋</span>
+                </h1>
+                <p class="text-indigo-100 max-w-lg text-lg">
+                    {{ __('Here is what is happening with your store today.') }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="md:col-span-1 bg-white rounded-3xl shadow-sm p-8 border border-gray-100 hover:shadow-lg transition-all duration-300 relative overflow-hidden dark:bg-gray-800 dark:border-gray-700 group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 dark:bg-emerald-900/20"></div>
+            
+            <div class="relative z-10 h-full flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-emerald-50 rounded-2xl text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            <i class="fas fa-wallet text-2xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg dark:bg-emerald-900/30 dark:text-emerald-400">
+                            {{ __('Cash on Hand') }}
+                        </span>
+                    </div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Balance') }}</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">
+                        ${{ number_format($balance, 2) }}
+                    </h3>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <a href="{{ route('analytics.balance-sheet') }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 dark:text-emerald-400 dark:hover:text-emerald-300">
+                        {{ __('View Report') }} <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

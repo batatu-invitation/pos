@@ -148,28 +148,28 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">{{ __('Settings') }}</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">{{ __('Settings') }}</h2>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
 
 
         <div class="p-6">
             <form wire:submit="save" class="space-y-6">
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Store Information') }}</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ __('Store Information') }}</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Store Name') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Store Name') }}</label>
                             <input wire:model="storeName" type="text"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Currency') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Currency') }}</label>
                             <select wire:model="currency"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                                 @foreach ($currencies as $code => $name)
                                     <option value="{{ $code }}">{{ $code }} - {{ $name }}
                                     </option>
@@ -177,19 +177,19 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Phone') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Phone') }}</label>
                             <input wire:model="phone" type="text"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Email') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Email') }}</label>
                             <input wire:model="email" type="email"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Timezone') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Timezone') }}</label>
                             <select
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                                 @foreach ($timezones as $offset => $name)
                                     <option value="{{ $offset }}">{{ $offset }} - {{ $name }}
                                     </option>
@@ -198,32 +198,32 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
                         </div>
                         <div>
                             <label
-                                class="block text-sm font-medium text-gray-700 mb-1">{{ __('Code Transaction') }}</label>
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Code Transaction') }}</label>
                             <input wire:model="code_transaction" type="text"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Address') }}</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ __('Address') }}</h3>
                     <div class="space-y-4">
                         <div>
                             <label
-                                class="block text-sm font-medium text-gray-700 mb-1">{{ __('Street Address') }}</label>
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Street Address') }}</label>
                             <input wire:model="streetAddress" type="text"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                         </div>
                         <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('City') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('City') }}</label>
                                 <input wire:model="city" type="text"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                    class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Zip Code') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Zip Code') }}</label>
                                 <input wire:model="zipCode" type="text"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                    class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
                             </div>
                         </div>
                     </div>
@@ -237,6 +237,4 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
             </form>
         </div>
     </div>
-
-
 </div>

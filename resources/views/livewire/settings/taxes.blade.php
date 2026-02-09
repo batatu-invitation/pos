@@ -112,12 +112,12 @@ class extends Component
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
     <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row items-center justify-between mb-8">
             <div>
-                <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Tax Settings</h2>
-                <p class="mt-1 text-sm text-gray-500">Manage your tax rates and configurations.</p>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Tax Settings</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your tax rates and configurations.</p>
             </div>
             <button wire:click="create" class="mt-4 md:mt-0 px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all shadow-sm flex items-center">
                 <i class="fas fa-plus mr-2"></i> Add Tax Rate
@@ -126,16 +126,16 @@ class extends Component
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($taxes as $tax)
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200 overflow-hidden group">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 overflow-hidden group">
                 <div class="p-6">
                     <div class="flex justify-between items-start">
                         <div class="flex items-center space-x-3">
-                            <div class="p-2 rounded-lg {{ $tax->is_active ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400' }}">
+                            <div class="p-2 rounded-lg {{ $tax->is_active ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-50 text-gray-400 dark:bg-gray-700 dark:text-gray-400' }}">
                                 <i class="fas fa-percent text-xl"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900">{{ $tax->name }}</h3>
-                                <p class="text-sm text-gray-500">Created {{ $tax->created_at->format('M d, Y') }}</p>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $tax->name }}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Created {{ $tax->created_at->format('M d, Y') }}</p>
                             </div>
                         </div>
                         <div class="relative">
@@ -164,7 +164,7 @@ class extends Component
                                         }
                                     })
                                 "
-                                class="block w-32 pl-3 pr-10 py-1.5 text-xs font-medium border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-full {{ $tax->is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200' }}"
+                                class="block w-32 pl-3 pr-10 py-1.5 text-xs font-medium border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-full {{ $tax->is_active ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600' }}"
                             >
                                 <option value="active" {{ $tax->is_active ? 'selected' : '' }}>Active</option>
                                 <option value="inactive" {{ !$tax->is_active ? 'selected' : '' }}>Inactive</option>
@@ -173,12 +173,12 @@ class extends Component
                     </div>
 
                     <div class="mt-6 flex items-baseline">
-                        <span class="text-3xl font-bold text-gray-900">{{ number_format($tax->rate, 2) }}</span>
-                        <span class="ml-1 text-gray-500 font-medium">%</span>
+                        <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($tax->rate, 2) }}</span>
+                        <span class="ml-1 text-gray-500 dark:text-gray-400 font-medium">%</span>
                     </div>
 
-                    <div class="mt-6 flex items-center justify-end space-x-3 pt-4 border-t border-gray-50">
-                        <button wire:click="edit('{{ $tax->id }}')" class="text-gray-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-indigo-50" title="Edit">
+                    <div class="mt-6 flex items-center justify-end space-x-3 pt-4 border-t border-gray-50 dark:border-gray-700">
+                        <button wire:click="edit('{{ $tax->id }}')" class="text-gray-400 hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400 transition-colors p-2 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/30" title="Edit">
                             <i class="fas fa-pen"></i>
                         </button>
                         <button type="button"
@@ -190,7 +190,7 @@ class extends Component
                                 params: ['{{ $tax->id }}'],
                                 componentId: '{{ $this->getId() }}'
                             })"
-                            class="text-gray-400 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50" title="Delete">
+                            class="text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30" title="Delete">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -198,12 +198,12 @@ class extends Component
             </div>
             @empty
             <div class="col-span-full">
-                <div class="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-200">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4">
-                        <i class="fas fa-percent text-gray-400 text-2xl"></i>
+                <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 dark:bg-gray-700 mb-4">
+                        <i class="fas fa-percent text-gray-400 dark:text-gray-500 text-2xl"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900">No tax rates found</h3>
-                    <p class="mt-1 text-sm text-gray-500">Get started by creating a new tax rate.</p>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">No tax rates found</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new tax rate.</p>
                 </div>
             </div>
             @endforelse
@@ -226,33 +226,33 @@ class extends Component
             params: [],
             componentId: '{{ $this->getId() }}'
         })"
-            class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-6">
+            class="p-6 dark:bg-gray-800">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-6">
                 {{ $editingTaxId ? 'Edit Tax Rate' : 'Create New Tax Rate' }}
             </h2>
 
             <div class="space-y-6">
                 <!-- Name -->
                 <div>
-                    <x-input-label for="name" value="Name" />
-                    <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text"
+                    <x-input-label for="name" value="Name" class="dark:text-gray-300" />
+                    <x-text-input wire:model="name" id="name" class="block mt-1 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white" type="text"
                         placeholder="e.g. VAT, GST" />
                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                 </div>
 
                 <!-- Rate -->
                 <div>
-                    <x-input-label for="rate" value="Rate (%)" />
-                    <x-text-input wire:model="rate" id="rate" class="block mt-1 w-full" type="number" step="0.01"
+                    <x-input-label for="rate" value="Rate (%)" class="dark:text-gray-300" />
+                    <x-text-input wire:model="rate" id="rate" class="block mt-1 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white" type="number" step="0.01"
                         placeholder="0.00" />
                     <x-input-error :messages="$errors->get('rate')" class="mt-2" />
                 </div>
 
                 <!-- Status -->
                 <div>
-                    <x-input-label for="is_active" value="Status" />
+                    <x-input-label for="is_active" value="Status" class="dark:text-gray-300" />
                     <select wire:model="is_active" id="is_active"
-                        class="block w-full px-4 py-3 border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm dark:bg-gray-700 dark:text-white">
                         <option value="0">Inactive</option>
                         <option value="1">Active</option>
                     </select>
@@ -261,7 +261,7 @@ class extends Component
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-secondary-button x-on:click="$dispatch('close')" class="dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                     Cancel
                 </x-secondary-button>
 
