@@ -436,7 +436,7 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
 }" x-init="init(); Livewire.hook('morph.updated', () => { initCharts(); });" 
 class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-colors duration-300">
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="space-y-6">
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50">
             <div>
@@ -457,73 +457,77 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
         <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- YoY Growth -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-green-500/50 transition-all duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Annual Revenue Growth') }}</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                            {{ $kpi['annual_revenue_growth'] >= 0 ? '+' : '' }}{{ number_format($kpi['annual_revenue_growth'], 1, ',', '.') }}%
-                        </h3>
+            <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Annual Revenue Growth') }}</span>
+                        <i class="fas fa-chart-line text-emerald-100 text-xl"></i>
                     </div>
-                    <div class="p-3 bg-green-50 dark:bg-green-900/30 rounded-2xl text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-chart-line text-xl"></i>
+                    <h3 class="text-3xl font-bold mb-1">
+                        {{ $kpi['annual_revenue_growth'] >= 0 ? '+' : '' }}{{ number_format($kpi['annual_revenue_growth'], 1, ',', '.') }}%
+                    </h3>
+                    <div class="text-emerald-100 text-sm opacity-90">
+                        {{ __('Compared to last year') }}
                     </div>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Compared to last year') }}</p>
             </div>
 
             <!-- New Customers -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-blue-500/50 transition-all duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('New Customer Rate') }}</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                            {{ $kpi['new_customer_rate'] >= 0 ? '+' : '' }}{{ number_format($kpi['new_customer_rate'], 1, ',', '.') }}%
-                        </h3>
+            <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl p-6 text-white shadow-lg shadow-blue-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('New Customer Rate') }}</span>
+                        <i class="fas fa-user-plus text-blue-100 text-xl"></i>
                     </div>
-                    <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-2xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-user-plus text-xl"></i>
+                    <h3 class="text-3xl font-bold mb-1">
+                        {{ $kpi['new_customer_rate'] >= 0 ? '+' : '' }}{{ number_format($kpi['new_customer_rate'], 1, ',', '.') }}%
+                    </h3>
+                    <div class="flex items-center text-sm text-blue-100 opacity-90">
+                        <span class="font-medium flex items-center bg-white/10 px-2 py-0.5 rounded-lg mr-2">
+                            <i class="fas fa-arrow-{{ $kpi['new_customer_change'] >= 0 ? 'up' : 'down' }} mr-1"></i> {{ abs($kpi['new_customer_change']) }}
+                        </span>
+                        <span>{{ __('from last month') }}</span>
                     </div>
                 </div>
-                <p class="text-xs {{ $kpi['new_customer_change'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} flex items-center">
-                    <i class="fas fa-arrow-{{ $kpi['new_customer_change'] >= 0 ? 'up' : 'down' }} mr-1"></i>
-                    {{ abs($kpi['new_customer_change']) }} {{ __('from last month') }}
-                </p>
             </div>
 
             <!-- Retention -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-purple-500/50 transition-all duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Customer Retention') }}</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                            {{ number_format($kpi['customer_retention'], 1, ',', '.') }}%
-                        </h3>
+            <div class="bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-3xl p-6 text-white shadow-lg shadow-violet-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Customer Retention') }}</span>
+                        <i class="fas fa-hand-holding-heart text-violet-100 text-xl"></i>
                     </div>
-                    <div class="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-2xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-hand-holding-heart text-xl"></i>
+                    <h3 class="text-3xl font-bold mb-1">
+                        {{ number_format($kpi['customer_retention'], 1, ',', '.') }}%
+                    </h3>
+                    <div class="text-violet-100 text-sm opacity-90">
+                        {{ __('Returning customers') }}
                     </div>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Returning customers') }}</p>
             </div>
 
             <!-- Market Share (Used for AOV) -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-indigo-500/50 transition-all duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Avg. Order Value') }}</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                            Rp. {{ number_format($kpi['aov'], 0, ',', '.') }}
-                        </h3>
+            <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-6 text-white shadow-lg shadow-orange-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Avg. Order Value') }}</span>
+                        <i class="fas fa-shopping-bag text-orange-100 text-xl"></i>
                     </div>
-                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-shopping-bag text-xl"></i>
+                    <h3 class="text-3xl font-bold mb-1">
+                        Rp. {{ number_format($kpi['aov'], 0, ',', '.') }}
+                    </h3>
+                    <div class="flex items-center text-sm text-orange-100 opacity-90">
+                        <span class="font-medium flex items-center bg-white/10 px-2 py-0.5 rounded-lg mr-2">
+                            <i class="fas fa-arrow-{{ $kpi['aov_growth'] >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($kpi['aov_growth']), 1, ',', '.') }}%
+                        </span>
+                        <span>{{ __('YoY') }}</span>
                     </div>
                 </div>
-                <p class="text-xs {{ $kpi['aov_growth'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} flex items-center">
-                    <i class="fas fa-arrow-{{ $kpi['aov_growth'] >= 0 ? 'up' : 'down' }} mr-1"></i>
-                    {{ number_format(abs($kpi['aov_growth']), 1, ',', '.') }}% {{ __('YoY') }}
-                </p>
             </div>
         </div>
 

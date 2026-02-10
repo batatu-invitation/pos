@@ -108,15 +108,19 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
         $this->chartLabels = [];
         $this->chartData = [];
         
+        $startDate = Carbon::now()->subDays(6)->startOfDay();
+        
+        $salesData = Sale::where('status', 'completed')
+            ->where('created_at', '>=', $startDate)
+            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
+            $dateString = $date->format('Y-m-d');
             $this->chartLabels[] = $date->format('D');
-            
-            $daySales = Sale::where('status', 'completed')
-                ->whereDate('created_at', $date->format('Y-m-d'))
-                ->sum('total_amount');
-            
-            $this->chartData[] = $daySales;
+            $this->chartData[] = $salesData[$dateString] ?? 0;
         }
 
         // --- Top 3 Products ---
@@ -137,6 +141,7 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
 
         // --- Recent Transactions ---
         $recentSales = Sale::with('customer')
+            ->withCount('items')
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get();
@@ -153,7 +158,7 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
                 'id' => $sale->invoice_number,
                 'customer' => $sale->customer ? $sale->customer->name : 'Walk-in Customer',
                 'date' => $sale->created_at->diffForHumans(),
-                'items' => $sale->items()->count() . ' Items',
+                'items' => $sale->items_count . ' Items',
                 'total' => $sale->total_amount,
                 'status' => ucfirst($sale->status),
                 'status_color' => $statusColor

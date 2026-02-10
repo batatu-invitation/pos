@@ -3,6 +3,7 @@
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Customer;
+use App\Models\Purchase;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -22,6 +23,8 @@ class extends Component
     public $totalOrders = 0;
     public $newCustomers = 0;
     public $avgTransaction = 0;
+    public $totalReceivable = 0;
+    public $totalPayable = 0;
     public $topProducts = [];
     public $chartData = [];
 
@@ -110,7 +113,11 @@ class extends Component
         $prevAvgTransaction = $prevTotalOrders > 0 ? $prevTotalSales / $prevTotalOrders : 0;
         $this->avgTransactionGrowth = $this->calculateGrowth($this->avgTransaction, $prevAvgTransaction);
 
-        // 4. Top Products
+        // 4. Receivables & Payables (Current Outstanding)
+        $this->totalReceivable = Sale::where('payment_status', '!=', 'paid')->sum(DB::raw('total_amount - cash_received'));
+        $this->totalPayable = Purchase::where('status', '!=', 'paid')->sum(DB::raw('total_amount - paid_amount'));
+
+        // 5. Top Products
         $this->topProducts = SaleItem::select('product_name as name', DB::raw('SUM(quantity) as sales'), DB::raw('SUM(total_price) as revenue'))
             ->whereHas('sale', function($q) use ($startDate, $endDate) {
                 $q->whereBetween('created_at', [$startDate, $endDate])
@@ -331,80 +338,112 @@ class extends Component
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total Sales -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Sales') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">Rp. {{ number_format($totalSales, 0, ',', '.') }}</h3>
+        <div class="bg-gradient-to-br from-indigo-500 to-violet-600 rounded-3xl p-6 text-white shadow-lg shadow-indigo-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Total Sales') }}</span>
+                    <i class="fas fa-dollar-sign text-indigo-100 text-xl"></i>
                 </div>
-                <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400">
-                    <i class="fas fa-dollar-sign text-lg"></i>
+                <h3 class="text-3xl font-bold mb-1">Rp. {{ number_format($totalSales, 0, ',', '.') }}</h3>
+                <div class="flex items-center text-sm text-indigo-100 opacity-90">
+                    <span class="font-medium flex items-center bg-white/10 px-2 py-0.5 rounded-lg mr-2">
+                        <i class="fas fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($salesGrowth), 1) }}%
+                    </span>
+                    <span>{{ __('vs last period') }}</span>
                 </div>
-            </div>
-            <div class="flex items-center text-sm">
-                <span class="{{ $salesGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
-                    <i class="fas fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($salesGrowth), 1) }}%
-                </span>
-                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
             </div>
         </div>
 
         <!-- Total Orders -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Orders') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalOrders) }}</h3>
+        <div class="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-3xl p-6 text-white shadow-lg shadow-blue-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Total Orders') }}</span>
+                    <i class="fas fa-shopping-bag text-blue-100 text-xl"></i>
                 </div>
-                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
-                    <i class="fas fa-shopping-bag text-lg"></i>
+                <h3 class="text-3xl font-bold mb-1">{{ number_format($totalOrders) }}</h3>
+                <div class="flex items-center text-sm text-blue-100 opacity-90">
+                    <span class="font-medium flex items-center bg-white/10 px-2 py-0.5 rounded-lg mr-2">
+                        <i class="fas fa-arrow-{{ $ordersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($ordersGrowth), 1) }}%
+                    </span>
+                    <span>{{ __('vs last period') }}</span>
                 </div>
-            </div>
-            <div class="flex items-center text-sm">
-                <span class="{{ $ordersGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
-                    <i class="fas fa-arrow-{{ $ordersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($ordersGrowth), 1) }}%
-                </span>
-                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
             </div>
         </div>
 
         <!-- New Customers -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('New Customers') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($newCustomers) }}</h3>
+        <div class="bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-3xl p-6 text-white shadow-lg shadow-purple-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('New Customers') }}</span>
+                    <i class="fas fa-users text-purple-100 text-xl"></i>
                 </div>
-                <div class="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
-                    <i class="fas fa-users text-lg"></i>
+                <h3 class="text-3xl font-bold mb-1">{{ number_format($newCustomers) }}</h3>
+                <div class="flex items-center text-sm text-purple-100 opacity-90">
+                    <span class="font-medium flex items-center bg-white/10 px-2 py-0.5 rounded-lg mr-2">
+                        <i class="fas fa-arrow-{{ $customersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($customersGrowth), 1) }}%
+                    </span>
+                    <span>{{ __('vs last period') }}</span>
                 </div>
-            </div>
-            <div class="flex items-center text-sm">
-                <span class="{{ $customersGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
-                    <i class="fas fa-arrow-{{ $customersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($customersGrowth), 1) }}%
-                </span>
-                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
             </div>
         </div>
 
         <!-- Avg Transaction -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Avg. Transaction') }}</p>
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">Rp. {{ number_format($avgTransaction, ) }}</h3>
+        <div class="bg-gradient-to-br from-orange-400 to-amber-500 rounded-3xl p-6 text-white shadow-lg shadow-orange-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Avg. Transaction') }}</span>
+                    <i class="fas fa-receipt text-orange-100 text-xl"></i>
                 </div>
-                <div class="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-xl text-orange-600 dark:text-orange-400">
-                    <i class="fas fa-receipt text-lg"></i>
+                <h3 class="text-3xl font-bold mb-1">Rp. {{ number_format($avgTransaction, 0, ',', '.') }}</h3>
+                <div class="flex items-center text-sm text-orange-100 opacity-90">
+                    <span class="font-medium flex items-center bg-white/10 px-2 py-0.5 rounded-lg mr-2">
+                        <i class="fas fa-arrow-{{ $avgTransactionGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($avgTransactionGrowth), 1) }}%
+                    </span>
+                    <span>{{ __('vs last period') }}</span>
                 </div>
             </div>
-            <div class="flex items-center text-sm">
-                <span class="{{ $avgTransactionGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium flex items-center">
-                    <i class="fas fa-arrow-{{ $avgTransactionGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($avgTransactionGrowth), 1) }}%
-                </span>
-                <span class="text-gray-400 dark:text-gray-500 ml-2">{{ __('vs last period') }}</span>
+        </div>
+
+        <!-- Accounts Receivable -->
+        <div class="bg-gradient-to-br from-teal-400 to-emerald-500 rounded-3xl p-6 text-white shadow-lg shadow-teal-200 dark:shadow-none relative overflow-hidden group cursor-pointer" wire:navigate href="{{ route('analytics.accounts-receivable') }}">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Receivables') }}</span>
+                    <i class="fas fa-hand-holding-usd text-teal-100 text-xl"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-1">Rp. {{ number_format($totalReceivable, 0, ',', '.') }}</h3>
+                <div class="flex items-center justify-between text-sm text-teal-100 opacity-90 mt-2">
+                    <span>Unpaid Invoices</span>
+                    <span class="flex items-center bg-white/20 px-2 py-1 rounded-lg text-xs hover:bg-white/30 transition-colors">
+                        View Details <i class="fas fa-arrow-right ml-1"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounts Payable -->
+        <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-3xl p-6 text-white shadow-lg shadow-rose-200 dark:shadow-none relative overflow-hidden group cursor-pointer" wire:navigate href="{{ route('analytics.accounts-payable') }}">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Payables') }}</span>
+                    <i class="fas fa-file-invoice-dollar text-rose-100 text-xl"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-1">Rp. {{ number_format($totalPayable, 0, ',', '.') }}</h3>
+                <div class="flex items-center justify-between text-sm text-rose-100 opacity-90 mt-2">
+                    <span>Unpaid Bills</span>
+                    <span class="flex items-center bg-white/20 px-2 py-1 rounded-lg text-xs hover:bg-white/30 transition-colors">
+                        View Details <i class="fas fa-arrow-right ml-1"></i>
+                    </span>
+                </div>
             </div>
         </div>
     </div>

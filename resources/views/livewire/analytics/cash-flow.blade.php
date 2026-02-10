@@ -21,6 +21,12 @@ class extends Component
     public $financingActivities = [];
     public $startDate;
     public $endDate;
+    
+    // Summary Metrics
+    public $totalOperating = 0;
+    public $totalInvesting = 0;
+    public $totalFinancing = 0;
+    public $netCashFlow = 0;
 
     public function mount()
     {
@@ -36,6 +42,7 @@ class extends Component
 
         // --- Operating Activities ---
         $this->operatingActivities = [];
+        $this->totalOperating = 0;
 
         // 1. Cash from Sales (Inflow)
         // We use total_amount as that represents the actual cash/payment obligation
@@ -82,14 +89,20 @@ class extends Component
                 'type' => 'negative'
             ];
         }
+        
+        $this->totalOperating = $this->calculateTotal($this->operatingActivities);
 
         // --- Investing Activities ---
         // Currently no dedicated model for assets/investments, so we leave empty or placeholder
         $this->investingActivities = [];
+        $this->totalInvesting = $this->calculateTotal($this->investingActivities);
 
         // --- Financing Activities ---
         // Currently no dedicated model for loans/equity, so we leave empty or placeholder
         $this->financingActivities = [];
+        $this->totalFinancing = $this->calculateTotal($this->financingActivities);
+        
+        $this->netCashFlow = $this->totalOperating + $this->totalInvesting + $this->totalFinancing;
     }
 
     public function calculateTotal($activities)

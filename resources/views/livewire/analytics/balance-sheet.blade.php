@@ -173,49 +173,55 @@ new #[Layout('components.layouts.app')]
             </div>
         </div>
 
-        <!-- Summary Cards -->
+        <!-- Summary Cards (Bento Grid) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Total Assets -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-blue-500/50 transition-all duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Assets') }}</p>
-                        <h3 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                            Rp. {{ number_format($totalAssets, 0, ',', '.') }}
-                        </h3>
+            <div class="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-3xl p-6 text-white shadow-lg shadow-blue-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">Total Assets</span>
+                        <i class="fas fa-building text-blue-100 text-xl"></i>
                     </div>
-                    <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-2xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-building text-xl"></i>
+                    <div class="text-3xl font-bold mb-1">
+                        Rp. {{ number_format($totalAssets, 0, ',', '.') }}
+                    </div>
+                    <div class="text-blue-100 text-sm opacity-90">
+                        Owned resources
                     </div>
                 </div>
             </div>
 
             <!-- Total Liabilities -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-red-500/50 transition-all duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Liabilities') }}</p>
-                        <h3 class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-                            Rp. {{ number_format($totalLiabilities, 0, ',', '.') }}
-                        </h3>
+            <div class="bg-gradient-to-br from-red-500 to-rose-600 rounded-3xl p-6 text-white shadow-lg shadow-red-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">Total Liabilities</span>
+                        <i class="fas fa-file-invoice-dollar text-red-100 text-xl"></i>
                     </div>
-                    <div class="p-3 bg-red-50 dark:bg-red-900/30 rounded-2xl text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-file-invoice-dollar text-xl"></i>
+                    <div class="text-3xl font-bold mb-1">
+                        Rp. {{ number_format($totalLiabilities, 0, ',', '.') }}
+                    </div>
+                    <div class="text-red-100 text-sm opacity-90">
+                        Obligations owed
                     </div>
                 </div>
             </div>
 
             <!-- Total Equity -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-purple-500/50 transition-all duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Equity') }}</p>
-                        <h3 class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
-                            Rp. {{ number_format($totalEquity, 0, ',', '.') }}
-                        </h3>
+            <div class="bg-gradient-to-br from-purple-500 to-violet-600 rounded-3xl p-6 text-white shadow-lg shadow-purple-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">Total Equity</span>
+                        <i class="fas fa-balance-scale text-purple-100 text-xl"></i>
                     </div>
-                    <div class="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-2xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-balance-scale text-xl"></i>
+                    <div class="text-3xl font-bold mb-1">
+                        Rp. {{ number_format($totalEquity, 0, ',', '.') }}
+                    </div>
+                    <div class="text-purple-100 text-sm opacity-90">
+                        Net value
                     </div>
                 </div>
             </div>

@@ -30,20 +30,41 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
         $this->date = Carbon::now()->format('Y-m-d');
     }
 
+    protected function getFilteredQuery()
+    {
+        return Transaction::query()
+            ->when($this->search, fn($q) => $q->where(function($sub) {
+                $sub->where('description', 'like', '%'.$this->search.'%')
+                    ->orWhere('category', 'like', '%'.$this->search.'%')
+                    ->orWhere('reference_number', 'like', '%'.$this->search.'%');
+            }))
+            ->when($this->typeFilter && $this->typeFilter !== 'All Types', fn($q) => $q->where('type', $this->typeFilter));
+    }
+
     public function with()
     {
+        // Calculate stats based on current filters
+        $statsQuery = $this->getFilteredQuery();
+        
+        // Clone query for stats to avoid affecting the main pagination query logic if needed
+        // but aggregate functions are fine on the same builder instance structure usually
+        // However, standard builder clones are safer.
+        
+        $income = (clone $statsQuery)->where('type', 'income')->sum('amount');
+        $expense = (clone $statsQuery)->where('type', 'expense')->sum('amount');
+        $balance = $income - $expense;
+
         return [
-            'transactions' => Transaction::query()
-                ->when($this->search, fn($q) => $q->where(function($sub) {
-                    $sub->where('description', 'like', '%'.$this->search.'%')
-                        ->orWhere('category', 'like', '%'.$this->search.'%')
-                        ->orWhere('reference_number', 'like', '%'.$this->search.'%');
-                }))
-                ->when($this->typeFilter && $this->typeFilter !== 'All Types', fn($q) => $q->where('type', $this->typeFilter))
+            'transactions' => $this->getFilteredQuery()
                 ->latest('date')
                 ->latest('created_at')
                 ->paginate(10),
             'categories' => $this->getCategories(),
+            'summary' => [
+                'income' => $income,
+                'expense' => $expense,
+                'balance' => $balance
+            ]
         ];
     }
 
@@ -73,13 +94,7 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
 
     public function exportPdf()
     {
-        $transactions = Transaction::query()
-            ->when($this->search, fn($q) => $q->where(function($sub) {
-                $sub->where('description', 'like', '%'.$this->search.'%')
-                    ->orWhere('category', 'like', '%'.$this->search.'%')
-                    ->orWhere('reference_number', 'like', '%'.$this->search.'%');
-            }))
-            ->when($this->typeFilter && $this->typeFilter !== 'All Types', fn($q) => $q->where('type', $this->typeFilter))
+        $transactions = $this->getFilteredQuery()
             ->latest('date')
             ->latest('created_at')
             ->get();
@@ -161,113 +176,199 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
 ?>
 
 <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ __('Financial Transactions') }}</h2>
-        <div class="flex gap-2">
+    <!-- Header & Actions -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{{ __('Financial Transactions') }}</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">{{ __('Manage and track your financial records efficiently.') }}</p>
+        </div>
+        <div class="flex gap-3">
             <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" @click.away="open = false" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors shadow-sm">
-                    <i class="fas fa-file-export"></i> {{ __('Export') }}
-                    <i class="fas fa-chevron-down text-xs"></i>
+                <button @click="open = !open" @click.away="open = false" class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-4 py-2.5 rounded-xl flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm font-medium">
+                    <i class="fas fa-file-export text-gray-400"></i> {{ __('Export') }}
+                    <i class="fas fa-chevron-down text-xs ml-1"></i>
                 </button>
-                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border border-gray-100 dark:border-gray-700 py-1" style="display: none;">
-                    <button wire:click="exportExcel" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <i class="fas fa-file-excel text-green-600 mr-2"></i> {{ __('Export Excel') }}
+                <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 border border-gray-100 dark:border-gray-700 py-2 transform transition-all" 
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     style="display: none;">
+                    <button wire:click="exportExcel" @click="open = false" class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-file-excel text-green-500 mr-3 w-5"></i> {{ __('Export Excel') }}
                     </button>
-                    <button wire:click="exportPdf" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <i class="fas fa-file-pdf text-red-600 mr-2"></i> {{ __('Export PDF') }}
+                    <button wire:click="exportPdf" @click="open = false" class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-file-pdf text-red-500 mr-3 w-5"></i> {{ __('Export PDF') }}
                     </button>
                 </div>
             </div>
             <button wire:click="create"
-                class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                <i class="fas fa-plus mr-2"></i> {{ __('Add Transaction') }}
+                class="flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 dark:shadow-none font-medium">
+                <i class="fas fa-plus mr-2"></i> {{ __('New Transaction') }}
             </button>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 justify-between items-center">
-            <div class="relative">
-                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="text" wire:model.live.debounce.300ms="search"
-                    class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 w-64 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                    placeholder="{{ __('Search transactions...') }}">
-            </div>
-            <div class="flex gap-2">
-                <select wire:model.live="typeFilter"
-                    class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2">
-                    <option>{{ __('All Types') }}</option>
-                    <option value="income">{{ __('Income') }}</option>
-                    <option value="expense">{{ __('Expense') }}</option>
-                </select>
+    <!-- Bento Grid Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Card 1: Net Balance -->
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 text-white shadow-lg shadow-indigo-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Net Balance') }}</span>
+                    <i class="fas fa-wallet text-indigo-100 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold mb-1">
+                    Rp. {{ number_format($summary['balance'], 0, ',', '.') }}
+                </div>
+                <div class="text-indigo-100 text-sm opacity-90">
+                    {{ __('Total available balance') }}
+                </div>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 font-semibold text-xs uppercase">
-                    <tr>
-                        <th class="px-6 py-3">{{ __('Date') }}</th>
-                        <th class="px-6 py-3">{{ __('Type') }}</th>
-                        <th class="px-6 py-3">{{ __('Category') }}</th>
-                        <th class="px-6 py-3">{{ __('Description') }}</th>
-                        <th class="px-6 py-3 text-right">{{ __('Amount') }}</th>
-                        <th class="px-6 py-3 text-right">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
-                    @forelse($transactions as $transaction)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            <td class="px-6 py-4 text-gray-500 dark:text-gray-400">
-                                {{ $transaction->date->format('d M Y') }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <span
-                                    class="px-2 py-1 bg-{{ $transaction->type === 'income' ? 'green' : 'red' }}-100 dark:bg-{{ $transaction->type === 'income' ? 'green' : 'red' }}-900/30 text-{{ $transaction->type === 'income' ? 'green' : 'red' }}-700 dark:text-{{ $transaction->type === 'income' ? 'green' : 'red' }}-400 rounded-full text-xs font-semibold uppercase">
-                                    {{ $transaction->type }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                                {{ $transaction->category ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 text-gray-600 dark:text-gray-400">
-                                {{ $transaction->description ?? '-' }}
-                                @if($transaction->payment_method)
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 block">{{ $transaction->payment_method }}</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-right font-medium {{ $transaction->type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                                {{ $transaction->type === 'income' ? '+' : '-' }} Rp. {{ number_format($transaction->amount, 0, ',', '.') }}
-                            </td>
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <button wire:click="edit('{{ $transaction->id }}')"
-                                    class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"><i
-                                        class="fas fa-edit"></i></button>
-                                <button type="button"
-                                    x-on:click="$dispatch('swal:confirm', {
-                                title: '{{ __('Delete Transaction?') }}',
-                                text: '{{ __('Are you sure you want to delete this transaction?') }}',
-                                icon: 'warning',
-                                method: 'delete',
-                                params: ['{{ $transaction->id }}'],
-                                componentId: '{{ $this->getId() }}'
-                            })"
-                                    class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    @empty
+
+        <!-- Card 2: Income -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group hover:border-green-200 dark:hover:border-green-800 transition-colors">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <span class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">{{ __('Income') }}</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                Rp. {{ number_format($summary['income'], 0, ',', '.') }}
+            </div>
+            <div class="text-sm text-green-600 dark:text-green-400 flex items-center">
+                <i class="fas fa-chart-line mr-1"></i> {{ __('Total earnings') }}
+            </div>
+        </div>
+
+        <!-- Card 3: Expenses -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group hover:border-red-200 dark:hover:border-red-800 transition-colors">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <span class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">{{ __('Expenses') }}</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                Rp. {{ number_format($summary['expense'], 0, ',', '.') }}
+            </div>
+            <div class="text-sm text-red-600 dark:text-red-400 flex items-center">
+                <i class="fas fa-chart-bar mr-1"></i> {{ __('Total spending') }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 gap-6">
+        <!-- Transaction List -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col">
+            <!-- Toolbar -->
+            <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                <div class="relative w-full sm:w-72">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" wire:model.live.debounce.300ms="search"
+                        class="pl-11 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-all placeholder-gray-400"
+                        placeholder="{{ __('Search transactions...') }}">
+                </div>
+                <div class="flex gap-3 w-full sm:w-auto">
+                    <select wire:model.live="typeFilter"
+                        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block px-4 py-2.5 w-full sm:w-auto cursor-pointer">
+                        <option>{{ __('All Types') }}</option>
+                        <option value="income">{{ __('Income') }}</option>
+                        <option value="expense">{{ __('Expense') }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-medium text-xs uppercase tracking-wider">
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                {{ __('No transactions found.') }}
-                            </td>
+                            <th class="px-6 py-4">{{ __('Date') }}</th>
+                            <th class="px-6 py-4">{{ __('Type') }}</th>
+                            <th class="px-6 py-4">{{ __('Category') }}</th>
+                            <th class="px-6 py-4">{{ __('Description') }}</th>
+                            <th class="px-6 py-4 text-right">{{ __('Amount') }}</th>
+                            <th class="px-6 py-4 text-right">{{ __('Actions') }}</th>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-            {{ $transactions->links() }}
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+                        @forelse($transactions as $transaction)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group">
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 font-medium">
+                                    {{ $transaction->date->format('d M Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide
+                                        {{ $transaction->type === 'income' 
+                                            ? 'bg-green-50 text-green-700 border border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/50' 
+                                            : 'bg-red-50 text-red-700 border border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50' }}">
+                                        {{ $transaction->type }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full {{ $transaction->type === 'income' ? 'bg-green-400' : 'bg-red-400' }}"></span>
+                                        {{ $transaction->category ?? '-' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-xs truncate">
+                                    <div class="font-medium text-gray-900 dark:text-gray-200">{{ $transaction->description ?? '-' }}</div>
+                                    @if($transaction->payment_method)
+                                        <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                                            <i class="fas fa-credit-card text-[10px]"></i> {{ $transaction->payment_method }}
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap font-bold {{ $transaction->type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                    {{ $transaction->type === 'income' ? '+' : '-' }} Rp. {{ number_format($transaction->amount, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button wire:click="edit('{{ $transaction->id }}')"
+                                            class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="{{ __('Edit') }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button"
+                                            x-on:click="$dispatch('swal:confirm', {
+                                                title: '{{ __('Delete Transaction?') }}',
+                                                text: '{{ __('Are you sure you want to delete this transaction?') }}',
+                                                icon: 'warning',
+                                                method: 'delete',
+                                                params: ['{{ $transaction->id }}'],
+                                                componentId: '{{ $this->getId() }}'
+                                            })"
+                                            class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all" title="{{ __('Delete') }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+                                        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                                            <i class="fas fa-search text-2xl opacity-50"></i>
+                                        </div>
+                                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400">{{ __('No transactions found') }}</p>
+                                        <p class="text-sm mt-1">{{ __('Try adjusting your search or filters') }}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                {{ $transactions->links() }}
+            </div>
         </div>
     </div>
 
@@ -284,25 +385,46 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
             componentId: '{{ $this->getId() }}'
         })"
             class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">
-                {{ $editingId ? __('Edit Transaction') : __('Create New Transaction') }}
-            </h2>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {{ $editingId ? __('Edit Transaction') : __('New Transaction') }}
+                </h2>
+                <button type="button" x-on:click="$dispatch('close-modal', 'transaction-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Type -->
                 <div class="col-span-1 md:col-span-2">
-                    <x-input-label for="type" value="{{ __('Transaction Type') }}" />
-                    <div class="mt-2 flex space-x-4">
-                        <label class="inline-flex items-center">
-                            <input type="radio" wire:model.live="type" value="income" class="form-radio text-indigo-600 dark:bg-gray-900 dark:border-gray-600">
-                            <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('Income') }}</span>
+                    <x-input-label for="type" value="{{ __('Transaction Type') }}" class="mb-2" />
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" wire:model.live="type" value="income" class="peer sr-only">
+                            <div class="text-center py-3 px-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20 peer-checked:text-green-700 dark:peer-checked:text-green-400 transition-all hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <i class="fas fa-arrow-down mb-1"></i>
+                                <div class="font-semibold">{{ __('Income') }}</div>
+                            </div>
                         </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" wire:model.live="type" value="expense" class="form-radio text-red-600 dark:bg-gray-900 dark:border-gray-600">
-                            <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('Expense') }}</span>
+                        <label class="cursor-pointer">
+                            <input type="radio" wire:model.live="type" value="expense" class="peer sr-only">
+                            <div class="text-center py-3 px-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20 peer-checked:text-red-700 dark:peer-checked:text-red-400 transition-all hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <i class="fas fa-arrow-up mb-1"></i>
+                                <div class="font-semibold">{{ __('Expense') }}</div>
+                            </div>
                         </label>
                     </div>
                     <x-input-error :messages="$errors->get('type')" class="mt-2" />
+                </div>
+
+                <!-- Amount -->
+                <div>
+                    <x-input-label for="amount" value="{{ __('Amount (Rp)') }}" />
+                    <div class="relative mt-1">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-semibold">Rp</span>
+                        <x-text-input wire:model="amount" id="amount" class="block w-full pl-10" type="number" step="0.01" placeholder="0" />
+                    </div>
+                    <x-input-error :messages="$errors->get('amount')" class="mt-2" />
                 </div>
 
                 <!-- Date -->
@@ -312,19 +434,11 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
                     <x-input-error :messages="$errors->get('date')" class="mt-2" />
                 </div>
 
-                <!-- Amount -->
-                <div>
-                    <x-input-label for="amount" value="{{ __('Amount (Rp)') }}" />
-                    <x-text-input wire:model="amount" id="amount" class="block mt-1 w-full" type="number" step="0.01"
-                        placeholder="0" />
-                    <x-input-error :messages="$errors->get('amount')" class="mt-2" />
-                </div>
-
                 <!-- Category -->
                 <div>
                     <x-input-label for="category" value="{{ __('Category') }}" />
                     <select wire:model="category" id="category"
-                        class="block w-full mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm p-2">
+                        class="block w-full mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm p-2.5">
                         <option value="">{{ __('Select Category') }}</option>
                         @foreach($this->getCategories() as $cat)
                             <option value="{{ $cat }}">{{ $cat }}</option>
@@ -337,7 +451,7 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
                 <div>
                     <x-input-label for="payment_method" value="{{ __('Payment Method') }}" />
                     <select wire:model="payment_method" id="payment_method"
-                        class="block w-full mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm p-2">
+                        class="block w-full mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm p-2.5">
                         <option value="Cash">{{ __('Cash') }}</option>
                         <option value="Bank Transfer">{{ __('Bank Transfer') }}</option>
                         <option value="Credit Card">{{ __('Credit Card') }}</option>
@@ -350,19 +464,19 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
                 <!-- Description -->
                 <div class="col-span-1 md:col-span-2">
                     <x-input-label for="description" value="{{ __('Description') }}" />
-                    <textarea wire:model="description" id="description" class="block mt-1 w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="2" placeholder="Details..."></textarea>
+                    <textarea wire:model="description" id="description" class="block mt-1 w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="3" placeholder="{{ __('Enter transaction details...') }}"></textarea>
                     <x-input-error :messages="$errors->get('description')" class="mt-2" />
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end">
+            <div class="mt-8 flex justify-end gap-3">
                 <button type="button" x-on:click="$dispatch('close-modal', 'transaction-modal')"
-                    class="mr-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    class="px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">
                     {{ __('Cancel') }}
                 </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                    {{ $editingId ? __('Update Transaction') : __('Create Transaction') }}
+                    class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none font-medium">
+                    {{ $editingId ? __('Save Changes') : __('Create Transaction') }}
                 </button>
             </div>
         </form>
