@@ -10,6 +10,7 @@ new class extends Component {
     use WithPagination;
 
     public $accountId;
+    public $search = '';
     public $startDate;
     public $endDate;
     public $typeFilter = 'all'; // all, in, out
@@ -61,6 +62,13 @@ new class extends Component {
                 ->where('journal_entry_items.account_id', $this->accountId)
                 ->whereBetween('journal_entries.date', [$this->startDate, $this->endDate])
                 ->where('journal_entries.status', 'posted');
+
+            if ($this->search) {
+                $query->whereHas('journalEntry', function($q) {
+                    $q->where('description', 'like', "%{$this->search}%")
+                      ->orWhere('reference', 'like', "%{$this->search}%");
+                });
+            }
                 
             if ($this->typeFilter === 'in') {
                 $query->where('journal_entry_items.debit', '>', 0);
@@ -134,72 +142,90 @@ new class extends Component {
             </div>
 
             <!-- Card 2: Total In -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group hover:border-green-200 dark:hover:border-green-800 transition-colors">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
-                        <i class="fas fa-arrow-down"></i>
+            <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Total In') }}</span>
+                        <i class="fas fa-arrow-down text-emerald-100 text-xl"></i>
                     </div>
-                    <span class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">{{ __('Total In') }}</span>
-                </div>
-                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                    Rp. {{ number_format($summary['in'], 0, ',', '.') }}
-                </div>
-                <div class="text-sm text-green-600 dark:text-green-400 flex items-center">
-                    <i class="fas fa-level-up-alt mr-1"></i> {{ __('Debit Transactions') }}
+                    <div class="text-3xl font-bold mb-1">
+                        Rp. {{ number_format($summary['in'], 0, ',', '.') }}
+                    </div>
+                    <div class="text-emerald-100 text-sm opacity-90">
+                        {{ __('Debit Transactions') }}
+                    </div>
                 </div>
             </div>
 
             <!-- Card 3: Total Out -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group hover:border-red-200 dark:hover:border-red-800 transition-colors">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-                        <i class="fas fa-arrow-up"></i>
+            <div class="bg-gradient-to-br from-rose-500 to-red-600 rounded-3xl p-6 text-white shadow-lg shadow-rose-200 dark:shadow-none relative overflow-hidden group">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Total Out') }}</span>
+                        <i class="fas fa-arrow-up text-rose-100 text-xl"></i>
                     </div>
-                    <span class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">{{ __('Total Out') }}</span>
-                </div>
-                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                    Rp. {{ number_format($summary['out'], 0, ',', '.') }}
-                </div>
-                <div class="text-sm text-red-600 dark:text-red-400 flex items-center">
-                    <i class="fas fa-level-down-alt mr-1"></i> {{ __('Credit Transactions') }}
+                    <div class="text-3xl font-bold mb-1">
+                        Rp. {{ number_format($summary['out'], 0, ',', '.') }}
+                    </div>
+                    <div class="text-rose-100 text-sm opacity-90">
+                        {{ __('Credit Transactions') }}
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 gap-6">
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col">
-                <!-- Toolbar -->
-                <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
-                    <div class="flex gap-4 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
-                         <!-- Date Range -->
-                        <div class="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-xl p-1">
-                            <input wire:model.live="startDate" type="date" 
-                                class="border-none bg-transparent text-sm text-gray-700 dark:text-gray-300 focus:ring-0 p-1.5 cursor-pointer">
-                            <span class="text-gray-400">-</span>
-                            <input wire:model.live="endDate" type="date" 
-                                class="border-none bg-transparent text-sm text-gray-700 dark:text-gray-300 focus:ring-0 p-1.5 cursor-pointer">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Filters</h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Description or Ref..." 
+                                    class="w-full pl-10 pr-4 py-2 rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white transition-all text-sm">
+                            </div>
                         </div>
 
                         <!-- Type Filter -->
-                        <div class="relative">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
                             <select wire:model.live="typeFilter" 
-                                class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block pl-3 pr-8 py-2 w-full cursor-pointer appearance-none">
+                                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white text-sm">
                                 <option value="all">{{ __('All Types') }}</option>
                                 <option value="in">{{ __('Cash In') }}</option>
                                 <option value="out">{{ __('Cash Out') }}</option>
                             </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Period</label>
+                            <div class="space-y-2">
+                                <input wire:model.live="startDate" type="date" 
+                                    class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white text-sm">
+                                <input wire:model.live="endDate" type="date" 
+                                    class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white text-sm">
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Table -->
-                <div class="overflow-x-auto">
+            <!-- Table Section -->
+            <div class="lg:col-span-3">
+                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col">
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-medium text-xs uppercase tracking-wider">
+                        <thead class="bg-gray-50/50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-medium text-xs uppercase tracking-wider">
                             <tr>
                                 <th class="px-6 py-4">{{ __('Date') }}</th>
                                 <th class="px-6 py-4">{{ __('Ref / Description') }}</th>
@@ -241,12 +267,12 @@ new class extends Component {
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-6 py-12 text-center">
-                                        <div class="flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
-                                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                                                <i class="fas fa-file-invoice text-2xl opacity-50"></i>
+                                        <div class="flex flex-col items-center justify-center space-y-3">
+                                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-file-invoice text-gray-400 text-2xl"></i>
                                             </div>
-                                            <p class="text-lg font-medium text-gray-500 dark:text-gray-400">{{ __('No records found') }}</p>
-                                            <p class="text-sm mt-1">{{ __('Try adjusting your date range or filters') }}</p>
+                                            <p class="text-gray-500 dark:text-gray-400 text-base font-medium">{{ __('No records found') }}</p>
+                                            <p class="text-gray-400 text-sm">{{ __('Try adjusting your date range or filters') }}</p>
                                         </div>
                                     </td>
                                 </tr>

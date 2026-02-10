@@ -66,54 +66,60 @@ new class extends Component {
 };
 ?>
 
-<div class="p-6 space-y-6">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Trial Balance</h2>
-            <p class="text-gray-500 dark:text-gray-400 text-sm">Summary of ending balances of all general ledger accounts.</p>
-        </div>
+<div class="p-6 space-y-6 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        <div class="flex items-center gap-2">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">As of Date:</label>
-            <input wire:model.live="asOfDate" type="date" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    {{ __('Trial Balance') }}
+                </h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {{ __('Summary of ending balances of all general ledger accounts.') }}
+                </p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('As of Date:') }}</label>
+                <input wire:model.live="asOfDate" type="date" class="rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+            </div>
         </div>
-    </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Trial Balance Report</h3>
-        </div>
-        <div class="p-6">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <!-- Report Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Trial Balance Report') }}</h3>
+            </div>
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Account</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Debit</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Credit</th>
+                    <tr class="bg-gray-50/50 dark:bg-gray-700/50">
+                        <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase">{{ __('Account') }}</th>
+                        <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase text-right">{{ __('Debit') }}</th>
+                        <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase text-right">{{ __('Credit') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @foreach($report['lines'] as $line)
-                        <tr>
-                            <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ $line['code'] }} - {{ $line['name'] }}</td>
-                            <td class="px-4 py-2 text-sm text-right text-gray-900 dark:text-white">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
+                            <td class="p-4 text-sm font-medium text-gray-900 dark:text-white">{{ $line['code'] }} - {{ $line['name'] }}</td>
+                            <td class="p-4 text-sm text-gray-700 dark:text-gray-300 text-right">
                                 {{ $line['debit'] > 0 ? 'Rp. ' . number_format($line['debit'], 0, ',', '.') : '-' }}
                             </td>
-                            <td class="px-4 py-2 text-sm text-right text-gray-900 dark:text-white">
+                            <td class="p-4 text-sm text-gray-700 dark:text-gray-300 text-right">
                                 {{ $line['credit'] > 0 ? 'Rp. ' . number_format($line['credit'], 0, ',', '.') : '-' }}
                             </td>
                         </tr>
                     @endforeach
-                    <tr class="bg-gray-50 dark:bg-gray-900/50 font-bold">
-                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-right">Total</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900 dark:text-white">
-                            Rp. {{ number_format($report['total_debit'], 0, ',', '.') }}
-                        </td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900 dark:text-white">
-                            Rp. {{ number_format($report['total_credit'], 0, ',', '.') }}
-                        </td>
-                    </tr>
                 </tbody>
+                <tfoot class="bg-gray-50/50 dark:bg-gray-700/50 font-bold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <tr>
+                        <td class="p-4">{{ __('Total') }}</td>
+                        <td class="p-4 text-right text-indigo-600 dark:text-indigo-400">Rp. {{ number_format($report['total_debit'], 0, ',', '.') }}</td>
+                        <td class="p-4 text-right text-indigo-600 dark:text-indigo-400">Rp. {{ number_format($report['total_credit'], 0, ',', '.') }}</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>

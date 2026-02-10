@@ -209,78 +209,96 @@ new class extends Component {
 };
 ?>
 
-<div class="p-6 space-y-6">
+<div class="mx-auto p-6 space-y-8">
+    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Memos & Adjustments</h2>
-            <p class="text-gray-500 dark:text-gray-400 text-sm">Manage internal adjustments and manual journal entries.</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Memos & Adjustments</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Manage internal adjustments and manual journal entries.</p>
         </div>
-        <button wire:click="create" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+        <button wire:click="create" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all font-medium flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             New Memo
         </button>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row gap-4 items-end">
-        <div class="flex-1 w-full">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
-            <input wire:model.live="search" type="text" placeholder="Search reference or description..." 
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input wire:model.live="search" type="text" placeholder="Reference or description..." 
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white transition-all text-sm shadow-sm">
+            </div>
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
             <input wire:model.live="startDate" type="date" 
-                class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white text-sm shadow-sm p-2.5">
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date</label>
             <input wire:model.live="endDate" type="date" 
-                class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white text-sm shadow-sm p-2.5">
         </div>
     </div>
 
     <!-- List -->
-    <div class="space-y-4">
+    <div class="space-y-6">
         @forelse($entries as $entry)
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-                    <div>
-                        <span class="font-bold text-gray-900 dark:text-white text-lg">{{ $entry->reference }}</span>
-                        <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">{{ $entry->date->format('M d, Y') }}</span>
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+                <div class="px-8 py-5 bg-gray-50/50 dark:bg-gray-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-lg">{{ $entry->reference }}</h3>
+                            <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                <i class="far fa-calendar-alt"></i>
+                                {{ $entry->date->format('M d, Y') }}
+                            </div>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
-                         <button wire:click="edit('{{ $entry->id }}')" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Edit</button>
+                         <button wire:click="edit('{{ $entry->id }}')" class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
+                            Edit
+                         </button>
                          <button wire:click="delete('{{ $entry->id }}')" 
                             wire:confirm="Are you sure you want to delete this memo?"
-                            class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                            class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg transition-colors">
+                            Delete
+                         </button>
                     </div>
                 </div>
-                <div class="px-6 py-4">
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">{{ $entry->description }}</p>
+                <div class="px-8 py-6">
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl text-sm italic border-l-4 border-indigo-500">
+                        {{ $entry->description ?: 'No description provided.' }}
+                    </p>
                     
-                    <div class="overflow-x-auto">
+                    <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead>
+                            <thead class="bg-gray-50 dark:bg-gray-800">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Account</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Debit</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Credit</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Account</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Debit</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credit</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                                 @foreach($entry->items as $item)
-                                    <tr>
-                                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">
                                             {{ $item->account->code }} - {{ $item->account->name }}
                                         </td>
-                                        <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                            {{ $item->debit > 0 ? 'Rp. ' . number_format($item->debit, 0, ',', '.') : '' }}
+                                        <td class="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-white">
+                                            {{ $item->debit > 0 ? 'Rp. ' . number_format($item->debit, 0, ',', '.') : '-' }}
                                         </td>
-                                        <td class="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                                            {{ $item->credit > 0 ? 'Rp. ' . number_format($item->credit, 0, ',', '.') : '' }}
+                                        <td class="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-white">
+                                            {{ $item->credit > 0 ? 'Rp. ' . number_format($item->credit, 0, ',', '.') : '-' }}
                                         </td>
                                     </tr>
                                 @endforeach
@@ -290,8 +308,12 @@ new class extends Component {
                 </div>
             </div>
         @empty
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400">
-                No memos found for the selected period.
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                    <i class="fas fa-file-invoice text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">No Memos Found</h3>
+                <p class="text-gray-500 dark:text-gray-400">No memos found for the selected period.</p>
             </div>
         @endforelse
 

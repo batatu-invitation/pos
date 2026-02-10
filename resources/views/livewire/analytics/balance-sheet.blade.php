@@ -135,13 +135,13 @@ new #[Layout('components.layouts.app')]
 };
 ?>
 
-<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-colors duration-300">
+<div class="p-6 space-y-6 transition-colors duration-300">
     <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- Header Section -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
             <div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
                     {{ __('Balance Sheet') }}
                 </h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -229,7 +229,7 @@ new #[Layout('components.layouts.app')]
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Assets Column -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden h-full flex flex-col">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden h-full flex flex-col">
                 <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <span class="w-2 h-6 bg-blue-500 rounded-full"></span>
@@ -264,7 +264,7 @@ new #[Layout('components.layouts.app')]
             <!-- Liabilities & Equity Column -->
             <div class="space-y-6">
                 <!-- Liabilities -->
-                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             <span class="w-2 h-6 bg-red-500 rounded-full"></span>
@@ -297,7 +297,7 @@ new #[Layout('components.layouts.app')]
                 </div>
 
                 <!-- Equity -->
-                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             <span class="w-2 h-6 bg-purple-500 rounded-full"></span>
@@ -330,7 +330,7 @@ new #[Layout('components.layouts.app')]
                 </div>
                 
                  <!-- Grand Total -->
-                 <div class="bg-gray-900 dark:bg-black rounded-2xl shadow-xl p-6 flex justify-between items-center">
+                 <div class="bg-gray-900 dark:bg-black rounded-2xl shadow-sm p-6 flex justify-between items-center">
                      <span class="text-lg font-bold text-white">{{ __('Total Liabilities & Equity') }}</span>
                      <span class="text-2xl font-bold text-emerald-400">Rp. {{ number_format($totalLiabilities + $totalEquity, 0, ',', '.') }}</span>
                  </div>

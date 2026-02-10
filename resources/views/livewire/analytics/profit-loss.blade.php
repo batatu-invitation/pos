@@ -214,13 +214,13 @@ new #[Layout('components.layouts.app')]
     }
 }; ?>
 
-<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-colors duration-300">
+<div class="p-6 space-y-6 transition-colors duration-300">
     <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- Header Section -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
             <div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
                     {{ __('Profit & Loss Statement') }}
                 </h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -256,7 +256,7 @@ new #[Layout('components.layouts.app')]
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Total Revenue -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-green-500/50 transition-all duration-300">
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 group hover:border-green-500/50 transition-all duration-300">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Revenue') }}</p>
@@ -268,7 +268,7 @@ new #[Layout('components.layouts.app')]
                         <i class="fas fa-coins text-xl"></i>
                     </div>
                 </div>
-                 <div class="flex items-center text-sm {{ $revenueGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                <div class="flex items-center text-sm {{ $revenueGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                     <span class="flex items-center font-medium bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-lg mr-2">
                          <i class="fas fa-{{ $revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i> {{ number_format(abs($revenueGrowth), 1, ',', '.') }}%
                     </span>
@@ -277,7 +277,7 @@ new #[Layout('components.layouts.app')]
             </div>
 
             <!-- Total Expenses -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-red-500/50 transition-all duration-300">
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 group hover:border-red-500/50 transition-all duration-300">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Expenses') }}</p>
@@ -298,7 +298,7 @@ new #[Layout('components.layouts.app')]
             </div>
 
             <!-- Net Profit -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-indigo-500/50 transition-all duration-300">
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 group hover:border-indigo-500/50 transition-all duration-300">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Net Profit') }}</p>
@@ -320,8 +320,8 @@ new #[Layout('components.layouts.app')]
         </div>
 
         <!-- Detailed P&L Statement -->
-        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Income Statement') }}</h3>
                 <span class="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                     {{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}

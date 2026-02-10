@@ -218,24 +218,24 @@ new class extends Component {
         </div>
 
         <!-- Overdue -->
-        <div class="bg-gradient-to-br from-red-500 to-pink-600 rounded-3xl p-6 text-white shadow-lg shadow-red-200 dark:shadow-none relative overflow-hidden group">
+        <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 text-white shadow-lg shadow-purple-200 dark:shadow-none relative overflow-hidden group">
             <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
             <div class="relative z-10">
                 <div class="flex items-center justify-between mb-4">
                     <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">Overdue</span>
-                    <i class="fas fa-clock text-red-100 text-xl"></i>
+                    <i class="fas fa-clock text-purple-100 text-xl"></i>
                 </div>
                 <div class="text-3xl font-bold mb-1">
                     Rp. {{ number_format($overdueAmount, 0, ',', '.') }}
                 </div>
-                <div class="text-red-100 text-sm opacity-90">
+                <div class="text-purple-100 text-sm opacity-90">
                     Past due date
                 </div>
             </div>
         </div>
 
         <!-- Due Soon -->
-        <div class="bg-gradient-to-br from-orange-400 to-yellow-500 rounded-3xl p-6 text-white shadow-lg shadow-orange-200 dark:shadow-none relative overflow-hidden group">
+        <div class="bg-gradient-to-br from-orange-400 to-amber-500 rounded-3xl p-6 text-white shadow-lg shadow-orange-200 dark:shadow-none relative overflow-hidden group">
             <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
             <div class="relative z-10">
                 <div class="flex items-center justify-between mb-4">
@@ -266,14 +266,14 @@ new class extends Component {
                         <div class="relative">
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                             <input wire:model.live="search" type="text" placeholder="Invoice or Customer..." 
-                                class="w-full pl-10 pr-4 py-2 rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-blue-500 focus:ring-blue-500 dark:text-white transition-all text-sm">
+                                class="w-full pl-10 pr-4 py-2 rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-red-500 focus:ring-red-500 dark:text-white transition-all text-sm">
                         </div>
                     </div>
 
                     <!-- Status -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                        <select wire:model.live="statusFilter" class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-blue-500 focus:ring-blue-500 dark:text-white text-sm">
+                        <select wire:model.live="statusFilter" class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-red-500 focus:ring-red-500 dark:text-white text-sm">
                             <option value="">All Status</option>
                             <option value="unpaid">Unpaid</option>
                             <option value="partial">Partial</option>
@@ -285,9 +285,9 @@ new class extends Component {
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Period</label>
                         <div class="space-y-2">
                             <input wire:model.live="startDate" type="date" 
-                                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-blue-500 focus:ring-blue-500 dark:text-white text-sm">
+                                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-red-500 focus:ring-red-500 dark:text-white text-sm">
                             <input wire:model.live="endDate" type="date" 
-                                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-blue-500 focus:ring-blue-500 dark:text-white text-sm">
+                                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-red-500 focus:ring-red-500 dark:text-white text-sm">
                         </div>
                     </div>
                 </div>
@@ -314,7 +314,7 @@ new class extends Component {
                                 <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors group">
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-red-600 transition-colors">
                                                 {{ $sale->invoice_number }}
                                             </span>
                                             <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -362,7 +362,7 @@ new class extends Component {
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <button wire:click="openPaymentModal('{{ $sale->id }}')" 
-                                            class="inline-flex items-center justify-center px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg text-sm font-medium transition-colors">
+                                            class="inline-flex items-center justify-center px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg text-sm font-medium transition-colors">
                                             <i class="fas fa-money-bill-wave mr-2"></i> Pay
                                         </button>
                                     </td>
@@ -401,8 +401,8 @@ new class extends Component {
                     <!-- Modal Header -->
                     <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                <i class="fas fa-cash-register text-blue-600 dark:text-blue-400 text-sm"></i>
+                            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <i class="fas fa-cash-register text-red-600 dark:text-red-400 text-sm"></i>
                             </div>
                             Record Payment
                         </h3>
@@ -414,18 +414,18 @@ new class extends Component {
                     <!-- Modal Body -->
                     <div class="px-6 py-6 space-y-5">
                         <!-- Invoice Details Card -->
-                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800/30">
+                        <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-100 dark:border-red-800/30">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
-                                    <span class="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Invoice</span>
+                                    <span class="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide">Invoice</span>
                                     <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $selectedSale->invoice_number }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Customer</span>
+                                    <span class="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide">Customer</span>
                                     <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $selectedSale->customer->name ?? 'Guest' }}</p>
                                 </div>
                             </div>
-                            <div class="border-t border-blue-200 dark:border-blue-800/50 my-2 pt-2 flex justify-between items-center">
+                            <div class="border-t border-red-200 dark:border-red-800/50 my-2 pt-2 flex justify-between items-center">
                                 <span class="text-sm text-gray-600 dark:text-gray-300">Balance Due</span>
                                 <span class="text-lg font-bold text-red-600 dark:text-red-400">
                                     Rp. {{ number_format($selectedSale->total_amount - $selectedSale->cash_received, 0, ',', '.') }}
@@ -440,7 +440,7 @@ new class extends Component {
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm">Rp</span>
                                     <input type="number" step="0.01" wire:model="paymentAmount" 
-                                        class="pl-10 block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500 dark:text-white shadow-sm">
+                                        class="pl-10 block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-red-500 focus:ring-red-500 dark:text-white shadow-sm">
                                 </div>
                                 @error('paymentAmount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                             </div>
@@ -449,14 +449,14 @@ new class extends Component {
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Date</label>
                                     <input type="date" wire:model="paymentDate" 
-                                        class="block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500 dark:text-white shadow-sm">
+                                        class="block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-red-500 focus:ring-red-500 dark:text-white shadow-sm">
                                     @error('paymentDate') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deposit To</label>
                                     <select wire:model="depositAccountId" 
-                                        class="block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500 dark:text-white shadow-sm">
+                                        class="block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-red-500 focus:ring-red-500 dark:text-white shadow-sm">
                                         <option value="">Select Account</option>
                                         @foreach($assetAccounts as $account)
                                             <option value="{{ $account->id }}">{{ $account->code }} - {{ $account->name }}</option>
@@ -469,7 +469,7 @@ new class extends Component {
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
                                 <textarea wire:model="notes" rows="2" placeholder="Optional notes..."
-                                    class="block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500 dark:text-white shadow-sm"></textarea>
+                                    class="block w-full rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-red-500 focus:ring-red-500 dark:text-white shadow-sm"></textarea>
                             </div>
                         </div>
                     </div>
@@ -477,7 +477,7 @@ new class extends Component {
                     <!-- Modal Footer -->
                     <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 flex flex-row-reverse gap-3">
                         <button type="button" wire:click="recordPayment" 
-                            class="inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2.5 bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                            class="inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2.5 bg-red-600 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
                             Confirm Payment
                         </button>
                         <button type="button" wire:click="closePaymentModal" 

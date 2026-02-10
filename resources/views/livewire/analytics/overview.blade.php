@@ -213,7 +213,7 @@ class extends Component
     }
 }; ?>
 
-<div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6 custom-scrollbar"
+<div class="mx-auto p-6 space-y-8"
      x-data="{
          chart: null,
          isDark: document.documentElement.classList.contains('dark'),
@@ -315,10 +315,10 @@ class extends Component
 
 
     <!-- Header Actions -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">{{ __('Business Overview') }}</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Key performance indicators for your business.') }}</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{{ __('Business Overview') }}</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">{{ __('Key performance indicators for your business.') }}</p>
         </div>
         <div class="flex items-center space-x-3">
             <div class="relative">
@@ -338,7 +338,7 @@ class extends Component
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Total Sales -->
         <div class="bg-gradient-to-br from-indigo-500 to-violet-600 rounded-3xl p-6 text-white shadow-lg shadow-indigo-200 dark:shadow-none relative overflow-hidden group">
             <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
@@ -449,7 +449,7 @@ class extends Component
     </div>
 
     <!-- Main Chart -->
-    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 mb-8" wire:ignore>
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6" wire:ignore>
         <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">{{ __('Revenue Analytics') }}</h3>
         <div class="relative h-80 w-full">
             <canvas x-ref="revenueChart"></canvas>
@@ -458,26 +458,26 @@ class extends Component
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Top Products -->
-        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                 <h3 class="font-bold text-gray-800 dark:text-white">{{ __('Top Selling Products') }}</h3>
                 <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">{{ __('View All') }}</a>
             </div>
             <div class="p-0">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 dark:text-gray-400 uppercase">
+                    <thead class="bg-gray-50/50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         <tr>
-                            <th class="px-6 py-3 font-medium">{{ __('Product') }}</th>
-                            <th class="px-6 py-3 font-medium text-right">{{ __('Sales') }}</th>
-                            <th class="px-6 py-3 font-medium text-right">{{ __('Revenue') }}</th>
+                            <th class="px-6 py-3">{{ __('Product') }}</th>
+                            <th class="px-6 py-3 text-right">{{ __('Sales') }}</th>
+                            <th class="px-6 py-3 text-right">{{ __('Revenue') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
                         @foreach($topProducts as $product)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors group">
                             <td class="px-6 py-3 flex items-center">
                                 <div class="w-8 h-8 rounded bg-gray-200 dark:bg-gray-600 mr-3"></div>
-                                <span class="font-medium text-gray-800 dark:text-gray-200">{{ $product['name'] }}</span>
+                                <span class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 transition-colors">{{ $product['name'] }}</span>
                             </td>
                             <td class="px-6 py-3 text-right text-gray-600 dark:text-gray-400">{{ $product['sales'] }}</td>
                             <td class="px-6 py-3 text-right font-medium text-gray-900 dark:text-gray-100">Rp. {{ number_format($product['revenue'], 0 , ',', '.' ) }}</td>
@@ -490,15 +490,15 @@ class extends Component
     </div>
 
     <!-- Recent Activities Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mt-8">
-        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
             <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ __('Recent System Activities') }}</h3>
             <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">{{ __('View All Logs') }}</button>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+                    <tr class="bg-gray-50/50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                         <th class="px-6 py-3 font-medium">{{ __('Activity') }}</th>
                         <th class="px-6 py-3 font-medium">{{ __('User') }}</th>
                         <th class="px-6 py-3 font-medium">{{ __('Time') }}</th>
@@ -508,7 +508,7 @@ class extends Component
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @foreach($recentActivities as $activity)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors group">
                         <td class="px-6 py-4">
                             <div class="flex items-center">
                                 <div class="h-8 w-8 rounded-full flex items-center justify-center mr-3

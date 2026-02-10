@@ -114,13 +114,14 @@ class extends Component
     }
 }; ?>
 
-<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-colors duration-300">
+<div class="p-6 space-y-6 transition-colors duration-300">
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- Header Section -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50">
+        <!-- Controls Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
                     {{ __('Tax Report') }}
                 </h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -149,7 +150,7 @@ class extends Component
         </div>
 
         <!-- Filters Section -->
-        <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700">
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
             <div class="flex flex-col md:flex-row gap-4 items-end">
                 <div class="w-full md:w-auto">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Start Date') }}</label>
@@ -170,7 +171,7 @@ class extends Component
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Total Sales Tax -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-indigo-500/50 transition-all duration-300">
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 group hover:border-indigo-500/50 transition-all duration-300">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Sales Tax') }}</p>
@@ -188,7 +189,7 @@ class extends Component
             </div>
 
             <!-- Taxable Sales -->
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 group hover:border-blue-500/50 transition-all duration-300">
+            <div class="p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 group hover:border-blue-500/50 transition-all duration-300">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Taxable Sales') }}</p>
@@ -225,7 +226,7 @@ class extends Component
         </div>
 
         <!-- Tax Details Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Tax Details') }}</h3>
             </div>

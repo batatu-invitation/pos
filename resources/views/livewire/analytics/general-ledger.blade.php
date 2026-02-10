@@ -127,68 +127,70 @@ new class extends Component {
     </div>
 
     @if($selectedAccount)
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {{ $selectedAccount->code }} - {{ $selectedAccount->name }}
-            </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                Type: {{ ucfirst($selectedAccount->type) }} 
-                @if($selectedAccount->subtype) | {{ $selectedAccount->subtype }} @endif
-            </p>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-900/50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reference</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Debit</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credit</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Balance</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr class="bg-gray-50 dark:bg-gray-800 font-medium">
-                        <td colspan="5" class="px-6 py-4 text-gray-900 dark:text-white text-right">Opening Balance</td>
-                        <td class="px-6 py-4 text-right text-gray-900 dark:text-white">Rp. {{ number_format($openingBalance, 0, ',', '.') }}</td>
-                    </tr>
-                    @forelse($ledgerItems as $item)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                {{ $item['date']->format('M d, Y') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                {{ $item['reference'] }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                {{Str::limit($item['description'], 50)}}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
-                                {{ $item['debit'] > 0 ? 'Rp. ' . number_format($item['debit'], 0, ',', '.') : '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
-                                {{ $item['credit'] > 0 ? 'Rp. ' . number_format($item['credit'], 0, ',', '.') : '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
-                                Rp. {{ number_format($item['balance'], 0, ',', '.') }}
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                    {{ $selectedAccount->code }} - {{ $selectedAccount->name }}
+                </h3>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                    {{ ucfirst($selectedAccount->type) }}
+                </span>
+            </div>
+            
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 dark:bg-gray-700/50">
+                            <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase">{{ __('Date') }}</th>
+                            <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase">{{ __('Reference') }}</th>
+                            <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase">{{ __('Description') }}</th>
+                            <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase text-right">{{ __('Debit') }}</th>
+                            <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase text-right">{{ __('Credit') }}</th>
+                            <th class="p-4 text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase text-right">{{ __('Balance') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tr class="bg-gray-50/30 dark:bg-gray-800/30 font-medium">
+                            <td class="p-4 text-sm text-gray-900 dark:text-white" colspan="5">{{ __('Opening Balance') }}</td>
+                            <td class="p-4 text-sm text-right text-gray-900 dark:text-white">
+                                Rp. {{ number_format($openingBalance, 0, ',', '.') }}
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                No transactions found for this period.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        @forelse($ledgerItems as $item)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
+                                <td class="p-4 text-sm text-gray-700 dark:text-gray-300">{{ $item['date']->format('d M Y') }}</td>
+                                <td class="p-4 text-sm font-medium text-gray-900 dark:text-white">{{ $item['reference'] }}</td>
+                                <td class="p-4 text-sm text-gray-700 dark:text-gray-300">{{ $item['description'] }}</td>
+                                <td class="p-4 text-sm text-gray-700 dark:text-gray-300 text-right">
+                                    {{ $item['debit'] > 0 ? number_format($item['debit'], 0, ',', '.') : '-' }}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700 dark:text-gray-300 text-right">
+                                    {{ $item['credit'] > 0 ? number_format($item['credit'], 0, ',', '.') : '-' }}
+                                </td>
+                                <td class="p-4 text-sm font-bold text-gray-900 dark:text-white text-right">
+                                    Rp. {{ number_format($item['balance'], 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-gray-500 dark:text-gray-400">
+                                    {{ __('No transactions found in this period.') }}
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
     @else
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400">
-        Please select an account to view the ledger.
-    </div>
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">{{ __('Select an Account') }}</h3>
+            <p class="text-gray-500 dark:text-gray-400">{{ __('Please select an account above to view its general ledger.') }}</p>
+        </div>
     @endif
 </div>

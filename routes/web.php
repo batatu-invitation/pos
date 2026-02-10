@@ -79,7 +79,7 @@ foreach (config('tenancy.central_domains') as $domain) {
             Volt::route('/analytics/overview', 'analytics.overview')->name('analytics.overview');
             
             // Financial Statements
-            Volt::route('/analytics/profit-loss', 'analytics.profit-and-loss')->name('analytics.profit-loss');
+            Volt::route('/analytics/profit-loss', 'analytics.profit-loss')->name('analytics.profit-loss');
             Volt::route('/analytics/balance-sheet', 'analytics.balance-sheet')->name('analytics.balance-sheet');
             Volt::route('/analytics/trial-balance', 'analytics.trial-balance')->name('analytics.trial-balance');
             
@@ -89,7 +89,7 @@ foreach (config('tenancy.central_domains') as $domain) {
             Volt::route('/analytics/accounts-payable', 'analytics.accounts-payable')->name('analytics.accounts-payable');
             
             // Bookkeeping
-            Volt::route('/analytics/chart-of-accounts', 'analytics.chart-of-accounts')->name('analytics.chart-of-accounts');
+            Volt::route('/analytics/chart-of-accounts', 'accounting.chart-of-accounts')->name('analytics.chart-of-accounts');
             Volt::route('/analytics/journal', 'analytics.journal')->name('analytics.journal');
             Volt::route('/analytics/general-ledger', 'analytics.general-ledger')->name('analytics.general-ledger');
             Volt::route('/analytics/memo', 'analytics.memo')->name('analytics.memo');

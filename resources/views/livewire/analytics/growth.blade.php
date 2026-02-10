@@ -434,28 +434,22 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
         });
     }
 }" x-init="init(); Livewire.hook('morph.updated', () => { initCharts(); });" 
-class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-colors duration-300">
+class="mx-auto p-6 space-y-8">
 
-    <div class="space-y-6">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50">
-            <div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-                    {{ __('Company Growth') }}
-                </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {{ __('Track key performance indicators and growth metrics') }}
-                </p>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
-                    {{ __('Last updated') }}: {{ now()->format('M d, Y') }}
-                </span>
-            </div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{{ __('Company Growth') }}</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">{{ __('Track key performance indicators and growth metrics.') }}</p>
         </div>
+        <div class="flex items-center gap-2">
+            <span class="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                {{ __('Last updated') }}: {{ now()->format('M d, Y') }}
+            </span>
+        </div>
+    </div>
 
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- YoY Growth -->
             <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 dark:shadow-none relative overflow-hidden group">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
@@ -534,7 +528,7 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
         <!-- Charts Row 1 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Revenue Trend -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('Revenue Growth Trend (5 Years)') }}</h3>
                 <div class="relative h-72 w-full">
                     <canvas id="growthChart"></canvas>
@@ -542,7 +536,7 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
             </div>
 
             <!-- Monthly Comparison -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Monthly Performance') }}</h3>
                     <div class="flex space-x-2">
@@ -563,7 +557,7 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
         <!-- Charts Row 2 & Categories -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Customer Acquisition -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 lg:col-span-2">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 lg:col-span-2">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('Customer Acquisition vs Churn') }}</h3>
                 <div class="relative h-80 w-full">
                     <canvas id="customerChart"></canvas>
@@ -571,11 +565,11 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
             </div>
 
             <!-- Top Growing Categories -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('Fastest Growing Categories') }}</h3>
                 <div class="space-y-4">
                     @foreach($topCategories as $category)
-                    <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-center p-3 bg-gray-50/50 dark:bg-gray-700/30 rounded-2xl hover:bg-gray-50/80 dark:hover:bg-gray-700 transition-colors">
                         <div class="p-3 rounded-xl bg-{{ $category['color'] ?? 'blue' }}-100 dark:bg-{{ $category['color'] ?? 'blue' }}-900/30 text-{{ $category['color'] ?? 'blue' }}-600 dark:text-{{ $category['color'] ?? 'blue' }}-400 mr-4">
                             <i class="fas fa-{{ $category['icon'] ?? 'box' }}"></i>
                         </div>
@@ -601,13 +595,13 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
         </div>
 
         <!-- Growth History Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Growth History') }}</h3>
             </div>
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left text-sm text-gray-600 dark:text-gray-300">
-                    <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 uppercase tracking-wider text-xs font-semibold">
+                    <thead class="bg-gray-50/50 dark:bg-gray-700/30 text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs font-semibold border-b border-gray-100 dark:border-gray-700">
                         <tr>
                             <th class="px-6 py-4">{{ __('Period') }}</th>
                             <th class="px-6 py-4">{{ __('Revenue') }}</th>
@@ -619,7 +613,7 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         @foreach($growthHistory as $history)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors group">
                             <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $history['period'] }}</td>
                             <td class="px-6 py-4">Rp. {{ number_format($history['revenue'], 0, ',', '.') }}</td>
                             <td class="px-6 py-4">
@@ -646,5 +640,6 @@ class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-
                 </table>
             </div>
         </div>
-    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
