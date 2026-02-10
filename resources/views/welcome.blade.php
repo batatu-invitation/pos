@@ -1,301 +1,288 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartPOS Elite - Standar Baru Manajemen Bisnis</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Modern POS - Empower Your Business</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@100;300;400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #050505;
-            --accent-blue: #2D5BFF;
-            --glass-white: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
         }
-
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            background-color: var(--bg-dark);
-            color: #ffffff;
-        }
-
-        .font-space { font-family: 'Space Grotesk', sans-serif; }
-
-        .glass-card {
-            background: var(--glass-white);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 32px;
-        }
-
-        .gradient-border {
-            position: relative;
-            border-radius: 32px;
-            background: linear-gradient(135deg, #2D5BFF, #9D50BB);
-            padding: 1px;
-        }
-
-        .gradient-inner {
-            background: var(--bg-dark);
-            border-radius: 31px;
-        }
-
-        .hero-text {
-            font-size: clamp(3rem, 10vw, 8rem);
-            line-height: 0.9;
-            letter-spacing: -0.04em;
-        }
-
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 300px);
-            gap: 24px;
-        }
-
-        .noise {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            opacity: 0.05;
-            z-index: 9999;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
-
-        .glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(45, 91, 255, 0.15) 0%, transparent 70%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        .animate-marquee {
-            animation: marquee 30s linear infinite;
-        }
-    </style>
+    </script>
 </head>
-<body class="overflow-x-hidden">
-    <div class="noise"></div>
-    <div class="glow top-[-10%] right-[-10%]"></div>
-    <div class="glow bottom-[10%] left-[-10%]"></div>
+<body class="font-sans antialiased text-gray-800 bg-white selection:bg-primary-500 selection:text-white">
 
-    <!-- Nav -->
-    <nav class="fixed w-full z-[100] px-6 py-6">
-        <div class="max-w-7xl mx-auto glass-card px-8 py-4 flex justify-between items-center border-white/5">
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 bg-blue-600 rounded-full"></div>
-                <span class="text-xl font-extrabold tracking-tighter uppercase font-space">Smart<span class="text-blue-500">POS</span></span>
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <div class="bg-gradient-to-br from-primary-600 to-purple-600 text-white p-2.5 rounded-xl shadow-lg shadow-primary-500/30">
+                        <i class="fas fa-cash-register text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                        Modern POS
+                    </span>
+                </div>
+
+                <!-- Auth Links -->
+                <div class="flex items-center gap-4">
+                    @if (Route::has('login'))
+                        @auth
+                            <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-primary-600 transition-colors">Dashboard</a>
+                        @else
+                            <a href="{{ route('login') }}" class="font-medium text-gray-600 hover:text-primary-600 transition-colors">Log in</a>
+                            
+                            @if (Route::has('register'))
+                                <a href="{{ route('register') }}" class="hidden sm:inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 bg-primary-600 border border-transparent rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 shadow-lg shadow-primary-600/30 hover:shadow-primary-600/40">
+                                    Get Started
+                                </a>
+                            @endif
+                        @endauth
+                    @endif
+                </div>
             </div>
-            <div class="hidden md:flex space-x-8 text-sm font-semibold uppercase tracking-widest text-white/60">
-                <a href="#" class="hover:text-white transition">Fitur</a>
-                <a href="#" class="hover:text-white transition">Ekosistem</a>
-                <a href="#" class="hover:text-white transition">Mitra</a>
-                <a href="#" class="hover:text-white transition">Harga</a>
-            </div>
-            <button class="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:bg-blue-600 hover:text-white transition">
-                HUBUNGI KAMI
-            </button>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative pt-60 pb-32 px-6">
-        <div class="max-w-[1400px] mx-auto">
-            <div class="mb-12">
-                <span class="inline-block border border-white/20 px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-6 text-white/40">
-                    Versi 4.0 Kini Tersedia
-                </span>
-                <h1 class="hero-text font-bold uppercase">
-                    Kendali Mutlak <br>
-                    <span class="text-blue-600">Bisnis Anda.</span>
+    <div class="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-primary-100 blur-3xl opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 rounded-full bg-purple-100 blur-3xl opacity-50"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="inline-flex items-center px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-sm font-medium mb-6 border border-primary-100">
+                    <span class="flex h-2 w-2 rounded-full bg-primary-600 mr-2 animate-pulse"></span>
+                    v2.0 is now live
+                </div>
+                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-8 leading-tight">
+                    Manage your business with <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-purple-600">Precision & Style</span>
                 </h1>
+                <p class="text-xl text-gray-500 mb-10 leading-relaxed">
+                    The ultimate Point of Sale solution for modern retail and hospitality. Track inventory, manage sales, and analyze growth—all in one beautiful interface.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-primary-600 border border-transparent rounded-2xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 shadow-xl shadow-primary-600/30 hover:scale-105">
+                        <i class="fas fa-rocket mr-2"></i> Start Free Trial
+                    </a>
+                    <a href="#features" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-gray-700 transition-all duration-200 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 shadow-sm hover:shadow-md">
+                        <i class="fas fa-play-circle mr-2 text-primary-600"></i> Watch Demo
+                    </a>
+                </div>
             </div>
             
-            <div class="flex flex-col md:flex-row justify-between items-end gap-12">
-                <p class="max-w-xl text-xl text-white/50 leading-relaxed font-light">
-                    Sistem manajemen point-of-sales paling presisi untuk pengusaha yang tidak ingin berkompromi dengan detail. Dirancang untuk kecepatan, keamanan, dan skalabilitas tanpa batas.
-                </p>
-                <div class="flex space-x-4">
-                    <button class="bg-blue-600 text-white w-20 h-20 rounded-full flex items-center justify-center hover:scale-110 transition shadow-2xl shadow-blue-600/20">
-                        <i class="fas fa-arrow-right text-xl"></i>
-                    </button>
-                    <div class="text-left">
-                        <p class="text-sm font-bold uppercase tracking-widest mb-1">Coba Demo</p>
-                        <p class="text-xs text-white/40">Tanpa Kartu Kredit</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Visual Showcase (Bento Grid) -->
-    <section class="py-20 px-6">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[700px]">
-                <!-- Item 1: Large Dashboard -->
-                <div class="md:col-span-2 md:row-span-2 glass-card p-10 flex flex-col justify-between overflow-hidden relative group">
-                    <div class="relative z-10">
-                        <h3 class="text-3xl font-bold mb-4 font-space">Analisis <br>Penjualan Real-Time</h3>
-                        <p class="text-white/40 max-w-xs leading-relaxed">Pantau setiap rupiah yang masuk dengan presisi milidetik. Laporan otomatis langsung ke email Anda.</p>
-                    </div>
-                    <div class="mt-8 bg-white/5 rounded-2xl h-64 w-full border border-white/10 p-6 flex items-end gap-3 group-hover:bg-white/10 transition">
-                        <div class="bg-blue-600 w-full h-1/2 rounded-t-lg"></div>
-                        <div class="bg-blue-400 w-full h-3/4 rounded-t-lg"></div>
-                        <div class="bg-blue-700 w-full h-full rounded-t-lg"></div>
-                        <div class="bg-blue-500 w-full h-2/3 rounded-t-lg"></div>
-                        <div class="bg-blue-600 w-full h-4/5 rounded-t-lg"></div>
-                    </div>
-                </div>
-
-                <!-- Item 2: Inventory -->
-                <div class="md:col-span-2 glass-card p-10 flex justify-between items-center group">
-                    <div>
-                        <h3 class="text-2xl font-bold mb-2 font-space">Manajemen Stok</h3>
-                        <p class="text-white/40 text-sm">Otomasi rantai pasok Anda tanpa ribet.</p>
-                    </div>
-                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition">
-                        <i class="fas fa-boxes-stacked"></i>
-                    </div>
-                </div>
-
-                <!-- Item 3: Security -->
-                <div class="glass-card p-10 flex flex-col justify-center items-center text-center group">
-                    <i class="fas fa-shield-halved text-4xl text-blue-500 mb-6 group-hover:scale-125 transition"></i>
-                    <h4 class="font-bold font-space uppercase">Enkripsi <br>End-to-End</h4>
-                </div>
-
-                <!-- Item 4: Multi Branch -->
-                <div class="glass-card p-10 flex flex-col justify-center items-center text-center group">
-                    <i class="fas fa-network-wired text-4xl text-blue-500 mb-6 group-hover:scale-125 transition"></i>
-                    <h4 class="font-bold font-space uppercase">Multi <br>Cabang</h4>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Marquee Text -->
-    <div class="py-20 bg-blue-600 overflow-hidden whitespace-nowrap border-y border-white/20">
-        <div class="animate-marquee inline-block text-8xl font-black uppercase tracking-tighter">
-            SOLUSI RETAIL &bull; SOLUSI F&B &bull; SOLUSI JASA &bull; MANAJEMEN INVENTARIS &bull; LAPORAN PAJAK &bull; SOLUSI RETAIL &bull; SOLUSI F&B &bull; 
-        </div>
-    </div>
-
-    <!-- Deep Tech Features -->
-    <section class="py-32 px-6">
-        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-32 items-center">
-            <div>
-                <h2 class="text-5xl font-extrabold font-space uppercase leading-tight mb-12">
-                    Dibuat untuk <br><span class="text-white/30">Kebutuhan yang</span> <br>Sangat Kompleks.
-                </h2>
-                <div class="space-y-12">
-                    <div class="border-l-4 border-blue-600 pl-8">
-                        <h4 class="text-xl font-bold mb-4 uppercase">Sinkronisasi Offline</h4>
-                        <p class="text-white/50 leading-relaxed">Internet mati? Tidak masalah. Sistem tetap mencatat transaksi dan akan menyinkronkan data secara otomatis saat koneksi kembali normal.</p>
-                    </div>
-                    <div class="border-l-4 border-white/10 pl-8 hover:border-blue-600 transition">
-                        <h4 class="text-xl font-bold mb-4 uppercase">Integrasi Hardware</h4>
-                        <p class="text-white/50 leading-relaxed">Kompatibel dengan printer thermal, barcode scanner, laci kasir, dan timbangan digital manapun.</p>
-                    </div>
-                    <div class="border-l-4 border-white/10 pl-8 hover:border-blue-600 transition">
-                        <h4 class="text-xl font-bold mb-4 uppercase">Loyalty Program</h4>
-                        <p class="text-white/50 leading-relaxed">Kelola poin member, diskon khusus, dan promo berkala untuk menjaga retensi pelanggan Anda.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="relative">
-                <div class="gradient-border">
-                    <div class="gradient-inner p-4">
-                        <div class="rounded-3xl overflow-hidden bg-zinc-900 border border-white/5 p-12">
-                            <div class="flex items-center space-x-2 mb-10">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <!-- Hero Image / Dashboard Preview -->
+            <div class="mt-16 relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent z-10 h-20 bottom-0"></div>
+                <div class="rounded-3xl bg-gray-900 p-2 shadow-2xl ring-1 ring-gray-900/10">
+                    <div class="rounded-2xl overflow-hidden bg-gray-800 aspect-[16/9] relative group">
+                        <!-- Placeholder for dashboard image, using a gradient for now -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-chart-pie text-6xl text-gray-700 mb-4 group-hover:text-primary-500 transition-colors duration-500"></i>
+                                <p class="text-gray-500 font-medium">Dashboard Preview</p>
                             </div>
-                            <div class="space-y-6">
-                                <div class="h-4 bg-white/5 rounded w-3/4"></div>
-                                <div class="h-4 bg-white/5 rounded w-full"></div>
-                                <div class="h-4 bg-white/5 rounded w-5/6"></div>
-                                <div class="h-20 bg-blue-600/20 border border-blue-600/30 rounded w-full flex items-center justify-center text-blue-400 font-mono text-xs">
-                                    [ SISTEM STATUS: OPTIMAL ]
-                                </div>
-                                <div class="h-4 bg-white/5 rounded w-2/3"></div>
-                            </div>
+                        </div>
+                        <!-- UI Elements Mockup -->
+                        <div class="absolute top-0 left-0 right-0 h-12 bg-gray-800 border-b border-gray-700 flex items-center px-4 gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Pricing (No-Nonsense) -->
-    <section class="py-32 px-6">
-        <div class="max-w-4xl mx-auto">
-            <div class="glass-card p-16 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-12 opacity-10 text-9xl">
-                    <i class="fas fa-tag"></i>
+    <!-- Features Section -->
+    <div id="features" class="py-24 bg-gray-50 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-base font-bold text-primary-600 uppercase tracking-wide">Powerful Features</h2>
+                <p class="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">Everything you need to run your store</p>
+                <p class="mt-4 text-lg text-gray-500">Streamline operations and boost productivity with our comprehensive suite of tools.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
+                        <i class="fas fa-desktop text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Visual POS</h3>
+                    <p class="text-gray-500 leading-relaxed">
+                        Intuitive point-of-sale interface designed for speed. Process transactions, handle returns, and manage customers effortlessly.
+                    </p>
                 </div>
-                <div class="relative z-10 text-center">
-                    <h2 class="text-4xl font-bold mb-8 uppercase font-space tracking-tight">Investasi Tanpa Embun</h2>
-                    <div class="text-8xl font-black mb-6 tracking-tighter">Rp 2jt<span class="text-2xl text-white/30 tracking-normal font-normal">/tahun</span></div>
-                    <p class="text-white/50 mb-12 max-w-sm mx-auto">Satu harga untuk semua fitur. Tanpa biaya tambahan, tanpa batas outlet, tanpa batas transaksi.</p>
-                    <button class="bg-blue-600 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-blue-700 transition shadow-2xl shadow-blue-600/30 active:scale-95">
-                        AKTIFKAN SEKARANG
-                    </button>
-                    <p class="mt-8 text-xs text-white/20 uppercase font-bold tracking-[0.3em]">Jaminan Uang Kembali 30 Hari</p>
+
+                <!-- Feature 2 -->
+                <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 mb-6">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Real-time Analytics</h3>
+                    <p class="text-gray-500 leading-relaxed">
+                        Gain insights with dynamic dashboards. Track sales growth, top products, and financial health in real-time.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-6">
+                        <i class="fas fa-boxes text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Smart Inventory</h3>
+                    <p class="text-gray-500 leading-relaxed">
+                        Keep track of stock levels, manage categories, and get low-stock alerts. Never run out of your best-sellers.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-6">
+                        <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Financial Reports</h3>
+                    <p class="text-gray-500 leading-relaxed">
+                        Generate professional Profit & Loss, Balance Sheet, and Cash Flow statements. Export to PDF or Excel.
+                    </p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6">
+                        <i class="fas fa-building text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Multi-Branch</h3>
+                    <p class="text-gray-500 leading-relaxed">
+                        Scale your business with ease. Manage multiple branches, warehouses, and staff from a single account.
+                    </p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center text-pink-600 mb-6">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Team Management</h3>
+                    <p class="text-gray-500 leading-relaxed">
+                        Control access with role-based permissions (Admin, Manager, Cashier). Track employee performance.
+                    </p>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Footer Elite -->
-    <footer class="py-20 px-6 border-t border-white/10">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12">
-            <div>
-                <div class="flex items-center space-x-2 mb-6">
-                    <div class="w-6 h-6 bg-blue-600 rounded-full"></div>
-                    <span class="text-xl font-extrabold tracking-tighter uppercase font-space">SmartPOS</span>
-                </div>
-                <p class="text-white/30 text-sm max-w-xs leading-relaxed">Mendefinisikan ulang cara pengusaha mengelola aset dan pendapatan mereka sejak 2018.</p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-16">
-                <div>
-                    <h5 class="text-xs font-bold uppercase tracking-widest text-white/20 mb-6">Produk</h5>
-                    <ul class="space-y-3 text-sm font-semibold">
-                        <li><a href="#" class="hover:text-blue-500">Fitur</a></li>
-                        <li><a href="#" class="hover:text-blue-500">Integrasi</a></li>
-                        <li><a href="#" class="hover:text-blue-500">Keamanan</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="text-xs font-bold uppercase tracking-widest text-white/20 mb-6">Legal</h5>
-                    <ul class="space-y-3 text-sm font-semibold">
-                        <li><a href="#" class="hover:text-blue-600">Privasi</a></li>
-                        <li><a href="#" class="hover:text-blue-600">Ketentuan</a></li>
-                        <li><a href="#" class="hover:text-blue-600">SLA</a></li>
-                    </ul>
-                </div>
-                <div class="col-span-2 md:col-span-1">
-                    <h5 class="text-xs font-bold uppercase tracking-widest text-white/20 mb-6">Regional</h5>
-                    <p class="text-sm font-bold">Jakarta, Indonesia</p>
-                    <p class="text-sm text-white/40">Gedung Pusat Bisnis, Lt. 24</p>
-                </div>
+    <!-- CTA Section -->
+    <div class="relative py-24 bg-gray-900 overflow-hidden">
+        <div class="absolute inset-0">
+            <div class="absolute inset-0 bg-gradient-to-r from-primary-900 to-purple-900 opacity-90"></div>
+            <!-- Pattern -->
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
+        </div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-extrabold text-white sm:text-4xl mb-6">
+                Ready to transform your business?
+            </h2>
+            <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+                Join thousands of businesses that trust Modern POS for their daily operations. Start your journey today.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-primary-900 transition-all duration-200 bg-white border border-transparent rounded-2xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white shadow-lg">
+                    Create Account
+                </a>
+                <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-transparent border border-gray-600 rounded-2xl hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600">
+                    Login Now
+                </a>
             </div>
         </div>
-        <div class="max-w-7xl mx-auto mt-20 pt-10 border-t border-white/5 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-white/20">
-            <p>&copy; 2024 SMARTPOS ELITE. ALL RIGHTS RESERVED.</p>
-            <div class="flex space-x-6">
-                <a href="#">Instagram</a>
-                <a href="#">Twitter</a>
-                <a href="#">LinkedIn</a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-100 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="bg-primary-600 text-white p-1.5 rounded-lg">
+                            <i class="fas fa-cash-register"></i>
+                        </div>
+                        <span class="text-lg font-bold text-gray-900">Modern POS</span>
+                    </div>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Empowering businesses with modern tools for a digital age. Simple, powerful, and reliable.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-4">Product</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Integrations</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Updates</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-4">Support</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">API Status</a></li>
+                        <li><a href="#" class="hover:text-primary-600 transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-gray-400">
+                    &copy; {{ date('Y') }} Modern POS. All rights reserved.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-400 hover:text-primary-600 transition-colors"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary-600 transition-colors"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary-600 transition-colors"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-primary-600 transition-colors"><i class="fab fa-linkedin"></i></a>
+                </div>
             </div>
         </div>
     </footer>

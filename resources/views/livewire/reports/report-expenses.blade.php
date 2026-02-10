@@ -32,6 +32,14 @@ class extends Component
             ->get();
     }
 
+    public function getExpensesByCategoryProperty()
+    {
+        return $this->expenses->groupBy('category')
+            ->map(function ($group) {
+                return $group->sum('amount');
+            })->sortDesc();
+    }
+
     public function exportExcel()
     {
         return Excel::download(new ExpensesExport($this->startDate, $this->endDate), 'expenses.xlsx');
@@ -79,7 +87,7 @@ class extends Component
         <!-- Main Content Area -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
              <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-                <h2 class="text-2xl font-bold text-gray-800">Expenses Report</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Expenses Overview</h2>
                 
                 <div class="flex items-center gap-2">
                     <input wire:model.live="startDate" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
@@ -105,38 +113,72 @@ class extends Component
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-gray-600">
-                        <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
-                            <tr>
-                                <th class="px-6 py-4">Date</th>
-                                <th class="px-6 py-4">Description</th>
-                                <th class="px-6 py-4">Category</th>
-                                <th class="px-6 py-4">Amount</th>
-                                <th class="px-6 py-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @forelse($this->expenses as $expense)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4">{{ $expense->date->format('d/m/Y') }}</td>
-                                <td class="px-6 py-4 font-medium text-gray-800">{{ $expense->description }}</td>
-                                <td class="px-6 py-4">{{ $expense->category }}</td>
-                                <td class="px-6 py-4 font-bold text-gray-800">Rp. {{ number_format($expense->amount, 0, ',', '.') }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $expense->status === 'paid' || $expense->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                        {{ ucfirst($expense->status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">No expenses found for the selected period.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Summary Card -->
+                <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Total Expenses</h3>
+                    <h2 class="text-3xl font-bold text-red-600 mb-1">Rp. {{ number_format($this->expenses->sum('amount'), 0, ',', '.') }}</h2>
+                    <p class="text-sm text-gray-500">{{ $this->expenses->count() }} transactions</p>
+
+                    <div class="mt-6">
+                         <h4 class="text-sm font-semibold text-gray-700 mb-3">Top Categories</h4>
+                         <div class="space-y-3">
+                            @foreach($this->expensesByCategory->take(5) as $category => $amount)
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">{{ $category ?: 'Uncategorized' }}</span>
+                                    <span class="font-medium">Rp. {{ number_format($amount, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                    @php 
+                                        $total = $this->expenses->sum('amount');
+                                        $percent = $total > 0 ? ($amount / $total) * 100 : 0; 
+                                    @endphp
+                                    <div class="bg-red-500 h-1.5 rounded-full" style="width: {{ $percent }}%"></div>
+                                </div>
+                            </div>
+                            @endforeach
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Expenses Table -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800">Expense Transactions</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-600">
+                            <thead class="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
+                                <tr>
+                                    <th class="px-6 py-4">Date</th>
+                                    <th class="px-6 py-4">Description</th>
+                                    <th class="px-6 py-4">Category</th>
+                                    <th class="px-6 py-4">Amount</th>
+                                    <th class="px-6 py-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @forelse($this->expenses as $expense)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">{{ $expense->date->format('d/m/Y') }}</td>
+                                    <td class="px-6 py-4 font-medium text-gray-800">{{ $expense->description }}</td>
+                                    <td class="px-6 py-4">{{ $expense->category }}</td>
+                                    <td class="px-6 py-4 font-bold text-gray-800">Rp. {{ number_format($expense->amount, 0, ',', '.') }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $expense->status === 'paid' || $expense->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                            {{ ucfirst($expense->status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">No expenses found for the selected period.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>

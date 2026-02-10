@@ -414,7 +414,7 @@
                                 <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=4f46e5&color=fff" alt="">
                             </div>
                             <div class="ml-3">
-                                <div class="text-base font-medium leading-none text-white">{{ auth()->user()->name ?? 'Guest' }}</div>
+                                <div class="text-base font-medium leading-none text-white">{{ auth()->user()->name ?? __('Guest') }}</div>
                                 <div class="text-sm font-medium leading-none text-gray-400">{{ auth()->user()->email ?? '' }}</div>
                             </div>
                             <form method="POST" action="{{ route('logout') }}" class="ml-auto">
@@ -507,13 +507,13 @@
                 const { title, text, icon, confirmButtonText, method, params, componentId } = detail;
 
                 Swal.fire({
-                    title: title || 'Are you sure?',
-                    text: text || "You won't be able to revert this!",
+                    title: title || @json(__('Are you sure?')),
+                    text: text || @json(__("You won't be able to revert this!")),
                     icon: icon || 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#4f46e5',
                     cancelButtonColor: '#ef4444',
-                    confirmButtonText: confirmButtonText || 'Yes, delete it!'
+                    confirmButtonText: confirmButtonText || @json(__('Yes, delete it!'))
                 }).then((result) => {
                     if (result.isConfirmed) {
                         Livewire.find(componentId).call(method, ...params);

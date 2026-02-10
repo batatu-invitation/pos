@@ -5,6 +5,10 @@ use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
 use App\Models\Sale;
 use App\Models\Transaction;
+use App\Models\Product;
+use App\Models\Customer;
+use App\Models\SaleItem;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class extends Component {
@@ -12,6 +16,24 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
     public $balance = 0;
     public $userBalance = 0;
     public $isManager = false;
+
+    // Stats
+    public $totalSalesAmount = 0;
+    public $salesGrowth = 0;
+    public $totalOrdersCount = 0;
+    public $ordersGrowth = 0;
+    public $totalProductsCount = 0;
+    public $productsGrowth = 0;
+    public $totalCustomersCount = 0;
+    public $customersGrowth = 0;
+
+    // Chart Data
+    public $chartLabels = [];
+    public $chartData = [];
+
+    // Lists
+    public $topProducts = [];
+    public $recentTransactions = [];
 
     public function mount()
     {
@@ -23,10 +45,8 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
         $user = auth()->user();
         if ($user) {
             $this->isManager = $user->hasRole('Manager');
-            // dd($this->isManager);
             if ($this->isManager) {
                 $this->userBalance = $user->balance;
-                // dd($this->userBalance);
             }
 
             $createdAt = Carbon::parse($user->created_at);
@@ -42,23 +62,105 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
         $cashInTrans = Transaction::where('type', 'income')->where('status', 'completed')->sum('amount');
         $cashOutTrans = Transaction::where('type', 'expense')->where('status', 'completed')->sum('amount');
         $this->balance = ($cashInSales + $cashInTrans) - $cashOutTrans;
-    }
-    public $topProducts = [['name' => 'Double Burger', 'sales' => 120, 'revenue' => 1200, 'icon' => '🍔'], ['name' => 'French Fries', 'sales' => 85, 'revenue' => 425, 'icon' => '🍟'], ['name' => 'Cola Zero', 'sales' => 70, 'revenue' => 210, 'icon' => '🥤']];
 
-    public $recentTransactions = [
-        ['id' => '#ORD-001', 'customer' => 'John Doe', 'date' => 'Today, 10:45 AM', 'items' => '3 Items', 'total' => 45.0, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-002', 'customer' => 'Sarah Smith', 'date' => 'Today, 10:30 AM', 'items' => '1 Item', 'total' => 12.5, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-003', 'customer' => 'Michael Brown', 'date' => 'Today, 10:15 AM', 'items' => '5 Items', 'total' => 85.0, 'status' => 'Pending', 'status_color' => 'yellow'],
-        ['id' => '#ORD-004', 'customer' => 'Emily Davis', 'date' => 'Today, 10:00 AM', 'items' => '2 Items', 'total' => 24.0, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-005', 'customer' => 'David Wilson', 'date' => 'Today, 09:45 AM', 'items' => '4 Items', 'total' => 55.5, 'status' => 'Refunded', 'status_color' => 'red'],
-        ['id' => '#ORD-006', 'customer' => 'Jessica Garcia', 'date' => 'Today, 09:30 AM', 'items' => '1 Item', 'total' => 8.0, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-007', 'customer' => 'Daniel Martinez', 'date' => 'Today, 09:15 AM', 'items' => '3 Items', 'total' => 32.0, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-008', 'customer' => 'Laura Robinson', 'date' => 'Today, 09:00 AM', 'items' => '2 Items', 'total' => 18.5, 'status' => 'Pending', 'status_color' => 'yellow'],
-        ['id' => '#ORD-009', 'customer' => 'Kevin Clark', 'date' => 'Today, 08:45 AM', 'items' => '6 Items', 'total' => 95.0, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-010', 'customer' => 'Amanda Lewis', 'date' => 'Today, 08:30 AM', 'items' => '1 Item', 'total' => 5.0, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-011', 'customer' => 'Robert Walker', 'date' => 'Today, 08:15 AM', 'items' => '2 Items', 'total' => 22.0, 'status' => 'Completed', 'status_color' => 'green'],
-        ['id' => '#ORD-012', 'customer' => 'Jennifer Hall', 'date' => 'Today, 08:00 AM', 'items' => '3 Items', 'total' => 38.0, 'status' => 'Completed', 'status_color' => 'green'],
-    ];
+        // --- Statistics (This Month vs Last Month) ---
+        $now = Carbon::now();
+        $startOfMonth = $now->copy()->startOfMonth();
+        $endOfMonth = $now->copy()->endOfMonth();
+        $startOfLastMonth = $now->copy()->subMonth()->startOfMonth();
+        $endOfLastMonth = $now->copy()->subMonth()->endOfMonth();
+
+        // 1. Sales (This Month)
+        $this->totalSalesAmount = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('total_amount');
+        
+        $lastMonthSales = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
+            ->sum('total_amount');
+
+        $this->salesGrowth = $lastMonthSales > 0 ? (($this->totalSalesAmount - $lastMonthSales) / $lastMonthSales) * 100 : ($this->totalSalesAmount > 0 ? 100 : 0);
+
+        // 2. Orders (This Month)
+        $this->totalOrdersCount = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->count();
+        
+        $lastMonthOrders = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
+            ->count();
+
+        $this->ordersGrowth = $lastMonthOrders > 0 ? (($this->totalOrdersCount - $lastMonthOrders) / $lastMonthOrders) * 100 : ($this->totalOrdersCount > 0 ? 100 : 0);
+
+        // 3. Products (Total Active)
+        $this->totalProductsCount = Product::count();
+        $newProductsThisMonth = Product::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
+        $totalLastMonthProducts = $this->totalProductsCount - $newProductsThisMonth;
+        $this->productsGrowth = $totalLastMonthProducts > 0 ? (($this->totalProductsCount - $totalLastMonthProducts) / $totalLastMonthProducts) * 100 : 0;
+
+        // 4. Customers (Total)
+        $this->totalCustomersCount = Customer::count();
+        $newCustomersThisMonth = Customer::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
+        $totalLastMonthCustomers = $this->totalCustomersCount - $newCustomersThisMonth;
+        $this->customersGrowth = $totalLastMonthCustomers > 0 ? (($this->totalCustomersCount - $totalLastMonthCustomers) / $totalLastMonthCustomers) * 100 : 0;
+
+        // --- Chart Data (Last 7 Days Sales) ---
+        $this->chartLabels = [];
+        $this->chartData = [];
+        
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $this->chartLabels[] = $date->format('D');
+            
+            $daySales = Sale::where('status', 'completed')
+                ->whereDate('created_at', $date->format('Y-m-d'))
+                ->sum('total_amount');
+            
+            $this->chartData[] = $daySales;
+        }
+
+        // --- Top 3 Products ---
+        $topProductsData = SaleItem::select('product_id', 'product_name', DB::raw('SUM(quantity) as total_quantity'), DB::raw('SUM(total_price) as total_revenue'))
+            ->groupBy('product_id', 'product_name')
+            ->orderByDesc('total_quantity')
+            ->take(3)
+            ->get();
+
+        $this->topProducts = $topProductsData->map(function($item) {
+            return [
+                'name' => $item->product_name,
+                'sales' => (int)$item->total_quantity,
+                'revenue' => (float)$item->total_revenue,
+                'icon' => '📦'
+            ];
+        })->toArray();
+
+        // --- Recent Transactions ---
+        $recentSales = Sale::with('customer')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        $this->recentTransactions = $recentSales->map(function($sale) {
+            $statusColor = match($sale->status) {
+                'completed' => 'green',
+                'pending' => 'yellow',
+                'refunded' => 'red',
+                default => 'gray'
+            };
+            
+            return [
+                'id' => $sale->invoice_number,
+                'customer' => $sale->customer ? $sale->customer->name : 'Walk-in Customer',
+                'date' => $sale->created_at->diffForHumans(),
+                'items' => $sale->items()->count() . ' Items',
+                'total' => $sale->total_amount,
+                'status' => ucfirst($sale->status),
+                'status_color' => $statusColor
+            ];
+        })->toArray();
+    // End of mount
+    }
 };
 ?>
 
@@ -157,15 +259,15 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Sales') }}</p>
-                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Rp. 12.426.000</h3>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Rp. {{ number_format($totalSalesAmount, 0, ',', '.') }}</h3>
                 </div>
                 <div class="p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl text-indigo-600 shadow-lg shadow-indigo-200/30 dark:from-indigo-900/30 dark:to-indigo-800/30 dark:text-indigo-400">
                     <i class="fas fa-dollar-sign text-xl"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-green-500 flex items-center font-medium">
-                    <i class="fas fa-arrow-up mr-1"></i> 12%
+                <span class="{{ $salesGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} flex items-center font-medium">
+                    <i class="fas fa-arrow-{{ $salesGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($salesGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
@@ -177,15 +279,15 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Orders') }}</p>
-                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">1,240</h3>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ number_format($totalOrdersCount, 0, ',', '.') }}</h3>
                 </div>
                 <div class="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl text-blue-600 shadow-lg shadow-blue-200/30 dark:from-blue-900/30 dark:to-blue-800/30 dark:text-blue-400">
                     <i class="fas fa-shopping-bag text-xl"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-green-500 flex items-center font-medium">
-                    <i class="fas fa-arrow-up mr-1"></i> 8%
+                <span class="{{ $ordersGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} flex items-center font-medium">
+                    <i class="fas fa-arrow-{{ $ordersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($ordersGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
@@ -197,15 +299,15 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Products') }}</p>
-                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">845</h3>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ number_format($totalProductsCount, 0, ',', '.') }}</h3>
                 </div>
                 <div class="p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl text-orange-600 shadow-lg shadow-orange-200/30 dark:from-orange-900/30 dark:to-orange-800/30 dark:text-orange-400">
                     <i class="fas fa-box text-xl"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-red-500 flex items-center font-medium">
-                    <i class="fas fa-arrow-down mr-1"></i> 2%
+                <span class="{{ $productsGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} flex items-center font-medium">
+                    <i class="fas fa-arrow-{{ $productsGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($productsGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
@@ -217,15 +319,15 @@ new #[Layout('components.layouts.app')] #[Title('Dashboard - Modern POS')] class
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Total Customers') }}</p>
-                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">3,200</h3>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ number_format($totalCustomersCount, 0, ',', '.') }}</h3>
                 </div>
                 <div class="p-3 bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl text-teal-600 shadow-lg shadow-teal-200/30 dark:from-teal-900/30 dark:to-teal-800/30 dark:text-teal-400">
                     <i class="fas fa-users text-xl"></i>
                 </div>
             </div>
             <div class="flex items-center text-sm">
-                <span class="text-green-500 flex items-center font-medium">
-                    <i class="fas fa-arrow-up mr-1"></i> 14%
+                <span class="{{ $customersGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} flex items-center font-medium">
+                    <i class="fas fa-arrow-{{ $customersGrowth >= 0 ? 'up' : 'down' }} mr-1"></i> {{ number_format(abs($customersGrowth), 1) }}%
                 </span>
                 <span class="text-gray-400 ml-2 dark:text-gray-500">{{ __('vs last month') }}</span>
             </div>
