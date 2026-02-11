@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Emoji extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\UserScoped;
 
     protected $table = 'emojis';
 
@@ -18,5 +18,6 @@ class Emoji extends Model
         'name',
         'tenant_id',
         'user_id',
+        'input_id',
     ];
 }

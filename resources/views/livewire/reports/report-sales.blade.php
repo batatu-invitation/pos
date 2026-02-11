@@ -46,7 +46,7 @@ class extends Component
         }
 
         if ($this->userFilter) {
-            $query->where('user_id', $this->userFilter);
+            $query->where('input_id', $this->userFilter);
         }
 
         $sales = $query->latest()->get(); // Get all for calculations

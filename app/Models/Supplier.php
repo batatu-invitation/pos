@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Supplier extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, \App\Traits\UserScoped;
 
     protected $fillable = [
         'name',
@@ -18,5 +18,7 @@ class Supplier extends Model
         'phone',
         'address',
         'status',
+        'user_id',
+        'input_id',
     ];
 }

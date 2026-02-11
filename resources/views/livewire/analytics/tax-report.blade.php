@@ -30,6 +30,9 @@ class extends Component
 
     public function loadData()
     {
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end = Carbon::parse($this->endDate)->endOfDay();
 

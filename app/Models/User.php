@@ -34,6 +34,7 @@ class User extends Authenticatable
         'password',
         'created_by',
         'balance',
+        'input_id',
     ];
 
     /**

@@ -63,8 +63,6 @@ new #[Layout('components.layouts.app', ['header' => 'Emojis'])] #[Title('Emojis 
         $data = [
             'name' => $this->name,
             'icon' => $this->icon,
-            'tenant_id' => auth()->id(),
-            'user_id' => auth()->user()->id,
         ];
 
         if ($this->editingEmojiId) {

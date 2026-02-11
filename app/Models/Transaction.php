@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Transaction extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, \App\Traits\UserScoped;
 
     protected $fillable = [
         'type',
@@ -23,6 +23,7 @@ class Transaction extends Model
         'source_type',
         'source_id',
         'user_id',
+        'input_id',
         'customer_id',
         'tenant_id',
     ];

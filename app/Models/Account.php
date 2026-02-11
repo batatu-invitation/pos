@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Account extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\UserScoped;
 
     protected $fillable = [
         'code',
@@ -17,6 +17,7 @@ class Account extends Model
         'subtype',
         'description',
         'user_id',
+        'input_id',
         'is_active',
     ];
 

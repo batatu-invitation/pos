@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasUuids, SoftDeletes, LogsActivityGeneric, HasFactory;
+    use HasUuids, SoftDeletes, LogsActivityGeneric, HasFactory, \App\Traits\UserScoped;
 
     protected $fillable = [
         'name',

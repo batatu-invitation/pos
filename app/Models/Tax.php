@@ -11,7 +11,7 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Tax extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, LogsActivityGeneric, BelongsToTenant;
+    use HasFactory, HasUuids, SoftDeletes, LogsActivityGeneric, BelongsToTenant, \App\Traits\UserScoped;
 
     protected $fillable = [
         'tenant_id',
@@ -19,6 +19,7 @@ class Tax extends Model
         'rate',
         'is_active',
         'user_id',
+        'input_id',
     ];
 
     protected $casts = [

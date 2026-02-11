@@ -28,7 +28,7 @@ class CheckSetupCompletion
         // Sekarang kita HANYA mengecek Manager. Super Admin akan otomatis lewat (skip).
         if ($user && ($user->hasRole('Manager') || in_array($user->role, ['Manager', 'manager']))) {
 
-            $hasSettings = ApplicationSetting::where('user_id', $user->id)->exists();
+            $hasSettings = ApplicationSetting::exists();
 
             if (!$hasSettings) {
                 return redirect()->route('setup');
@@ -42,7 +42,7 @@ class CheckSetupCompletion
         if ($user && !$user->hasAnyRole($excludedRoles)) {
 
             // Cek apakah setting sudah ada
-            $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+            $hasSettings = ApplicationSetting::exists();
 
             if (!$hasSettings) {
                 return redirect()->route('restrictedaccess');

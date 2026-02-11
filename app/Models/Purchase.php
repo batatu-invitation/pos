@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Purchase extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, \App\Traits\UserScoped;
 
     protected $fillable = [
         'supplier_id',
@@ -21,6 +21,7 @@ class Purchase extends Model
         'status',
         'notes',
         'user_id',
+        'input_id',
     ];
 
     protected $casts = [

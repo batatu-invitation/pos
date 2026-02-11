@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class BalanceHistory extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\UserScoped;
 
     protected $fillable = [
         'user_id',
+        'input_id',
         'amount',
         'type',
         'description',

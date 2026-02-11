@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Color extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, LogsActivityGeneric;
+    use HasFactory, HasUuids, SoftDeletes, LogsActivityGeneric, \App\Traits\UserScoped;
 
     protected $fillable = [
         'name',
         'class',
         'tenant_id',
         'user_id',
+        'input_id',
     ];
 }

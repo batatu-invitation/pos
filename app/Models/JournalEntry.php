@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class JournalEntry extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\UserScoped;
 
     protected $fillable = [
         'date',
@@ -17,6 +17,7 @@ class JournalEntry extends Model
         'type',
         'status',
         'user_id',
+        'input_id',
     ];
 
     protected $casts = [

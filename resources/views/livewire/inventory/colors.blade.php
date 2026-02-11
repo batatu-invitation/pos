@@ -59,8 +59,6 @@ new #[Layout('components.layouts.app', ['header' => 'Colors'])] #[Title('Colors 
         $data = [
             'name' => $this->name,
             'class' => $this->class,
-            'tenant_id' => auth()->id(),
-            'user_id' => auth()->user()->id,
         ];
 
         if ($this->editingColorId) {

@@ -39,18 +39,12 @@ new #[Layout('components.layouts.app')]
 
     public function with()
     {
-        $user = auth()->user();
+        
         $baseQuery = Product::query();
+        $user = auth()->user();
 
-        if ($user->hasRole('Super Admin')) {
-            // No restriction
-        } elseif (!$user->created_by) {
-            $baseQuery->where('user_id', $user->id);
-        } elseif ($user->hasRole(['Manager', 'Admin', 'Inventory Manager'])) {
-            $baseQuery->where('user_id', $user->created_by);
-        } else {
-            abort(403);
-        }
+        // Authorization is handled by Route Middleware
+        // Data Scoping is handled by UserScoped Global Scope
 
         // Clone query for stats to avoid modifying the main query instance used for pagination later? 
         // Actually simpler to just apply scopes to new instances or reuse logic.
@@ -116,8 +110,8 @@ new #[Layout('components.layouts.app')]
 
     public function calculateMargin()
     {
-        $price = (float) str_replace('.', '', $this->price);
-        $cost = (float) str_replace('.', '', $this->cost);
+        $price = (float) str_replace(['.', ','], '', $this->price);
+        $cost = (float) str_replace(['.', ','], '', $this->cost);
 
         if ($price > 0) {
             // Margin formula: ((Price - Cost) / Price) * 100
@@ -142,11 +136,14 @@ new #[Layout('components.layouts.app')]
         ]);
         $user = auth()->user();
 
-        $price = str_replace('.', '', $this->price);
-        $cost = str_replace('.', '', $this->cost);
+        $price = str_replace(['.', ','], '', $this->price);
+        $cost = str_replace(['.', ','], '', $this->cost);
 
         // Ensure margin is calculated before saving
         $this->calculateMargin();
+
+        $margin = str_replace('.', '', $this->margin);
+        $margin = str_replace(',', '.', $margin);
 
         $data = [
             'name' => $this->name,
@@ -154,10 +151,10 @@ new #[Layout('components.layouts.app')]
             'category_id' => $this->category_id,
             'price' => $price,
             'cost' => $cost,
-            'margin' => $this->margin,
+            'margin' => $margin,
             'stock' => $this->stock,
             'status' => $this->status,
-            'icon_id' => $this->icon_id,
+            'icon_id' => $this->icon_id ?: null,
             'user_id' => $user->created_by ? $user->created_by : $user->id,
             'input_id' => $user->id,
         ];

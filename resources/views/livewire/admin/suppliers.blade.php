@@ -24,12 +24,17 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
 
     public function with()
     {
-        $totalSuppliers = Supplier::count();
-        $activeSuppliers = Supplier::where('status', 'Active')->count();
-        $newSuppliersThisMonth = Supplier::where('created_at', '>=', \Carbon\Carbon::now()->startOfMonth())->count();
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
+        $totalSuppliers = Supplier::where('user_id', $userId)->count();
+        $activeSuppliers = Supplier::where('user_id', $userId)->where('status', 'Active')->count();
+        $newSuppliersThisMonth = Supplier::where('user_id', $userId)
+            ->where('created_at', '>=', \Carbon\Carbon::now()->startOfMonth())->count();
 
         return [
             'suppliers' => Supplier::query()
+                ->where('user_id', $userId)
                 ->when($this->search, fn($q) => $q->where(function($sub) {
                     $sub->where('name', 'like', '%'.$this->search.'%')
                         ->orWhere('contact_person', 'like', '%'.$this->search.'%')
@@ -70,6 +75,7 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
 
     public function save()
     {
+        $user = auth()->user();
         $rules = [
             'name' => 'required|string|max:255',
             'contact_person' => 'nullable|string|max:255',
@@ -88,6 +94,8 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
             'phone' => $this->phone,
             'address' => $this->address,
             'status' => $this->status,
+            'user_id' => $user->created_by ? $user->created_by : $user->id,
+            'input_id' => $user->id,
         ];
 
         if ($this->editingId) {
@@ -118,7 +126,9 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
 
     public function exportPdf()
     {
-        $suppliers = Supplier::latest()->get();
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+        $suppliers = Supplier::where('user_id', $userId)->latest()->get();
         $pdf = Pdf::loadView('pdf.suppliers', compact('suppliers'));
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();

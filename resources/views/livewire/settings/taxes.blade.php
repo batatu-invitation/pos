@@ -29,8 +29,11 @@ class extends Component
 
     public function with()
     {
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
         return [
-            'taxes' => Tax::orderBy('created_at', 'desc')->paginate(10)
+            'taxes' => Tax::where('user_id', $userId)->orderBy('created_at', 'desc')->paginate(10)
         ];
     }
 
@@ -55,20 +58,16 @@ class extends Component
     {
         $this->validate();
 
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
         // Handle Active Tax Logic
         if ($this->is_active) {
-            $query = Tax::where('is_active', true);
+            $query = Tax::where('user_id', $userId)->where('is_active', true);
             if ($this->editingTaxId) {
                 $query->where('id', '!=', $this->editingTaxId);
             }
             $query->update(['is_active' => false]);
-        }
-
-        // Handle user_id (auth or first user fallback)
-        $userId = auth()->id();
-        if (!$userId) {
-            $user = \App\Models\User::first();
-            $userId = $user ? $user->id : null;
         }
 
         $data = [
@@ -76,6 +75,7 @@ class extends Component
             'rate' => $this->rate,
             'is_active' => $this->is_active,
             'user_id' => $userId,
+            'input_id' => $user->id,
         ];
 
         if ($this->editingTaxId) {
@@ -103,8 +103,11 @@ class extends Component
         $tax = Tax::findOrFail($id);
         $isActive = $status === 'active';
 
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
         if ($isActive) {
-            Tax::where('id', '!=', $id)->update(['is_active' => false]);
+            Tax::where('user_id', $userId)->where('id', '!=', $id)->update(['is_active' => false]);
         }
 
         $tax->update(['is_active' => $isActive]);

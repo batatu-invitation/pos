@@ -23,8 +23,7 @@ if (! function_exists('settings')) {
         static $settings = null;
 
         if ($settings === null) {
-            $settings = ApplicationSetting::where('user_id', $userId)
-                ->pluck('value', 'key')
+            $settings = ApplicationSetting::pluck('value', 'key')
                 ->toArray();
         }
 

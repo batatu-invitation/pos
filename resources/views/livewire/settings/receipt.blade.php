@@ -22,7 +22,9 @@ new #[Layout('components.layouts.app')]
 
     public function mount()
     {
-        $settings = ApplicationSetting::pluck('value', 'key');
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+        $settings = ApplicationSetting::where('user_id', $userId)->pluck('value', 'key');
         $this->header = $settings['receipt_header'] ?? "Modern POS\n123 Main St, New York\nTel: +1 234 567 890";
         $this->footer = $settings['receipt_footer'] ?? "Thank you for shopping with us!\nPlease come again.";
         $this->showLogo = filter_var($settings['receipt_show_logo'] ?? true, FILTER_VALIDATE_BOOLEAN);
@@ -36,8 +38,7 @@ new #[Layout('components.layouts.app')]
         ]);
 
         $user = Auth::user();
-
-        $hasSettings = ApplicationSetting::where('user_id', $user->created_by)->exists();
+        $userId = $user->created_by ? $user->created_by : $user->id;
 
         if ($this->logo) {
             // Delete old logo if exists
@@ -61,25 +62,25 @@ new #[Layout('components.layouts.app')]
 
             $logoPath = 'receipt-logos/' . $filename;
 
-            if ($hasSettings) {
-                ApplicationSetting::updateOrCreate(['key' => 'receipt_logo_path', 'user_id' => $user->created_by], ['value' => $logoPath]);
-            } else {
-                ApplicationSetting::updateOrCreate(['key' => 'receipt_logo_path', 'user_id' => $user->id], ['value' => $logoPath]);
-            }
+            ApplicationSetting::updateOrCreate(
+                ['key' => 'receipt_logo_path', 'user_id' => $userId],
+                ['value' => $logoPath, 'input_id' => $user->id]
+            );
             $this->existingLogo = $logoPath;
         }
 
-        if ($hasSettings) {
-            ApplicationSetting::updateOrCreate(['key' => 'receipt_header', 'user_id' => $user->created_by], ['value' => $this->header]);
-            ApplicationSetting::updateOrCreate(['key' => 'receipt_footer', 'user_id' => $user->created_by], ['value' => $this->footer]);
-            ApplicationSetting::updateOrCreate(['key' => 'receipt_show_logo', 'user_id' => $user->created_by], ['value' => $this->showLogo]);
-        } else {
-            ApplicationSetting::updateOrCreate(['key' => 'receipt_header', 'user_id' => $user->id], ['value' => $this->header]);
-            ApplicationSetting::updateOrCreate(['key' => 'receipt_footer', 'user_id' => $user->id], ['value' => $this->footer]);
-            ApplicationSetting::updateOrCreate(['key' => 'receipt_show_logo', 'user_id' => $user->id], ['value' => $this->showLogo]);
-        }
-
-
+        ApplicationSetting::updateOrCreate(
+            ['key' => 'receipt_header', 'user_id' => $userId],
+            ['value' => $this->header, 'input_id' => $user->id]
+        );
+        ApplicationSetting::updateOrCreate(
+            ['key' => 'receipt_footer', 'user_id' => $userId],
+            ['value' => $this->footer, 'input_id' => $user->id]
+        );
+        ApplicationSetting::updateOrCreate(
+            ['key' => 'receipt_show_logo', 'user_id' => $userId],
+            ['value' => $this->showLogo, 'input_id' => $user->id]
+        );
 
         session()->flash('message', 'Receipt settings saved successfully.');
         $this->dispatch('notify', __('Receipt settings saved successfully.'));

@@ -152,6 +152,7 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
 
     public function save()
     {
+        $user = auth()->user();
         $rules = [
             'type' => 'required|in:income,expense',
             'amount' => 'required|numeric|min:0',
@@ -172,6 +173,8 @@ new #[Layout('components.layouts.app')] #[Title('Financial Transactions')] class
             'date' => $this->date,
             'payment_method' => $this->payment_method,
             'status' => $this->status,
+            'user_id' => $user->created_by ? $user->created_by : $user->id,
+            'input_id' => $user->id,
         ];
 
         if ($this->editingId) {

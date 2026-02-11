@@ -30,14 +30,18 @@ class extends Component
 
     public function with()
     {
+        $user = auth()->user();
         $totalCustomers = Customer::count();
-        $newCustomersThisMonth = Customer::where('created_at', '>=', \Carbon\Carbon::now()->startOfMonth())->count();
+        $newCustomersThisMonth = Customer::where('created_at', '>=', \Carbon\Carbon::now()->startOfMonth())
+            ->count();
 
         return [
             'customers' => Customer::query()
-                ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%')
-                    ->orWhere('phone', 'like', '%' . $this->search . '%'))
+                ->when($this->search, fn($q) => $q->where(function($sub) {
+                    $sub->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%')
+                        ->orWhere('phone', 'like', '%' . $this->search . '%');
+                }))
                 ->latest()
                 ->paginate(10),
             'totalCustomers' => $totalCustomers,
@@ -64,13 +68,15 @@ class extends Component
 
     public function save()
     {
+        $user = auth()->user();
         $this->validate();
 
         $data = [
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
-            'user_id' => auth()->id(),
+            'user_id' => $user->created_by ? $user->created_by : $user->id,
+            'input_id' => $user->id,
             'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random',
         ];
 

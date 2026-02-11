@@ -22,6 +22,7 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
     public function with()
     {
         $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
         $isSuperAdmin = $user->hasRole('Super Admin');
 
         // Base query for employees listing
@@ -30,7 +31,7 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
         if ($isSuperAdmin) {
             $query->where('id', '!=', $user->id);
         } else {
-            $query->where('created_by', $user->id);
+            $query->where('created_by', $userId);
         }
 
         // Apply Search
@@ -48,7 +49,7 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
         if ($isSuperAdmin) {
             $statsQuery->where('id', '!=', $user->id);
         } else {
-            $statsQuery->where('created_by', $user->id);
+            $statsQuery->where('created_by', $userId);
         }
         
         $totalEmployees = $statsQuery->count();
@@ -123,9 +124,13 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
             'status' => $this->status,
         ];
 
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
         // Only set created_by on creation to avoid overwriting if transferred (though logic here is strict ownership)
         if (!$this->editingUserId) {
-            $data['created_by'] = auth()->id();
+            $data['created_by'] = $userId;
+            $data['input_id'] = $user->id;
         }
 
         if ($this->password) {
@@ -133,13 +138,13 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
         }
 
         if ($this->editingUserId) {
-            $user = User::find($this->editingUserId);
-            $user->update($data);
+            $employee = User::find($this->editingUserId);
+            $employee->update($data);
         } else {
-            $user = User::create($data);
+            $employee = User::create($data);
         }
 
-        $user->syncRoles([$this->role]);
+        $employee->syncRoles([$this->role]);
 
         $this->dispatch('close-modal', 'employee-modal');
         $this->reset('firstName', 'lastName', 'email', 'password', 'phone', 'role', 'status', 'editingUserId');
@@ -148,11 +153,14 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
 
     public function deleteEmployee($id)
     {
-        $user = User::where('id', $id)
-            ->where('created_by', auth()->id())
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
+        $employee = User::where('id', $id)
+            ->where('created_by', $userId)
             ->first();
-        if ($user) {
-            $user->delete();
+        if ($employee) {
+            $employee->delete();
             $this->dispatch('notify', __('Employee deleted successfully!'));
         }
     }
@@ -164,13 +172,16 @@ new #[Layout('components.layouts.app')] #[Title('Employees - Modern POS')] class
 
     public function exportPdf()
     {
-        if (auth()->user()->hasRole('Super Admin')) {
+        $user = auth()->user();
+        $userId = $user->created_by ? $user->created_by : $user->id;
+
+        if ($user->hasRole('Super Admin')) {
             $employees = User::with('roles')
-                ->where('id', '!=', auth()->id())
+                ->where('id', '!=', $user->id)
                 ->latest()
                 ->get();
         } else {
-            $employees = User::where('created_by', auth()->id())
+            $employees = User::where('created_by', $userId)
                 ->with('roles')
                 ->latest()
                 ->get();

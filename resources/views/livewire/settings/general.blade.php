@@ -110,11 +110,11 @@ new #[Layout('components.layouts.app')] #[Title('General Settings - Modern POS')
 
         if ($hasSettings) {
             foreach ($settings as $key => $value) {
-                ApplicationSetting::updateOrCreate(['key' => $key, 'user_id' => $user->created_by], ['value' => $value]);
+                ApplicationSetting::updateOrCreate(['key' => $key], ['value' => $value]);
             }
         } else {
             foreach ($settings as $key => $value) {
-                ApplicationSetting::updateOrCreate(['key' => $key, 'user_id' => $user->id], ['value' => $value]);
+                ApplicationSetting::updateOrCreate(['key' => $key], ['value' => $value]);
             }
         }
 
