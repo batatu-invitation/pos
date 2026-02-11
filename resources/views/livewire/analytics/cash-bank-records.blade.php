@@ -124,7 +124,7 @@ new class extends Component {
     @if($selectedAccount)
         <!-- Bento Grid Summary -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Card 1: Net Change -->
+            <!-- Net Change -->
             <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 text-white shadow-lg shadow-indigo-200 dark:shadow-none relative overflow-hidden group">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
                 <div class="relative z-10">
@@ -141,7 +141,7 @@ new class extends Component {
                 </div>
             </div>
 
-            <!-- Card 2: Total In -->
+            <!-- Total In -->
             <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 dark:shadow-none relative overflow-hidden group">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
                 <div class="relative z-10">
@@ -158,7 +158,7 @@ new class extends Component {
                 </div>
             </div>
 
-            <!-- Card 3: Total Out -->
+            <!-- Total Out -->
             <div class="bg-gradient-to-br from-rose-500 to-red-600 rounded-3xl p-6 text-white shadow-lg shadow-rose-200 dark:shadow-none relative overflow-hidden group">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
                 <div class="relative z-10">
@@ -197,12 +197,21 @@ new class extends Component {
                         <!-- Type Filter -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
-                            <select wire:model.live="typeFilter" 
-                                class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white text-sm">
-                                <option value="all">{{ __('All Types') }}</option>
-                                <option value="in">{{ __('Cash In') }}</option>
-                                <option value="out">{{ __('Cash Out') }}</option>
-                            </select>
+                            <div class="relative">
+                                <select wire:model.live="typeFilter" 
+                                    class="w-full rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 focus:border-indigo-500 focus:ring-indigo-500 dark:text-white text-sm appearance-none pl-3 pr-8 py-2">
+                                    <option value="all">{{ __('All Types') }}</option>
+                                    <option value="in">{{ __('In (Debit)') }}</option>
+                                    <option value="out">{{ __('Out (Credit)') }}</option>
+                                    <option value="cash_in">Cash In</option>
+                                    <option value="cash_out">Cash Out</option>
+                                    <option value="bank_in">Bank In</option>
+                                    <option value="bank_out">Bank Out</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Date Range -->
@@ -224,16 +233,16 @@ new class extends Component {
                 <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col">
                     <!-- Table -->
                     <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50/50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-medium text-xs uppercase tracking-wider">
-                            <tr>
-                                <th class="px-6 py-4">{{ __('Date') }}</th>
-                                <th class="px-6 py-4">{{ __('Ref / Description') }}</th>
-                                <th class="px-6 py-4 text-right">{{ __('In (Debit)') }}</th>
-                                <th class="px-6 py-4 text-right">{{ __('Out (Credit)') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50/50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-medium text-xs uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-4">{{ __('Date') }}</th>
+                                    <th class="px-6 py-4">{{ __('Ref / Description') }}</th>
+                                    <th class="px-6 py-4 text-right">{{ __('In (Debit)') }}</th>
+                                    <th class="px-6 py-4 text-right">{{ __('Out (Credit)') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
                             @forelse($transactions as $item)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group">
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 font-medium">

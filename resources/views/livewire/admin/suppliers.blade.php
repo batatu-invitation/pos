@@ -26,6 +26,7 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
     {
         $totalSuppliers = Supplier::count();
         $activeSuppliers = Supplier::where('status', 'Active')->count();
+        $newSuppliersThisMonth = Supplier::where('created_at', '>=', \Carbon\Carbon::now()->startOfMonth())->count();
 
         return [
             'suppliers' => Supplier::query()
@@ -38,6 +39,7 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
                 ->paginate(9),
             'totalSuppliers' => $totalSuppliers,
             'activeSuppliers' => $activeSuppliers,
+            'newSuppliersThisMonth' => $newSuppliersThisMonth,
         ];
     }
 
@@ -163,24 +165,55 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
     </div>
 
     <!-- Stats Overview Bento -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow duration-300 dark:bg-gray-800 dark:border-gray-700">
-            <div>
-                <p class="text-sm font-medium text-gray-500 mb-1 dark:text-gray-400">{{ __('Total Suppliers') }}</p>
-                <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ $totalSuppliers }}</h3>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
-                <i class="fas fa-truck text-xl"></i>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <!-- Total Suppliers -->
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl p-6 text-white shadow-lg shadow-blue-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Total Suppliers') }}</span>
+                    <i class="fas fa-truck text-blue-100 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold mb-1">
+                    {{ number_format($totalSuppliers) }}
+                </div>
+                <div class="text-blue-100 text-sm opacity-90">
+                    {{ __('Registered suppliers') }}
+                </div>
             </div>
         </div>
-        
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow duration-300 dark:bg-gray-800 dark:border-gray-700">
-            <div>
-                <p class="text-sm font-medium text-gray-500 mb-1 dark:text-gray-400">{{ __('Active Suppliers') }}</p>
-                <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ $activeSuppliers }}</h3>
+
+        <!-- Active Suppliers -->
+        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('Active Suppliers') }}</span>
+                    <i class="fas fa-check-circle text-emerald-100 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold mb-1">
+                    {{ number_format($activeSuppliers) }}
+                </div>
+                <div class="text-emerald-100 text-sm opacity-90">
+                    {{ __('Currently active') }}
+                </div>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                <i class="fas fa-check-circle text-xl"></i>
+        </div>
+
+        <!-- New Suppliers -->
+        <div class="bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl p-6 text-white shadow-lg shadow-purple-200 dark:shadow-none relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">{{ __('New This Month') }}</span>
+                    <i class="fas fa-calendar-plus text-purple-100 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold mb-1">
+                    {{ number_format($newSuppliersThisMonth) }}
+                </div>
+                <div class="text-purple-100 text-sm opacity-90">
+                    {{ __('Joined recently') }}
+                </div>
             </div>
         </div>
     </div>
@@ -305,7 +338,7 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
                         <x-input-label for="name" :value="__('Company Name')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                         <x-text-input wire:model="name" id="name" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="text"
                             placeholder="PT. Example" />
-                        <x-input-error :messages="$errors->get('name')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('name')" class="mt-1 dark:text-red-400" />
                     </div>
 
                     <!-- Contact Person -->
@@ -313,7 +346,7 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
                         <x-input-label for="contact_person" :value="__('Contact Person')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                         <x-text-input wire:model="contact_person" id="contact_person" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="text"
                             placeholder="John Doe" />
-                        <x-input-error :messages="$errors->get('contact_person')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('contact_person')" class="mt-1 dark:text-red-400" />
                     </div>
 
                     <!-- Phone -->
@@ -321,7 +354,7 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
                         <x-input-label for="phone" :value="__('Phone Number')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                         <x-text-input wire:model="phone" id="phone" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="text"
                             placeholder="+62 ..." />
-                        <x-input-error :messages="$errors->get('phone')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('phone')" class="mt-1 dark:text-red-400" />
                     </div>
 
                     <!-- Email -->
@@ -329,14 +362,14 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
                         <x-input-label for="email" :value="__('Email Address')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                         <x-text-input wire:model="email" id="email" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" type="email"
                             placeholder="email@example.com" />
-                        <x-input-error :messages="$errors->get('email')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('email')" class="mt-1 dark:text-red-400" />
                     </div>
 
                     <!-- Address -->
                     <div class="col-span-1 md:col-span-2">
                         <x-input-label for="address" :value="__('Address')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                         <textarea wire:model="address" id="address" class="block w-full rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:placeholder-gray-500" rows="3" placeholder="Full address..."></textarea>
-                        <x-input-error :messages="$errors->get('address')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('address')" class="mt-1 dark:text-red-400" />
                     </div>
 
                     <!-- Status -->
@@ -349,7 +382,7 @@ new #[Layout('components.layouts.app')] #[Title('Supplier Management')] class ex
                                 <option value="Inactive">{{ __('Inactive') }}</option>
                             </select>
                         </div>
-                        <x-input-error :messages="$errors->get('status')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('status')" class="mt-1 dark:text-red-400" />
                     </div>
                 </div>
 

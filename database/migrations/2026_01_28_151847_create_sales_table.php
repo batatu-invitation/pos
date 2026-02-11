@@ -27,6 +27,8 @@ return new class extends Migration
             $table->decimal('change_amount', 10, 2)->nullable();
             $table->string('payment_method'); // Cash, Card, etc.
             $table->string('status')->default('completed'); // completed, refunded, pending
+            $table->enum('payment_status', ['paid', 'partial', 'unpaid'])->default('paid');
+            $table->date('due_date')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();

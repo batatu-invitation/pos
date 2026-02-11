@@ -64,4 +64,95 @@ class Sale extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the transaction associated with this sale (auto-generated)
+     */
+    public function transaction()
+    {
+        return $this->morphOne(Transaction::class, 'source');
+    }
+
+    /**
+     * Boot the model and add event listeners for automatic transaction sync
+     */
+    protected static function booted()
+    {
+        static::created(function ($sale) {
+            // Auto-create transaction for completed sales
+            if ($sale->status === 'completed') {
+                self::createTransactionFromSale($sale);
+            }
+        });
+
+        static::updated(function ($sale) {
+            // Update corresponding transaction if sale changes
+            if ($sale->isDirty('total_amount') || $sale->isDirty('status') || $sale->isDirty('payment_status')) {
+                self::updateTransactionFromSale($sale);
+            }
+        });
+
+        static::deleting(function ($sale) {
+            // Delete associated transaction when sale is deleted
+            $sale->transaction()->delete();
+        });
+    }
+
+    /**
+     * Create a transaction from a sale
+     */
+    protected static function createTransactionFromSale(Sale $sale): Transaction
+    {
+        return Transaction::create([
+            'type' => 'income',
+            'amount' => $sale->total_amount,
+            'category' => 'Sales',
+            'description' => "Sale #{$sale->invoice_number} - {$sale->customer?->name}",
+            'date' => $sale->created_at->format('Y-m-d'),
+            'reference_number' => $sale->invoice_number,
+            'payment_method' => $sale->payment_method,
+            'status' => self::mapSaleStatusToTransaction($sale->status, $sale->payment_status),
+            'source_type' => 'sale',
+            'source_id' => $sale->id,
+            'user_id' => $sale->user_id,
+            'customer_id' => $sale->customer_id,
+            'tenant_id' => $sale->tenant_id,
+        ]);
+    }
+
+    /**
+     * Update transaction from sale changes
+     */
+    protected static function updateTransactionFromSale(Sale $sale): void
+    {
+        $transaction = $sale->transaction;
+        
+        if ($transaction) {
+            $transaction->update([
+                'amount' => $sale->total_amount,
+                'status' => self::mapSaleStatusToTransaction($sale->status, $sale->payment_status),
+                'payment_method' => $sale->payment_method,
+                'date' => $sale->created_at->format('Y-m-d'),
+            ]);
+        } elseif ($sale->status === 'completed') {
+            // Create transaction if sale was updated to completed
+            self::createTransactionFromSale($sale);
+        }
+    }
+
+    /**
+     * Map sale status to transaction status
+     */
+    protected static function mapSaleStatusToTransaction(string $saleStatus, ?string $paymentStatus): string
+    {
+        if ($saleStatus === 'refunded') {
+            return 'cancelled';
+        }
+        
+        if ($paymentStatus === 'unpaid') {
+            return 'pending';
+        }
+        
+        return 'completed';
+    }
 }

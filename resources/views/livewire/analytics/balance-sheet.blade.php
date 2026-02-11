@@ -136,7 +136,7 @@ new #[Layout('components.layouts.app')]
 ?>
 
 <div class="p-6 space-y-6 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="mx-auto space-y-6">
         
         <!-- Header Section -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">

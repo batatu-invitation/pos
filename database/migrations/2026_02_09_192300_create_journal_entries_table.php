@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->date('date');
             $table->string('reference')->nullable();
             $table->text('description')->nullable();
+            $table->string('type')->default('general');
             $table->enum('status', ['draft', 'posted'])->default('draft');
-            $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

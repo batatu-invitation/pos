@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('purchases', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('supplier_id')->constrained()->restrictOnDelete();
+            $table->foreignUuid('supplier_id')->constrained('suppliers')->restrictOnDelete();
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('invoice_number');
             $table->date('date');
             $table->date('due_date')->nullable();
@@ -21,7 +22,6 @@ return new class extends Migration
             $table->decimal('paid_amount', 15, 2)->default(0);
             $table->enum('status', ['pending', 'partial', 'paid', 'overdue'])->default('pending');
             $table->text('notes')->nullable();
-            $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

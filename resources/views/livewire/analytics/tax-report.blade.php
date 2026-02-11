@@ -115,7 +115,7 @@ class extends Component
 }; ?>
 
 <div class="p-6 space-y-6 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="mx-auto space-y-6">
         
         <!-- Controls Section -->
         <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">

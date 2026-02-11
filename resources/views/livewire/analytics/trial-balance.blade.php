@@ -4,8 +4,12 @@ use Livewire\Volt\Component;
 use App\Models\Account;
 use App\Models\JournalEntryItem;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TrialBalanceExport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Livewire\Attributes\Title;
 
-new class extends Component {
+new #[Title('Trial Balance')] class extends Component {
     public $asOfDate;
     public $report = [];
 
@@ -63,11 +67,32 @@ new class extends Component {
             }
         }
     }
+
+    public function exportExcel()
+    {
+        $this->generateReport();
+        return Excel::download(new TrialBalanceExport(
+            $this->report,
+            $this->asOfDate
+        ), 'trial-balance.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $this->generateReport();
+        $pdf = Pdf::loadView('pdf.trial-balance', [
+            'report' => $this->report,
+            'asOfDate' => $this->asOfDate,
+        ]);
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'trial-balance.pdf');
+    }
 };
 ?>
 
 <div class="p-6 space-y-6 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="mx-auto space-y-6">
         
         <!-- Header Section -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
@@ -81,8 +106,26 @@ new class extends Component {
             </div>
             
             <div class="flex items-center gap-3">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('As of Date:') }}</label>
-                <input wire:model.live="asOfDate" type="date" class="rounded-xl border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                <div class="flex items-center gap-2 bg-white dark:bg-gray-700 p-1 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">{{ __('As of') }}:</label>
+                    <input wire:model.live="asOfDate" type="date" class="border-0 bg-transparent text-sm focus:ring-0 text-gray-700 dark:text-gray-200 p-2">
+                </div>
+
+                <!-- Export Button -->
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+                        <i class="fas fa-file-export mr-2"></i> {{ __('Export') }}
+                        <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                    </button>
+                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 py-1" style="display: none;">
+                        <button wire:click="exportExcel" @click="open = false" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <i class="fas fa-file-excel mr-2 text-green-600 dark:text-green-400"></i> Export Excel
+                        </button>
+                        <button wire:click="exportPdf" @click="open = false" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <i class="fas fa-file-pdf mr-2 text-red-600 dark:text-red-400"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
