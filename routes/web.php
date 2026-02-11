@@ -95,6 +95,7 @@ foreach (config('tenancy.central_domains') as $domain) {
             Volt::route('/analytics/memo', 'analytics.memo')->name('analytics.memo');
 
             Volt::route('/analytics/cash-flow', 'analytics.cash-flow')->name('analytics.cash-flow');
+            Route::get('/analytics/inventory-capital', \App\Livewire\Analytics\InventoryCapital::class)->name('analytics.inventory-capital');
 
             Volt::route('/reports/sales', 'reports.report-sales')->name('reports.sales');
             Volt::route('/reports/inventory', 'reports.report-inventory')->name('reports.inventory');

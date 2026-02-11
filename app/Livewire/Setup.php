@@ -146,6 +146,38 @@ class Setup extends Component
             );
         }
 
+        // Seed Default Emojis
+        $defaultEmojis = [
+            ['icon' => '📦', 'name' => 'Box'],
+            ['icon' => '🍔', 'name' => 'Burger'],
+            ['icon' => '🥤', 'name' => 'Drink'],
+            ['icon' => '👕', 'name' => 'Shirt'],
+            ['icon' => '🏠', 'name' => 'Home'],
+            ['icon' => '🛒', 'name' => 'Cart'],
+            ['icon' => '💊', 'name' => 'Pill'],
+            ['icon' => '📱', 'name' => 'Mobile'],
+        ];
+
+        foreach ($defaultEmojis as $emoji) {
+            \App\Models\Emoji::create($emoji);
+        }
+
+        // Seed Default Colors
+        $defaultColors = [
+            ['name' => 'Red', 'class' => 'bg-red-500'],
+            ['name' => 'Blue', 'class' => 'bg-blue-500'],
+            ['name' => 'Green', 'class' => 'bg-green-500'],
+            ['name' => 'Yellow', 'class' => 'bg-yellow-500'],
+            ['name' => 'Purple', 'class' => 'bg-purple-500'],
+            ['name' => 'Orange', 'class' => 'bg-orange-500'],
+            ['name' => 'Pink', 'class' => 'bg-pink-500'],
+            ['name' => 'Gray', 'class' => 'bg-gray-500'],
+        ];
+
+        foreach ($defaultColors as $color) {
+            \App\Models\Color::create($color);
+        }
+
         return redirect()->route('dashboard');
     }
 
