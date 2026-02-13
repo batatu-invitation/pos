@@ -244,6 +244,7 @@ new class extends Component {
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
                             @forelse($transactions as $item)
+                                @if($item->journalEntry)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group">
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 font-medium">
                                         {{ $item->journalEntry->date->format('d M Y') }}
@@ -273,6 +274,7 @@ new class extends Component {
                                         @endif
                                     </td>
                                 </tr>
+                                @endif
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-6 py-12 text-center">
