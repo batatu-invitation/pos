@@ -19,12 +19,12 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             UserSeeder::class,
-            CategorySeeder::class,
-            EmojiSeeder::class,
-            ProductSeeder::class,
-            ColorSeeder::class,
-            AccountSeeder::class,
-            DemoDataSeeder::class,
+            // CategorySeeder::class,
+            // EmojiSeeder::class,
+            // ProductSeeder::class,
+            // ColorSeeder::class,
+            // AccountSeeder::class,
+            // DemoDataSeeder::class,
         ]);
     }
 }

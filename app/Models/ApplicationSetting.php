@@ -8,12 +8,11 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ApplicationSetting extends Model
 {
-    use HasUuids, BelongsToTenant, \App\Traits\UserScoped;
+    use HasUuids, BelongsToTenant ;
 
     protected $fillable = [
         'tenant_id',
         'user_id',
-        'input_id',
         'key',
         'value',
     ];

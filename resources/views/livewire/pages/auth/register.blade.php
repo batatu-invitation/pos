@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\BalanceHistory;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -39,14 +40,27 @@ $register = function () {
         'password' => Hash::make($validated['password']),
         'role' => 'cashier', // Default for self-registration, admin can change later
         'status' => 'active',
+        'balance' => 10000,
     ];
 
-    event(new Registered($user = User::create($userData)));
+    DB::transaction(function () use ($userData) {
+        event(new Registered($user = User::create($userData)));
 
-    $user->assignRole('cashier');
+        BalanceHistory::create([
+            'user_id' => $user->id,
+            'amount' => 10000,
+            'type' => 'addition',
+            'description' => 'Bonus Saldo Awal',
+        ]);
 
-    Auth::login($user);
+        $user->assignRole('Manager');
 
+        Auth::login($user);
+
+        if (!session()->has('locale')) {
+            session(['locale' => 'id']);
+        }
+    });
 
     $this->redirect(route('dashboard', absolute: false));
 };
@@ -57,8 +71,8 @@ $register = function () {
     <!-- Left Side - Image -->
     <div class="hidden lg:flex w-1/2 bg-indigo-900 justify-center items-center relative overflow-hidden">
         <div class="absolute inset-0 bg-indigo-900/90 z-10"></div>
-        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="POS Background" class="absolute inset-0 w-full h-full object-cover">
-
+         <img src="https://kimi-web-img.moonshot.cn/img/st3.depositphotos.com/4cc9e3a33ee5dfd8c68ce7b6f12dbc7298ee93aa.jpg" alt="POS Background" class="absolute inset-0 w-full h-full object-cover">
+       
         <div class="relative z-20 text-white text-center p-12">
             <div class="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm">
                 <i class="fas fa-user-plus text-3xl"></i>

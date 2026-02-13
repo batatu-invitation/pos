@@ -13,17 +13,11 @@ return new class extends Migration
     {
         Schema::create('application_settings', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->cascadeOnDelete();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('tenant_id')->index()->nullable()->constrained('tenants')->cascadeOnDelete();
+            $table->foreignUuid('user_id')->index()->nullable()->constrained('users')->cascadeOnDelete();
             $table->string('key')->index();
             $table->text('value')->nullable();
             $table->timestamps();
-
-            // Unique constraint: key per tenant per user? or key per tenant?
-            // If user_id is null, it's a tenant setting. If user_id is set, it's a user setting.
-            // Let's just index them for now.
-            $table->index(['tenant_id', 'key']);
-            $table->index(['user_id', 'key']);
         });
     }
 

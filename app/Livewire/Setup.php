@@ -43,7 +43,7 @@ class Setup extends Component
     public function mount()
     {
         // Safety check: if already setup, redirect
-        $hasSettings = ApplicationSetting::exists();
+        $hasSettings = ApplicationSetting::where('user_id', Auth::id())->exists();
         if ($hasSettings) {
             return redirect()->route('dashboard');
         }
@@ -142,6 +142,7 @@ class Setup extends Component
         foreach ($settings as $key => $value) {
             ApplicationSetting::updateOrCreate(
                 ['key' => $key],
+                ['user_id' => Auth::id()],
                 ['value' => $value]
             );
         }
