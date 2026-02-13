@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('user_id')->index()->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->index()->nullable()->constrained('users')->nullOnDelete();
             $table->date('date');
-            $table->string('reference')->nullable();
+            $table->string('reference')->index()->nullable();
             $table->text('description')->nullable();
             $table->string('type')->default('general');
             $table->enum('status', ['draft', 'posted'])->default('draft');

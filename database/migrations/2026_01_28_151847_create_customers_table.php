@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('name');
+            $table->string('name')->index();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('avatar')->nullable();

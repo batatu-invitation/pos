@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('user_id')->index()->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->index()->nullable()->constrained('users')->nullOnDelete();
             $table->string('code')->unique();
-            $table->string('name');
+            $table->string('name')->index();
             $table->enum('type', ['asset', 'liability', 'equity', 'revenue', 'expense']);
             $table->string('subtype')->nullable(); // e.g., 'Current Asset', 'Long-term Liability'
             $table->text('description')->nullable();

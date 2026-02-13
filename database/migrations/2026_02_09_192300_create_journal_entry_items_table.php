@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('journal_entry_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('journal_entry_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('account_id')->constrained('accounts')->restrictOnDelete();
+            $table->foreignUuid('journal_entry_id')->index()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('account_id')->index()->constrained('accounts')->restrictOnDelete();
             $table->decimal('debit', 15, 2)->default(0);
             $table->decimal('credit', 15, 2)->default(0);
             $table->timestamps();

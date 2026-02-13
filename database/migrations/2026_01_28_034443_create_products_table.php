@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->nullOnDelete();   
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('name')->index();
-            $table->string('sku')->unique();
             $table->foreignUuid('category_id')->nullable()->constrained('categories')->nullOnDelete();
+            $table->string('name')->index();
+            $table->string('sku')->index()->unique();
             $table->decimal('price', 10, 2);
             $table->decimal('cost', 15, 2)->default(0);
             $table->decimal('margin', 10, 2)->default(0);

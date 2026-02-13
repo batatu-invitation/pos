@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->string('key');
+            $table->string('key')->index();
             $table->text('value')->nullable();
             $table->timestamps();
 

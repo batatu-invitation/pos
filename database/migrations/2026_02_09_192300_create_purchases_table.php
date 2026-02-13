@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('purchases', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('supplier_id')->constrained('suppliers')->restrictOnDelete();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('invoice_number');
+            $table->foreignUuid('supplier_id')->index()->constrained('suppliers')->restrictOnDelete();
+            $table->foreignUuid('user_id')->index()->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->index()->nullable()->constrained('users')->nullOnDelete();
+            $table->string('invoice_number')->index();
             $table->date('date');
             $table->date('due_date')->nullable();
             $table->decimal('total_amount', 15, 2);

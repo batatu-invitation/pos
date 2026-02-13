@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->nullOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('input_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('icon');
             $table->string('name')->nullable();
             $table->timestamps();
