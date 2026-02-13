@@ -35,7 +35,6 @@ foreach (config('tenancy.central_domains') as $domain) {
             Volt::route('/settings/integrations', 'settings.integrations')->name('settings.integrations');
             Volt::route('/settings/api-keys', 'settings.api-keys')->name('settings.api-keys');
             Volt::route('/settings/backup', 'settings.backup')->name('settings.backup');
-            Volt::route('/settings/taxes', 'settings.taxes')->name('settings.taxes');
         });
 
         // Inventory Group
@@ -108,6 +107,7 @@ foreach (config('tenancy.central_domains') as $domain) {
             Volt::route('/analytics/tax-report', 'analytics.tax-report')->name('analytics.tax-report');
             Volt::route('/settings/general', 'settings.general')->name('settings.general');
             Volt::route('/settings/receipt', 'settings.receipt')->name('settings.receipt');
+            Volt::route('/settings/taxes', 'settings.taxes')->name('settings.taxes');
         });
     });
 }

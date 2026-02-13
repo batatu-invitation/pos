@@ -5,17 +5,20 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use App\Models\Sale;
 use App\Models\User;
+use App\Models\Category;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SalesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Livewire\WithPagination;
 
-new
-#[Layout('components.layouts.app')]
+new #[Layout('components.layouts.app')]
 #[Title('Sales Report - Modern POS')]
 class extends Component
 {
+    use WithPagination;
+
     public $startDate;
     public $endDate;
     public $statusFilter = 'completed';
@@ -28,88 +31,73 @@ class extends Component
         $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
     }
 
+    public function updated($propertyName)
+    {
+        $this->resetPage();
+    }
+
     public function with()
     {
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end = Carbon::parse($this->endDate)->endOfDay();
 
-        $query = Sale::query()
-            ->with(['customer', 'user', 'items.product.category'])
-            ->whereBetween('created_at', [$start, $end]);
+        // 1. Ambil Summary Metrics dalam SATU Query (Optimasi Profit & Cost)
+        // Kita join sale_items dan products untuk menghitung profit secara presisi di level DB
+        $metrics = DB::table('sales')
+            ->leftJoin('sale_items', 'sales.id', '=', 'sale_items.sale_id')
+            ->leftJoin('products', 'sale_items.product_id', '=', 'products.id')
+            ->whereBetween('sales.created_at', [$start, $end])
+            ->when($this->statusFilter, fn($q) => $q->where('sales.status', $this->statusFilter))
+            ->when($this->paymentMethodFilter, fn($q) => $q->where('sales.payment_method', $this->paymentMethodFilter))
+            ->when($this->userFilter, fn($q) => $q->where('sales.user_id', $this->userFilter))
+            ->selectRaw("
+                COUNT(DISTINCT sales.id) as total_orders,
+                SUM(sale_items.total_price) as total_revenue,
+                SUM(sale_items.quantity * products.cost) as total_cost
+            ")
+            ->first();
 
-        if ($this->statusFilter) {
-            $query->where('status', $this->statusFilter);
-        }
-
-        if ($this->paymentMethodFilter) {
-            $query->where('payment_method', $this->paymentMethodFilter);
-        }
-
-        if ($this->userFilter) {
-            $query->where('input_id', $this->userFilter);
-        }
-
-        $sales = $query->latest()->get(); // Get all for calculations
-
-        // 1. Summary Metrics
-        $totalRevenue = $sales->sum('total_amount');
-        $totalOrders = $sales->count();
-        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
-        
-        // Calculate Cost & Profit (Approximate based on current product cost)
-        $totalCost = 0;
-        foreach ($sales as $sale) {
-            foreach ($sale->items as $item) {
-                // If product exists, use its cost. If deleted, assume 0 or handle gracefully.
-                $cost = $item->product ? $item->product->cost : 0; 
-                $totalCost += $cost * $item->quantity;
-            }
-        }
+        $totalRevenue = (float) $metrics->total_revenue;
+        $totalOrders = (int) $metrics->total_orders;
+        $totalCost = (float) $metrics->total_cost;
         $grossProfit = $totalRevenue - $totalCost;
-        $margin = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
 
-        // 2. Sales by Payment Method
-        $salesByPaymentMethod = $sales->groupBy('payment_method')->map(function ($group) {
-            return $group->sum('total_amount');
-        });
+        // 2. Sales by Payment Method (Aggregated)
+        $salesByPaymentMethod = Sale::whereBetween('created_at', [$start, $end])
+            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
+            ->groupBy('payment_method')
+            ->selectRaw('payment_method, SUM(total_amount) as total')
+            ->pluck('total', 'payment_method');
 
-        // 3. Sales by Category
-        $salesByCategory = [];
-        foreach ($sales as $sale) {
-            foreach ($sale->items as $item) {
-                if ($item->product && $item->product->category) {
-                    $catName = $item->product->category->name;
-                    if (!isset($salesByCategory[$catName])) {
-                        $salesByCategory[$catName] = 0;
-                    }
-                    $salesByCategory[$catName] += $item->total_price;
-                } else {
-                    $catName = 'Uncategorized';
-                    if (!isset($salesByCategory[$catName])) {
-                        $salesByCategory[$catName] = 0;
-                    }
-                    $salesByCategory[$catName] += $item->total_price;
-                }
-            }
-        }
-        arsort($salesByCategory);
+        // 3. Sales by Category (Aggregated - Anti N+1)
+        $salesByCategory = DB::table('sale_items')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->join('products', 'sale_items.product_id', '=', 'products.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->whereBetween('sales.created_at', [$start, $end])
+            ->when($this->statusFilter, fn($q) => $q->where('sales.status', $this->statusFilter))
+            ->selectRaw('categories.name, SUM(sale_items.total_price) as total')
+            ->groupBy('categories.name')
+            ->orderByDesc('total')
+            ->pluck('total', 'name');
 
-        // 4. Chart Data (Daily)
-        $chartData = [];
+        // 4. Chart Data (Daily Aggregation)
+        $dailySales = Sale::whereBetween('created_at', [$start, $end])
+            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
+            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
         $chartLabels = [];
-        
-        $period = \Carbon\CarbonPeriod::create($start, $end);
-        foreach ($period as $date) {
+        $chartData = [];
+        foreach (\Carbon\CarbonPeriod::create($start, $end) as $date) {
+            $formattedDate = $date->format('Y-m-d');
             $chartLabels[] = $date->format('d M');
-            $daySales = $sales->filter(function ($sale) use ($date) {
-                return $sale->created_at->format('Y-m-d') === $date->format('Y-m-d');
-            });
-            $chartData[] = $daySales->sum('total_amount');
+            $chartData[] = (float) ($dailySales[$formattedDate] ?? 0);
         }
 
-        // Pagination for the list
-        $paginatedSales = Sale::query()
-            ->with(['customer', 'user'])
+        // 5. Paginated List (Eager Loading)
+        $sales = Sale::with(['customer', 'user'])
             ->whereBetween('created_at', [$start, $end])
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->paymentMethodFilter, fn($q) => $q->where('payment_method', $this->paymentMethodFilter))
@@ -118,14 +106,14 @@ class extends Component
             ->paginate(10);
 
         return [
-            'sales' => $paginatedSales,
-            'users' => User::all(),
+            'sales' => $sales,
+            'users' => User::select('id', DB::raw("CONCAT(first_name, ' ', last_name) as name"))->get(),
             'totalRevenue' => $totalRevenue,
             'totalOrders' => $totalOrders,
-            'avgOrderValue' => $avgOrderValue,
+            'avgOrderValue' => $totalOrders > 0 ? $totalRevenue / $totalOrders : 0,
             'totalCost' => $totalCost,
             'grossProfit' => $grossProfit,
-            'margin' => $margin,
+            'margin' => $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0,
             'salesByPaymentMethod' => $salesByPaymentMethod,
             'salesByCategory' => $salesByCategory,
             'chartLabels' => $chartLabels,
@@ -145,16 +133,20 @@ class extends Component
 
     public function exportExcel()
     {
-        return Excel::download(new SalesExport, 'sales-report.xlsx');
+        return Excel::download(new SalesExport($this->startDate, $this->endDate, $this->statusFilter), 'sales-report.xlsx');
     }
 
     public function exportPdf()
     {
-        $sales = Sale::with(['customer', 'user'])->latest()->get();
+        // Tetap gunakan Eager Loading untuk PDF
+        $sales = Sale::with(['customer', 'user', 'items.product'])
+            ->whereBetween('created_at', [Carbon::parse($this->startDate)->startOfDay(), Carbon::parse($this->endDate)->endOfDay()])
+            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
+            ->latest()
+            ->get();
+
         $pdf = Pdf::loadView('pdf.sales-report', compact('sales'));
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'sales-report.pdf');
+        return response()->streamDownload(fn() => print($pdf->output()), 'sales-report.pdf');
     }
 }; ?>
 

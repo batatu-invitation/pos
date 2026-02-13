@@ -6,7 +6,6 @@ use App\Models\Customer;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -25,249 +24,158 @@ new #[Layout('components.layouts.app')] #[Title('Company Growth - Modern POS')] 
     public function loadData()
     {
         $now = Carbon::now();
+        $thisYear = $now->year;
+        $lastYear = $thisYear - 1;
 
-        // --- 1. KPI Cards ---
-
-        // Annual Revenue Growth
-        $thisYearRevenue = Sale::whereYear('created_at', $now->year)->where('status', 'completed')->sum('total_amount');
-        $lastYearRevenue = Sale::whereYear('created_at', $now->copy()->subYear()->year)
+        // --- 1. KPI & YEARLY TREND (Single Query) ---
+        $yearlyStats = Sale::selectRaw('
+                YEAR(created_at) as year, 
+                SUM(total_amount) as revenue, 
+                COUNT(*) as orders
+            ')
             ->where('status', 'completed')
-            ->sum('total_amount');
-        $annualGrowth = $this->calculateGrowth($thisYearRevenue, $lastYearRevenue);
+            ->where('created_at', '>=', $now->copy()->subYears(4)->startOfYear())
+            ->groupBy('year')
+            ->get()
+            ->keyBy('year');
 
-        // New Customer Rate (Month over Month)
-        $thisMonthCustomers = Customer::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count();
-        $lastMonthCustomers = Customer::whereMonth('created_at', $now->copy()->subMonth()->month)
-            ->whereYear('created_at', $now->copy()->subMonth()->year)
+        $thisYearRev = $yearlyStats->get($thisYear)->revenue ?? 0;
+        $lastYearRev = $yearlyStats->get($lastYear)->revenue ?? 0;
+        $thisYearOrders = $yearlyStats->get($thisYear)->orders ?? 0;
+        $lastYearOrders = $yearlyStats->get($lastYear)->orders ?? 0;
+
+        // --- 2. CUSTOMER METRICS (Optimized) ---
+        $customerStats = Customer::selectRaw("
+                SUM(CASE WHEN month(created_at) = {$now->month} AND year(created_at) = {$thisYear} THEN 1 ELSE 0 END) as this_month,
+                SUM(CASE WHEN month(created_at) = {$now->copy()->subMonth()->month} AND year(created_at) = {$now->copy()->subMonth()->year} THEN 1 ELSE 0 END) as last_month,
+                COUNT(*) as total_all_time
+            ")
+            ->first();
+
+        $repeatCustomers = Sale::where('status', 'completed')
+            ->whereNotNull('customer_id')
+            ->groupBy('customer_id')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('customer_id')
             ->count();
-        $customerGrowth = $this->calculateGrowth($thisMonthCustomers, $lastMonthCustomers);
 
-        // Customer Retention (Repeat Customers / Total Customers)
-        $totalCustomers = Customer::count();
-        $repeatCustomers = Sale::select('customer_id')->whereNotNull('customer_id')->where('status', 'completed')->groupBy('customer_id')->havingRaw('COUNT(*) > 1')->get()->count();
-        $retentionRate = $totalCustomers > 0 ? ($repeatCustomers / $totalCustomers) * 100 : 0;
-
-        // Avg Order Value (AOV) YoY
-        $thisYearOrders = Sale::whereYear('created_at', $now->year)->where('status', 'completed')->count();
-        $thisYearAOV = $thisYearOrders > 0 ? $thisYearRevenue / $thisYearOrders : 0;
-
-        $lastYearOrders = Sale::whereYear('created_at', $now->copy()->subYear()->year)
-            ->where('status', 'completed')
-            ->count();
-        $lastYearAOV = $lastYearOrders > 0 ? $lastYearRevenue / $lastYearOrders : 0;
-        $aovGrowth = $this->calculateGrowth($thisYearAOV, $lastYearAOV);
-
-        $this->kpi = [
-            'annual_revenue_growth' => $annualGrowth,
-            'new_customer_rate' => $customerGrowth,
-            'new_customer_change' => $thisMonthCustomers - $lastMonthCustomers, // Absolute change for subtext? Or just use growth rate. View uses % change.
-            'customer_retention' => $retentionRate,
-            'aov' => $thisYearAOV,
-            'aov_growth' => $aovGrowth,
-        ];
-
-        // --- 2. Charts ---
-
-        // Revenue Trend (5 Years)
-        $years = range($now->year - 4, $now->year);
-        $revenueTrendData = [];
-        foreach ($years as $year) {
-            $revenueTrendData[] = Sale::whereYear('created_at', $year)->where('status', 'completed')->sum('total_amount');
-        }
-
-        // Monthly Comparison (This Year vs Last Year)
-        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        $thisYearMonthly = [];
-        $lastYearMonthly = [];
-
-        // Efficient query for monthly data
-        $thisYearSales = Sale::selectRaw('EXTRACT(MONTH FROM created_at) as month, SUM(total_amount) as total')
-            ->whereYear('created_at', $now->year)
-            ->where('status', 'completed')
-            ->groupByRaw('EXTRACT(MONTH FROM created_at)')
-            ->pluck('total', 'month')
-            ->toArray();
-
-        $lastYearSales = Sale::selectRaw('EXTRACT(MONTH FROM created_at) as month, SUM(total_amount) as total')
-            ->whereYear('created_at', $now->copy()->subYear()->year)
-            ->where('status', 'completed')
-            ->groupByRaw('EXTRACT(MONTH FROM created_at)')
-            ->pluck('total', 'month')
-            ->toArray();
-
-        for ($i = 1; $i <= 12; $i++) {
-            $thisYearMonthly[] = $thisYearSales[$i] ?? 0;
-            $lastYearMonthly[] = $lastYearSales[$i] ?? 0;
-        }
-
-        // Customer Acquisition (Last 6 Months)
-        $customerTrendLabels = [];
-        $customerTrendData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $customerTrendLabels[] = $date->format('M');
-            $customerTrendData[] = Customer::whereYear('created_at', $date->year)->whereMonth('created_at', $date->month)->count();
-        }
-
-        $this->charts = [
-            'revenue_years' => array_map('strval', $years),
-            'revenue_trend' => $revenueTrendData,
-            'monthly_labels' => $months,
-            'this_year_monthly' => $thisYearMonthly,
-            'last_year_monthly' => $lastYearMonthly,
-            'customer_labels' => $customerTrendLabels,
-            'customer_data' => $customerTrendData,
-            'this_year' => $now->year,
-            'last_year' => $now->year - 1,
-        ];
-
-        // --- 3. Top Growing Categories ---
-        // Comparing last 30 days sales count vs previous 30 days
+        // --- 3. TOP GROWING CATEGORIES (Anti N+1) ---
         $start = now()->subDays(30);
         $prevStart = now()->subDays(60);
 
-        // Ambil semua SaleItems dalam 60 hari terakhir sekaligus
-        $allSales = SaleItem::with('product')
-            ->whereHas('sale', function ($q) use ($prevStart) {
-                $q->where('created_at', '>=', $prevStart)->where('status', 'completed');
+        $categoryStats = SaleItem::query()
+            ->join('products', 'sale_items.product_id', '=', 'products.id')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->selectRaw('
+                categories.name, categories.icon, categories.color,
+                SUM(CASE WHEN sales.created_at >= ? THEN sale_items.quantity ELSE 0 END) as current_sales,
+                SUM(CASE WHEN sales.created_at >= ? AND sales.created_at < ? THEN sale_items.quantity ELSE 0 END) as prev_sales
+            ', [$start, $prevStart, $start])
+            ->where('sales.status', 'completed')
+            ->groupBy('categories.id', 'categories.name', 'categories.icon', 'categories.color')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'sales' => (int) $item->current_sales,
+                    'growth' => $this->calculateGrowth($item->current_sales, $item->prev_sales),
+                    'icon' => $item->icon ?? 'box',
+                    'color' => $item->color ?? 'blue',
+                ];
             })
+            ->sortByDesc('growth')
+            ->take(6)
+            ->values()
+            ->toArray();
+
+        // --- 4. MONTHLY COMPARISON CHART ---
+        $monthlySales = Sale::selectRaw('
+                YEAR(created_at) as year, 
+                MONTH(created_at) as month, 
+                SUM(total_amount) as total
+            ')
+            ->whereIn(DB::raw('YEAR(created_at)'), [$thisYear, $lastYear])
+            ->where('status', 'completed')
+            ->groupBy('year', 'month')
             ->get();
 
-        $categories = Category::all();
-        $categoryGrowth = [];
+        $thisYearMonthly = array_fill(1, 12, 0);
+        $lastYearMonthly = array_fill(1, 12, 0);
 
-        foreach ($categories as $category) {
-            // Filter data dari koleksi di memori (tanpa query database lagi)
-            $currentSales = $allSales
-                ->filter(function ($item) use ($category, $start) {
-                    return $item->product->category_id == $category->id && $item->created_at >= $start;
-                })
-                ->sum('quantity');
-
-            $prevSales = $allSales
-                ->filter(function ($item) use ($category, $start, $prevStart) {
-                    return $item->product->category_id == $category->id && $item->created_at >= $prevStart && $item->created_at < $start;
-                })
-                ->sum('quantity');
-
-            $growth = $this->calculateGrowth($currentSales, $prevSales);
-
-            $categoryGrowth[] = [
-                'name' => $category->name,
-                'sales' => (int) $currentSales,
-                'growth' => $growth,
-                'icon' => $category->icon ?? 'box',
-                'color' => $category->color ?? 'blue',
-            ];
+        foreach ($monthlySales as $sale) {
+            if ($sale->year == $thisYear) $thisYearMonthly[$sale->month] = (float)$sale->total;
+            else $lastYearMonthly[$sale->month] = (float)$sale->total;
         }
 
-        // Urutkan dan ambil top 6
-        usort($categoryGrowth, fn($a, $b) => $b['growth'] <=> $a['growth']);
-        $this->topCategories = array_slice($categoryGrowth, 0, 6);
-        // dd($this->topCategories);
-
-        // --- 4. Growth History (Last 12 Months) ---
-        $history = [];
-        $now = Carbon::now();
-
-        // Pre-fetch data for the last 13 months to allow growth calculation for the 12th month back
-        // Range: From start of 12 months ago to end of current month
-        // Gunakan startOfMonth agar perhitungan mundur bulan lebih stabil
-        $now = now()->startOfMonth();
-
-        $startDate = $now->copy()->subMonths(12)->startOfMonth();
-        $endDate = $now->copy()->endOfMonth();
-
-        // Fetch Sales Data Grouped by Year-Month
-        $salesData = Sale::selectRaw(
-            '
-        EXTRACT(YEAR FROM created_at) as year,
-        EXTRACT(MONTH FROM created_at) as month,
-        SUM(total_amount) as revenue,
-        COUNT(*) as orders
-    ',
-        )
-            ->whereBetween('created_at', [$startDate, $endDate])
+        // --- 5. GROWTH HISTORY (Last 12 Months) ---
+        $historyData = Sale::selectRaw('
+                YEAR(created_at) as year, 
+                MONTH(created_at) as month, 
+                SUM(total_amount) as revenue, 
+                COUNT(*) as orders
+            ')
             ->where('status', 'completed')
-            ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
+            ->where('created_at', '>=', $now->copy()->subMonths(13)->startOfMonth())
+            ->groupBy('year', 'month')
             ->get()
-            ->keyBy(function ($item) {
-                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
-            });
+            ->keyBy(fn($i) => $i->year . '-' . $i->month);
 
-        // Fetch Customer Data Grouped by Year-Month
-        $customerData = Customer::selectRaw(
-            '
-        EXTRACT(YEAR FROM created_at) as year,
-        EXTRACT(MONTH FROM created_at) as month,
-        COUNT(*) as count
-    ',
-        )
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
+        $histCustomers = Customer::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
+            ->where('created_at', '>=', $now->copy()->subMonths(13)->startOfMonth())
+            ->groupBy('year', 'month')
             ->get()
-            ->keyBy(function ($item) {
-                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
-            });
+            ->keyBy(fn($i) => $i->year . '-' . $i->month);
 
         $history = [];
-
         for ($i = 0; $i < 12; $i++) {
-            // subMonthsNoOverflow mencegah lonjakan tanggal jika hari ini tanggal 31
             $date = $now->copy()->subMonthsNoOverflow($i);
-            $yearMonth = $date->format('Y-m');
+            $key = $date->year . '-' . $date->month;
+            $prevKey = $date->copy()->subMonthNoOverflow()->year . '-' . $date->copy()->subMonthNoOverflow()->month;
 
-            $prevDate = $date->copy()->subMonthNoOverflow();
-            $prevYearMonth = $prevDate->format('Y-m');
-
-            // Ambil data sales
-            $currentSale = $salesData->get($yearMonth);
-            $revenue = $currentSale ? $currentSale->revenue : 0;
-            $orders = $currentSale ? $currentSale->orders : 0;
-
-            // Ambil data sales bulan sebelumnya untuk growth rate
-            $prevSale = $salesData->get($prevYearMonth);
-            $prevRevenue = $prevSale ? $prevSale->revenue : 0;
-
-            // Ambil data customer
-            $currentCustomer = $customerData->get($yearMonth);
-            $customers = $currentCustomer ? $currentCustomer->count : 0;
-
-            // Kalkulasi
-            $growthRate = $this->calculateGrowth($revenue, $prevRevenue);
-            $avgOrder = $orders > 0 ? $revenue / $orders : 0;
-
-            // Determine Status
-            $status = 'Average';
-            if ($growthRate >= 10) {
-                $status = 'Excellent';
-            } elseif ($growthRate > 0) {
-                $status = 'Good';
-            } elseif ($growthRate < -10) {
-                $status = 'Poor';
-            }
+            $curr = $historyData->get($key);
+            $prev = $historyData->get($prevKey);
+            $rev = $curr->revenue ?? 0;
+            $growth = $this->calculateGrowth($rev, $prev->revenue ?? 0);
 
             $history[] = [
                 'period' => $date->format('M Y'),
-                'revenue' => $revenue,
-                'growth_rate' => $growthRate,
-                'customers' => $customers,
-                'avg_order' => $avgOrder,
-                'status' => $status,
+                'revenue' => $rev,
+                'growth_rate' => $growth,
+                'customers' => $histCustomers->get($key)->count ?? 0,
+                'avg_order' => ($curr->orders ?? 0) > 0 ? $rev / $curr->orders : 0,
+                'status' => $growth >= 10 ? 'Excellent' : ($growth > 0 ? 'Good' : ($growth < -10 ? 'Poor' : 'Average')),
             ];
         }
 
-        // return $history;
-        // dd($history);
+        // --- ASSIGN TO PUBLIC PROPERTIES ---
+        $this->topCategories = $categoryStats;
         $this->growthHistory = $history;
-        // dd($this->growthHistory);
+        $this->kpi = [
+            'annual_revenue_growth' => $this->calculateGrowth($thisYearRev, $lastYearRev),
+            'new_customer_rate' => $this->calculateGrowth($customerStats->this_month, $customerStats->last_month),
+            'new_customer_change' => $customerStats->this_month - $customerStats->last_month,
+            'customer_retention' => $customerStats->total_all_time > 0 ? ($repeatCustomers / $customerStats->total_all_time) * 100 : 0,
+            'aov' => $thisYearOrders > 0 ? $thisYearRev / $thisYearOrders : 0,
+            'aov_growth' => $this->calculateGrowth(
+                $thisYearOrders > 0 ? $thisYearRev / $thisYearOrders : 0,
+                $lastYearOrders > 0 ? $lastYearRev / $lastYearOrders : 0
+            ),
+        ];
+
+        $this->charts = [
+            'revenue_years' => array_map('strval', range($thisYear - 4, $thisYear)),
+            'revenue_trend' => array_values(array_map(fn($y) => $yearlyStats->get($y)->revenue ?? 0, range($thisYear - 4, $thisYear))),
+            'monthly_labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'this_year_monthly' => array_values($thisYearMonthly),
+            'last_year_monthly' => array_values($lastYearMonthly),
+            'this_year' => $thisYear,
+            'last_year' => $lastYear,
+        ];
     }
 
-    private function calculateGrowth($current, $previous)
-    {
-        if ($previous == 0) {
-            return $current > 0 ? 100 : 0;
-        }
+    private function calculateGrowth($current, $previous) {
+        if ($previous <= 0) return $current > 0 ? 100 : 0;
         return (($current - $previous) / $previous) * 100;
     }
 }; ?>

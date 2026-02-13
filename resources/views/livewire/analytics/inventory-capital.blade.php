@@ -96,40 +96,44 @@
                     <tr>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('name')">
                             {{ __('Product') }}
-                             @if($sortField === 'name')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i>
-                            @endif
+                            @if($sortField === 'name') <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i> @endif
                         </th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('sku')">
                             {{ __('SKU') }}
-                            @if($sortField === 'sku')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i>
-                            @endif
+                            @if($sortField === 'sku') <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i> @endif
                         </th>
-                         <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('cost')">
-                            {{ __('Cost Price') }}
-                             @if($sortField === 'cost')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i>
-                            @endif
-                        </th>
-                         <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('stock')">
+                        <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('stock')">
                             {{ __('Stock') }}
-                             @if($sortField === 'stock')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i>
-                            @endif
+                            @if($sortField === 'stock') <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i> @endif
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('cost')">
+                            {{ __('Cost') }}
+                            @if($sortField === 'cost') <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i> @endif
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('price')">
+                            {{ __('Price') }}
+                            @if($sortField === 'price') <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i> @endif
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-indigo-600 transition-colors dark:text-gray-400" wire:click="sortBy('margin')">
+                            {{ __('Margin') }}
+                            @if($sortField === 'margin') <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1"></i> @endif
                         </th>
                         <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
                             {{ __('Total Capital') }}
                         </th>
+                        <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                            {{ __('Total Margin') }}
+                        </th>
                     </tr>
                 </thead>
+
                 <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                     @forelse($products as $product)
                         <tr class="hover:bg-gray-50 transition-colors dark:hover:bg-gray-700/30">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">
-                                         @if($product->image)
+                                        @if($product->image)
                                             <img class="h-10 w-10 rounded-lg object-cover" src="{{ Storage::url($product->image) }}" alt="">
                                         @else
                                             <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl dark:bg-gray-700">
@@ -146,32 +150,56 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono dark:text-gray-400">
                                 {{ $product->sku }}
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->stock > 10 ? 'bg-green-100 text-green-800' : ($product->stock > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                    {{ number_format($product->stock) }}
+                                </span>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right dark:text-gray-300">
                                 Rp {{ number_format($product->cost, 0, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->stock > 10 ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : ($product->stock > 0 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300') }}">
-                                    {{ number_format($product->stock) }}
-                                </span>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right dark:text-gray-300">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-green-600 dark:text-green-400">
+                                Rp {{ number_format($product->margin, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right dark:text-white">
                                 Rp {{ number_format($product->cost * $product->stock, 0, ',', '.') }}
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right dark:text-white">
+                                Rp {{ number_format($product->margin * $product->stock, 0, ',', '.') }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
-                                <i class="fas fa-box-open text-4xl mb-3 text-gray-300 dark:text-gray-600"></i>
+                            <td colspan="7" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
                                 <p>{{ __('No products found.') }}</p>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
+
+                <tfoot class="bg-gray-100 dark:bg-gray-700/80 border-t-2 border-gray-200 dark:border-gray-600">
+                    <tr>
+                        <td colspan="2" class="px-6 py-4 text-sm font-black text-gray-900 dark:text-white text-right uppercase tracking-wider">
+                            Grand Total
+                        </td>
+                        <td class="px-6 py-4 text-center text-sm font-bold text-gray-900 dark:text-white bg-gray-200/50 dark:bg-gray-800/50">
+                            {{ number_format($products->sum('stock'), 0, ',', '.') }}
+                        </td>
+                        <td colspan="3">
+                           
+                        </td>
+                        <td class="px-6 py-4 text-right text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20">
+                            Rp {{ number_format($products->sum(fn($p) => $p->cost * $p->stock), 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 text-right text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20">
+                            Rp {{ number_format($products->sum(fn($p) => $p->margin * $p->stock), 0, ',', '.') }}
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
-        </div>
-        
-         <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-            {{ $products->links() }}
         </div>
     </div>
 </div>

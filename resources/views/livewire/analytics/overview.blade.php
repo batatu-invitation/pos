@@ -28,7 +28,6 @@ class extends Component
     public $topProducts = [];
     public $chartData = [];
 
-    // Comparison percentages (vs last period)
     public $salesGrowth = 0;
     public $ordersGrowth = 0;
     public $customersGrowth = 0;
@@ -41,175 +40,171 @@ class extends Component
 
     public function updatedDateRange()
     {
+        $this->resetPage(); // Reset pagination saat filter berubah
         $this->loadData();
         $this->dispatch('update-chart', data: $this->chartData);
     }
 
     public function loadData()
     {
-        // Define dates
-        $endDate = Carbon::now();
+        $now = Carbon::now();
+        $endDate = $now->copy();
 
+        // 1. Optimized Date Range Logic
         switch ($this->dateRange) {
             case '7_days':
-                $startDate = Carbon::now()->subDays(7);
-                $prevEndDate = $startDate->copy()->subDay();
-                $prevStartDate = $prevEndDate->copy()->subDays(7);
+                $startDate = $now->copy()->subDays(6)->startOfDay();
+                $prevStartDate = $startDate->copy()->subDays(7);
+                $prevEndDate = $startDate->copy()->subSecond();
                 break;
-
-            case '30_days':
-                $startDate = Carbon::now()->subDays(30);
-                $prevEndDate = $startDate->copy()->subDay();
-                $prevStartDate = $prevEndDate->copy()->subDays(30);
-                break;
-
             case 'this_month':
-                $startDate = Carbon::now()->startOfMonth();
-                // Compare with same period last month
-                $prevStartDate = Carbon::now()->subMonth()->startOfMonth();
-                $prevEndDate = Carbon::now()->subMonth(); // Same day of last month
+                $startDate = $now->copy()->startOfMonth();
+                $prevStartDate = $startDate->copy()->subMonth();
+                $prevEndDate = $now->copy()->subMonth();
                 break;
-
             case 'last_month':
-                $startDate = Carbon::now()->subMonth()->startOfMonth();
-                $endDate = Carbon::now()->subMonth()->endOfMonth();
-                // Compare with month before last
-                $prevStartDate = Carbon::now()->subMonths(2)->startOfMonth();
-                $prevEndDate = Carbon::now()->subMonths(2)->endOfMonth();
+                $startDate = $now->copy()->subMonth()->startOfMonth();
+                $endDate = $now->copy()->subMonth()->endOfMonth();
+                $prevStartDate = $startDate->copy()->subMonth();
+                $prevEndDate = $endDate->copy()->subMonth();
                 break;
-
             case 'this_year':
-                $startDate = Carbon::now()->startOfYear();
-                // Compare with same period last year
-                $prevStartDate = Carbon::now()->subYear()->startOfYear();
-                $prevEndDate = Carbon::now()->subYear(); // Same day of last year
+                $startDate = $now->copy()->startOfYear();
+                $prevStartDate = $startDate->copy()->subYear();
+                $prevEndDate = $now->copy()->subYear();
                 break;
-
-            default:
-                $startDate = Carbon::now()->subDays(30);
-                $prevEndDate = $startDate->copy()->subDay();
-                $prevStartDate = $prevEndDate->copy()->subDays(30);
+            default: // 30_days
+                $startDate = $now->copy()->subDays(29)->startOfDay();
+                $prevStartDate = $startDate->copy()->subDays(30);
+                $prevEndDate = $startDate->copy()->subSecond();
         }
 
-        // 1. Total Sales & Orders
-        $currentSalesQuery = Sale::whereBetween('created_at', [$startDate, $endDate])->where('status', 'completed');
-        $this->totalSales = $currentSalesQuery->sum('total_amount');
-        $this->totalOrders = $currentSalesQuery->count();
+        // 2. Aggregate Current and Previous Sales in 2 queries instead of many
+        $salesMetrics = Sale::selectRaw("
+            SUM(CASE WHEN created_at >= '{$startDate}' THEN total_amount ELSE 0 END) as current_sales,
+            COUNT(CASE WHEN created_at >= '{$startDate}' THEN id ELSE NULL END) as current_orders,
+            SUM(CASE WHEN created_at BETWEEN '{$prevStartDate}' AND '{$prevEndDate}' THEN total_amount ELSE 0 END) as prev_sales,
+            COUNT(CASE WHEN created_at BETWEEN '{$prevStartDate}' AND '{$prevEndDate}' THEN id ELSE NULL END) as prev_orders
+        ")->where('status', 'completed')->first();
 
-        $prevSalesQuery = Sale::whereBetween('created_at', [$prevStartDate, $prevEndDate])->where('status', 'completed');
-        $prevTotalSales = $prevSalesQuery->sum('total_amount');
-        $prevTotalOrders = $prevSalesQuery->count();
+        $this->totalSales = (float) $salesMetrics->current_sales;
+        $this->totalOrders = (int) $salesMetrics->current_orders;
+        
+        // 3. Customer Growth Metrics
+        $customerMetrics = Customer::selectRaw("
+            COUNT(CASE WHEN created_at >= '{$startDate}' THEN id ELSE NULL END) as current_new,
+            COUNT(CASE WHEN created_at BETWEEN '{$prevStartDate}' AND '{$prevEndDate}' THEN id ELSE NULL END) as prev_new
+        ")->first();
 
-        $this->salesGrowth = $this->calculateGrowth($this->totalSales, $prevTotalSales);
-        $this->ordersGrowth = $this->calculateGrowth($this->totalOrders, $prevTotalOrders);
+        $this->newCustomers = (int) $customerMetrics->current_new;
 
-        // 2. New Customers
-        $this->newCustomers = Customer::whereBetween('created_at', [$startDate, $endDate])->count();
-        $prevNewCustomers = Customer::whereBetween('created_at', [$prevStartDate, $prevEndDate])->count();
-        $this->customersGrowth = $this->calculateGrowth($this->newCustomers, $prevNewCustomers);
-
-        // 3. Avg Transaction
+        // 4. Growth Calculations
+        $this->salesGrowth = $this->calculateGrowth($this->totalSales, $salesMetrics->prev_sales);
+        $this->ordersGrowth = $this->calculateGrowth($this->totalOrders, $salesMetrics->prev_orders);
+        $this->customersGrowth = $this->calculateGrowth($this->newCustomers, $customerMetrics->prev_new);
+        
         $this->avgTransaction = $this->totalOrders > 0 ? $this->totalSales / $this->totalOrders : 0;
-        $prevAvgTransaction = $prevTotalOrders > 0 ? $prevTotalSales / $prevTotalOrders : 0;
-        $this->avgTransactionGrowth = $this->calculateGrowth($this->avgTransaction, $prevAvgTransaction);
+        $prevAvg = $salesMetrics->prev_orders > 0 ? $salesMetrics->prev_sales / $salesMetrics->prev_orders : 0;
+        $this->avgTransactionGrowth = $this->calculateGrowth($this->avgTransaction, $prevAvg);
 
-        // 4. Receivables & Payables (Current Outstanding)
+        // 5. Global Receivables/Payables (Hanya dipanggil sekali)
         $this->totalReceivable = Sale::where('payment_status', '!=', 'paid')->sum(DB::raw('total_amount - cash_received'));
         $this->totalPayable = Purchase::where('status', '!=', 'paid')->sum(DB::raw('total_amount - paid_amount'));
 
-        // 5. Top Products
-        $this->topProducts = SaleItem::select('product_name as name', DB::raw('SUM(quantity) as sales'), DB::raw('SUM(total_price) as revenue'))
-            ->whereHas('sale', function($q) use ($startDate, $endDate) {
-                $q->whereBetween('created_at', [$startDate, $endDate])
-                  ->completed();
-            })
+        // 6. Top Products Optimized
+        $this->topProducts = SaleItem::query()
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->select('product_name as name', DB::raw('SUM(quantity) as sales'), DB::raw('SUM(total_price) as revenue'))
+            ->whereBetween('sales.created_at', [$startDate, $endDate])
+            ->where('sales.status', 'completed')
             ->groupBy('product_name')
             ->orderByDesc('revenue')
             ->take(5)
-            ->get()
-            ->toArray();
+            ->get()->toArray();
 
-        // 6. Chart Data
-        $chartQuery = Sale::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total_amount) as total'))
+        // 7. Chart Data (Optimized Fill missing dates)
+        $dailySales = Sale::selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'completed')
             ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+            ->pluck('total', 'date');
 
-        // Fill missing dates
-        $period = CarbonPeriod::create($startDate, $endDate);
-        $labels = [];
-        $data = [];
-
-        foreach($period as $date) {
-            $formattedDate = $date->format('Y-m-d');
+        $labels = []; $data = [];
+        foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+            $formatted = $date->format('Y-m-d');
             $labels[] = $date->format('D, d M');
-            $record = $chartQuery->firstWhere('date', $formattedDate);
-            $data[] = $record ? $record->total : 0;
+            $data[] = (float) ($dailySales[$formatted] ?? 0);
         }
-
-        $this->chartData = [
-            'labels' => $labels,
-            'data' => $data
-        ];
+        $this->chartData = ['labels' => $labels, 'data' => $data];
     }
 
     private function calculateGrowth($current, $previous)
     {
-        if ($previous == 0) return $current > 0 ? 100 : 0;
+        if ($previous <= 0) return $current > 0 ? 100 : 0;
         return (($current - $previous) / $previous) * 100;
     }
 
     public function with()
     {
-        return [
-            'recentActivities' => $this->getRecentActivities(),
-        ];
+        return ['recentActivities' => $this->getRecentActivities()];
     }
 
     public function getRecentActivities()
     {
-        $sales = Sale::query()->select('id', 'created_at', DB::raw("'sale' as type"));
-        $customers = Customer::query()->select('id', 'created_at', DB::raw("'customer' as type"));
+        // Hindari query manual find() di dalam loop. Gunakan Polymorphic Eager Loading.
+        $union = DB::table('sales')
+            ->select('id', 'created_at', DB::raw("'sale' as type"))
+            ->union(DB::table('customers')->select('id', 'created_at', DB::raw("'customer' as type")))
+            ->orderBy('created_at', 'desc');
 
-        $query = $sales->union($customers)->orderBy('created_at', 'desc');
+        $paginated = $union->paginate(10);
+        
+        // Ambil ID per tipe untuk batch loading (Eager Loading)
+        $idsByType = collect($paginated->items())->groupBy('type')->map->pluck('id');
 
-        $paginated = $query->paginate(10);
+        $sales = isset($idsByType['sale']) 
+            ? Sale::with(['user', 'customer'])->whereIn('id', $idsByType['sale'])->get()->keyBy('id') 
+            : collect();
+        $customers = isset($idsByType['customer']) 
+            ? Customer::whereIn('id', $idsByType['customer'])->get()->keyBy('id') 
+            : collect();
 
-        $transformed = $paginated->getCollection()->map(function ($item) {
-             if ($item->type === 'sale') {
-                 $sale = Sale::with('user', 'customer')->find($item->id);
-                 if (!$sale) return null; // Handle deleted or missing
-                 return [
+        // Transformasi koleksi yang sudah di-load secara batch
+        $transformed = collect($paginated->items())->map(function ($item) use ($sales, $customers) {
+            if ($item->type === 'sale') {
+                $sale = $sales->get($item->id);
+                if (!$sale) return null;
+                return [
                     'action' => 'New Order #' . $sale->invoice_number,
-                    'user' => $sale->customer ? $sale->customer->name : 'Walk-in Customer',
-                    'time' => $sale->created_at->diffForHumans(),
+                    'user' => $sale->customer->name ?? 'Walk-in Customer',
+                    'time' => Carbon::parse($item->created_at)->diffForHumans(),
                     'amount' => $sale->total_amount,
                     'status' => ucfirst($sale->status),
                     'type' => 'success',
-                    'details' => 'Order processed by ' . ($sale->user ? $sale->user->name : 'System'),
-                    'created_at' => $sale->created_at
-                 ];
-             } else {
-                 $customer = Customer::find($item->id);
-                 if (!$customer) return null;
-                 return [
+                    'details' => 'Processed by ' . ($sale->user->name ?? 'System'),
+                ];
+            } else {
+                $customer = $customers->get($item->id);
+                if (!$customer) return null;
+                return [
                     'action' => 'New Customer',
                     'user' => $customer->name,
-                    'time' => $customer->created_at->diffForHumans(),
+                    'time' => Carbon::parse($item->created_at)->diffForHumans(),
                     'amount' => null,
                     'status' => 'Registered',
                     'type' => 'info',
                     'details' => 'Customer added to system',
-                    'created_at' => $customer->created_at
-                 ];
-             }
+                ];
+            }
         })->filter()->values();
 
-        $paginated->setCollection($transformed);
-
-        return $paginated;
+        return new \Illuminate\Pagination\LengthAwarePaginator(
+            $transformed,
+            $paginated->total(),
+            $paginated->perPage(),
+            $paginated->currentPage(),
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
     }
 }; ?>
 

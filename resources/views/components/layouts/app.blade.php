@@ -71,126 +71,146 @@
                         <div class="hidden xl:block">
                             <div class="flex items-baseline space-x-2">
                                 
-                                <!-- Operations Dropdown -->
-                                <div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                                    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center">
-                                        <i class="fas fa-briefcase mr-1"></i> {{ __('Operations') }} <i class="fas fa-chevron-down ml-1 text-xs"></i>
-                                    </button>
-                                    <div x-show="open" 
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="transform opacity-0 scale-95"
-                                         x-transition:enter-end="transform opacity-100 scale-100"
-                                         class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 dark:bg-gray-800 focus:outline-none z-50 max-h-[80vh] overflow-y-auto"
-                                         style="display: none;">
-                                        
-                                        <!-- Dashboard -->
-                                        <a wire:navigate href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('dashboard') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }} font-semibold border-b border-gray-100 dark:border-gray-700">
-                                            <i class="fas fa-home mr-2 w-4"></i> {{ __('Dashboard') }}
-                                        </a>
+                               <!-- Operations Dropdown - Only show if user has access to at least one item inside -->
+@hasanyrole(['Super Admin', 'Manager', 'Cashier', 'Analyst', 'Customer Support'])
+<div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center">
+        <i class="fas fa-briefcase mr-1"></i> {{ __('Operations') }} <i class="fas fa-chevron-down ml-1 text-xs"></i>
+    </button>
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 dark:bg-gray-800 focus:outline-none z-50 max-h-[80vh] overflow-y-auto"
+         style="display: none;">
+        
+        <!-- Dashboard - All authenticated users -->
+        <a wire:navigate href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('dashboard') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }} font-semibold border-b border-gray-100 dark:border-gray-700">
+            <i class="fas fa-home mr-2 w-4"></i> {{ __('Dashboard') }}
+        </a>
 
-                                        @role(['Super Admin', 'Manager', 'Cashier'])
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('POS') }}</div>
-                                        <a wire:navigate href="{{ route('pos.visual') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('pos.visual') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Visual POS') }}</a>
-                                        <a wire:navigate href="{{ route('pos.minimarket') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('pos.minimarket') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Mini Market POS') }}</a>
-                                        <a wire:navigate href="{{ route('pos.terminal') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('pos.terminal') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('POS Terminal') }}</a>
-                                        @endrole
+        @role(['Super Admin', 'Manager', 'Cashier'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('POS') }}</div>
+        <a wire:navigate href="{{ route('pos.visual') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('pos.visual') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Visual POS') }}</a>
+        <a wire:navigate href="{{ route('pos.minimarket') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('pos.minimarket') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Mini Market POS') }}</a>
+        <a wire:navigate href="{{ route('pos.terminal') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('pos.terminal') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('POS Terminal') }}</a>
+        @endrole
 
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Sales') }}</div>
-                                        <a wire:navigate href="{{ route('sales.sales') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('sales.sales') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Transactions') }}</a>
+        @role(['Super Admin', 'Manager', 'Cashier', 'Analyst'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Sales') }}</div>
+        <a wire:navigate href="{{ route('sales.sales') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('sales.sales') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Transactions') }}</a>
+        @endrole
 
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('People') }}</div>
-                                        <a wire:navigate href="{{ route('people.customers') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('people.customers') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Customers') }}</a>
-                                        <a wire:navigate href="{{ route('people.employees') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('people.employees') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Employees') }}</a>
-                                    </div>
-                                </div>
+        @role(['Super Admin', 'Manager', 'Customer Support'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('People') }}</div>
+        <a wire:navigate href="{{ route('people.customers') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('people.customers') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Customers') }}</a>
+        <a wire:navigate href="{{ route('people.employees') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('people.employees') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Employees') }}</a>
+        @endrole
+    </div>
+</div>
+@endhasanyrole
 
-                                <!-- Management Dropdown -->
-                                <div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                                    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center">
-                                        <i class="fas fa-chart-line mr-1"></i> {{ __('Management') }} <i class="fas fa-chevron-down ml-1 text-xs"></i>
-                                    </button>
-                                    <div x-show="open" 
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="transform opacity-0 scale-95"
-                                         x-transition:enter-end="transform opacity-100 scale-100"
-                                         class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 dark:bg-gray-800 focus:outline-none z-50 max-h-[80vh] overflow-y-auto"
-                                         style="display: none;">
-                                        
-                                        @role(['Super Admin', 'Manager', 'Inventory Manager'])
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Inventory') }}</div>
-                                        <a wire:navigate href="{{ route('inventory.products') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.products') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Products') }}</a>
-                                        <a wire:navigate href="{{ route('inventory.stock') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.stock') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Stock') }}</a>
-                                        <a wire:navigate href="{{ route('inventory.categories') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.categories') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Categories') }}</a>
-                                        <a wire:navigate href="{{ route('admin.suppliers') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.suppliers') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Suppliers') }}</a>
-                                        <a wire:navigate href="{{ route('inventory.emojis') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.emojis') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Icons') }}</a>
-                                        <a wire:navigate href="{{ route('inventory.colors') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.colors') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Colors') }}</a>
-                                        @endrole
+<!-- Management Dropdown - Only show if user has access to at least one item inside -->
+@hasanyrole(['Super Admin', 'Manager', 'Inventory Manager', 'Analyst'])
+<div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center">
+        <i class="fas fa-chart-line mr-1"></i> {{ __('Management') }} <i class="fas fa-chevron-down ml-1 text-xs"></i>
+    </button>
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 dark:bg-gray-800 focus:outline-none z-50 max-h-[80vh] overflow-y-auto"
+         style="display: none;">
+        
+        @role(['Super Admin', 'Manager', 'Inventory Manager', 'Analyst'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Inventory') }}</div>
+        <a wire:navigate href="{{ route('inventory.products') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.products') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Products') }}</a>
+        <a wire:navigate href="{{ route('inventory.stock') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.stock') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Stock') }}</a>
+        <a wire:navigate href="{{ route('inventory.categories') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.categories') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Categories') }}</a>
+        <a wire:navigate href="{{ route('inventory.emojis') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.emojis') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Icons') }}</a>
+        <a wire:navigate href="{{ route('inventory.colors') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('inventory.colors') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Colors') }}</a>
+        @endrole
 
-                                        @role(['Super Admin', 'Manager'])
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Finance') }}</div>
-                                        <a wire:navigate href="{{ route('finance.transactions') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('finance.transactions') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Income & Expense') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.cash-bank-records') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.cash-bank-records') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Cash & Bank') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.accounts-receivable') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.accounts-receivable') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Accounts Receivable') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.accounts-payable') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.accounts-payable') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Accounts Payable') }}</a>
+        @role(['Super Admin', 'Manager', 'Analyst'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Suppliers') }}</div>
+        <a wire:navigate href="{{ route('admin.suppliers') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.suppliers') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Suppliers') }}</a>
+        @endrole
 
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Bookkeeping') }}</div>
-                                        <a wire:navigate href="{{ route('analytics.chart-of-accounts') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.chart-of-accounts') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Chart of Accounts') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.journal') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.journal') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Journal Entries') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.general-ledger') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.general-ledger') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('General Ledger') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.memo') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.memo') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Memos / Adjustments') }}</a>
-                                        @endrole
+        @role(['Super Admin', 'Manager'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Finance') }}</div>
+        <a wire:navigate href="{{ route('finance.transactions') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('finance.transactions') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Income & Expense') }}</a>
+        <a wire:navigate href="{{ route('analytics.cash-bank-records') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.cash-bank-records') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Cash & Bank') }}</a>
+        <a wire:navigate href="{{ route('analytics.accounts-receivable') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.accounts-receivable') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Accounts Receivable') }}</a>
+        <a wire:navigate href="{{ route('analytics.accounts-payable') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.accounts-payable') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Accounts Payable') }}</a>
 
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Analytics') }}</div>
-                                        <a wire:navigate href="{{ route('analytics.overview') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.overview') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Overview') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.growth') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.growth') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Growth') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.profit-loss') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.profit-loss') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('P & L') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.cash-flow') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.cash-flow') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Cash Flow') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.balance-sheet') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.balance-sheet') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Balance Sheet') }}</a>
-                                        <a wire:navigate href="{{ route('analytics.inventory-capital') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.inventory-capital') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Inventory Capital') }}</a>
-                                        @role(['Super Admin', 'Manager'])
-                                        <a wire:navigate href="{{ route('analytics.tax-report') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.tax-report') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Tax Report') }}</a>
-                                        @endrole
-                                        <a wire:navigate href="{{ route('analytics.trial-balance') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.trial-balance') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Trial Balance') }}</a>
-                                        <a wire:navigate href="{{ route('reports.sales') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('reports.sales') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Reports') }}</a>
-                                    </div>
-                                </div>
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Bookkeeping') }}</div>
+        <a wire:navigate href="{{ route('analytics.chart-of-accounts') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.chart-of-accounts') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Chart of Accounts') }}</a>
+        <a wire:navigate href="{{ route('analytics.journal') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.journal') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Journal Entries') }}</a>
+        <a wire:navigate href="{{ route('analytics.general-ledger') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.general-ledger') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('General Ledger') }}</a>
+        <a wire:navigate href="{{ route('analytics.memo') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.memo') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Memos / Adjustments') }}</a>
+        @endrole
 
-                                <!-- System Dropdown -->
-                                <div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                                    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center">
-                                        <i class="fas fa-cogs mr-1"></i> {{ __('System') }} <i class="fas fa-chevron-down ml-1 text-xs"></i>
-                                    </button>
-                                    <div x-show="open" 
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="transform opacity-0 scale-95"
-                                         x-transition:enter-end="transform opacity-100 scale-100"
-                                         class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 dark:bg-gray-800 focus:outline-none z-50 max-h-[80vh] overflow-y-auto"
-                                         style="display: none;">
-                                        
-                                        @role('Super Admin')
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Admin') }}</div>
-                                        <a wire:navigate href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.dashboard') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Admin Panel') }}</a>
-                                        <a wire:navigate href="{{ route('admin.users') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.users') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Users') }}</a>
-                                        <a wire:navigate href="{{ route('admin.roles') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.roles') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Roles') }}</a>
-                                        <a wire:navigate href="{{ route('admin.branches') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.branches') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Branches') }}</a>
-                                        <a wire:navigate href="{{ route('admin.audit-logs') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.audit-logs') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Audit Logs') }}</a>
-                                        <a wire:navigate href="{{ route('admin.system-health') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.system-health') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('System Health') }}</a>
-                                        @endrole
+        @role(['Super Admin', 'Manager', 'Analyst'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Analytics') }}</div>
+        <a wire:navigate href="{{ route('analytics.overview') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.overview') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Overview') }}</a>
+        <a wire:navigate href="{{ route('analytics.growth') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.growth') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Growth') }}</a>
+        <a wire:navigate href="{{ route('analytics.profit-loss') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.profit-loss') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('P & L') }}</a>
+        <a wire:navigate href="{{ route('analytics.cash-flow') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.cash-flow') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Cash Flow') }}</a>
+        <a wire:navigate href="{{ route('analytics.balance-sheet') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.balance-sheet') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Balance Sheet') }}</a>
+        <a wire:navigate href="{{ route('analytics.inventory-capital') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.inventory-capital') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Inventory Capital') }}</a>
+        <a wire:navigate href="{{ route('analytics.trial-balance') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.trial-balance') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Trial Balance') }}</a>
+        @role(['Super Admin', 'Manager'])
+        <a wire:navigate href="{{ route('analytics.tax-report') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('analytics.tax-report') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Tax Report') }}</a>
+        @endrole
+        <a wire:navigate href="{{ route('reports.sales') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('reports.sales') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Reports') }}</a>
+        <a wire:navigate href="{{ route('reports.inventory') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('reports.inventory') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Inventory Report') }}</a>
+        <a wire:navigate href="{{ route('reports.expenses') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('reports.expenses') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Expenses Report') }}</a>
+        @endrole
+    </div>
+</div>
+@endhasanyrole
 
-                                        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Settings') }}</div>
-                                        <a wire:navigate href="{{ route('settings.general') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.general') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('General') }}</a>
-                                        <a wire:navigate href="{{ route('settings.receipt') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.receipt') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Receipt') }}</a>
-                                        @role('Super Admin')
-                                        <a wire:navigate href="{{ route('settings.payment') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.payment') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Payment Methods') }}</a>
-                                        <a wire:navigate href="{{ route('settings.notifications') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.notifications') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Notifications') }}</a>
-                                        <a wire:navigate href="{{ route('settings.integrations') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.integrations') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Integrations') }}</a>
-                                        <a wire:navigate href="{{ route('settings.api-keys') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.api-keys') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('API Keys') }}</a>
-                                        <a wire:navigate href="{{ route('settings.backup') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.backup') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Backups') }}</a>
-                                        @endrole
-                                        <a wire:navigate href="{{ route('settings.taxes') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.taxes') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Taxes') }}</a>
-                                        <a wire:navigate href="{{ route('settings.profile') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.profile') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('My Profile') }}</a>
-                                    </div>
-                                </div>
+<!-- System Dropdown - Only show if user has access to at least one item inside -->
+@hasanyrole(['Super Admin', 'Manager'])
+<div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center">
+        <i class="fas fa-cogs mr-1"></i> {{ __('System') }} <i class="fas fa-chevron-down ml-1 text-xs"></i>
+    </button>
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 dark:bg-gray-800 focus:outline-none z-50 max-h-[80vh] overflow-y-auto"
+         style="display: none;">
+        
+        @role('Super Admin')
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Admin') }}</div>
+        <a wire:navigate href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.dashboard') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Admin Panel') }}</a>
+        <a wire:navigate href="{{ route('admin.users') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.users') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Users') }}</a>
+        <a wire:navigate href="{{ route('admin.roles') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.roles') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Roles') }}</a>
+        <a wire:navigate href="{{ route('admin.branches') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.branches') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Branches') }}</a>
+        <a wire:navigate href="{{ route('admin.audit-logs') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.audit-logs') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Audit Logs') }}</a>
+        <a wire:navigate href="{{ route('admin.system-health') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('admin.system-health') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('System Health') }}</a>
+        @endrole
+
+        @role(['Super Admin', 'Manager'])
+        <div class="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">{{ __('Settings') }}</div>
+        <a wire:navigate href="{{ route('settings.general') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.general') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('General') }}</a>
+        <a wire:navigate href="{{ route('settings.receipt') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.receipt') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Receipt') }}</a>
+        <a wire:navigate href="{{ route('settings.taxes') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.taxes') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Taxes') }}</a>
+        @role('Super Admin')
+        <a wire:navigate href="{{ route('settings.payment') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.payment') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Payment Methods') }}</a>
+        <a wire:navigate href="{{ route('settings.notifications') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.notifications') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Notifications') }}</a>
+        <a wire:navigate href="{{ route('settings.integrations') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.integrations') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Integrations') }}</a>
+        <a wire:navigate href="{{ route('settings.api-keys') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.api-keys') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('API Keys') }}</a>
+        <a wire:navigate href="{{ route('settings.backup') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.backup') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('Backups') }}</a>
+        @endrole
+        <a wire:navigate href="{{ route('settings.profile') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('settings.profile') ? 'bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 border-transparent hover:border-indigo-500' }} ml-2 border-l-2">{{ __('My Profile') }}</a>
+        @endrole
+    </div>
+</div>
+@endhasanyrole
                             </div>
                         </div>
                     </div>
@@ -198,11 +218,13 @@
                     <!-- Right Side Controls -->
                     <div class="hidden md:flex items-center space-x-4">
                         <!-- Open POS Button -->
+                        @role(['Super Admin', 'Manager', 'Cashier'])
                         <a href="{{ route('pos.visual') }}"
                             class="hidden lg:flex items-center px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                             <i class="fas fa-cash-register mr-2"></i>
                             {{ __('Open POS') }}
                         </a>
+                        @endrole
 
                         <!-- Search -->
                         <div class="relative hidden lg:block">
@@ -343,26 +365,39 @@
                     </div>
                     @endrole
 
+                    @role(['Super Admin', 'Manager', 'Cashier', 'Analyst'])
                     <div class="space-y-1 pl-4">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('Sales') }}</p>
                         <a wire:navigate href="{{ route('sales.sales') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('sales.sales') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Transactions') }}</a>
                     </div>
+                    @endrole
 
+                    @role(['Super Admin', 'Manager', 'Customer Support'])
                     <div class="space-y-1 pl-4">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('People') }}</p>
                         <a wire:navigate href="{{ route('people.customers') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('people.customers') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Customers') }}</a>
                         <a wire:navigate href="{{ route('people.employees') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('people.employees') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Employees') }}</a>
                     </div>
+                    @endrole
 
                     <!-- Management -->
                     <div class="px-3 pt-4 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider border-t border-gray-700 mt-2">{{ __('Management') }}</div>
                     
-                    @role(['Super Admin', 'Manager', 'Inventory Manager'])
+                    @role(['Super Admin', 'Manager', 'Inventory Manager', 'Analyst'])
                     <div class="space-y-1 pl-4">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('Inventory') }}</p>
                         <a wire:navigate href="{{ route('inventory.products') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('inventory.products') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Products') }}</a>
                         <a wire:navigate href="{{ route('inventory.categories') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('inventory.categories') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Categories') }}</a>
                         <a wire:navigate href="{{ route('inventory.stock') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('inventory.stock') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Stock') }}</a>
+                        <a wire:navigate href="{{ route('inventory.emojis') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('inventory.emojis') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Icons') }}</a>
+                        <a wire:navigate href="{{ route('inventory.colors') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('inventory.colors') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Colors') }}</a>
+                    </div>
+                    @endrole
+
+                    @role(['Super Admin', 'Manager', 'Analyst'])
+                    <div class="space-y-1 pl-4">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('Suppliers') }}</p>
+                        <a wire:navigate href="{{ route('admin.suppliers') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('admin.suppliers') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Suppliers') }}</a>
                     </div>
                     @endrole
 
@@ -370,9 +405,23 @@
                     <div class="space-y-1 pl-4">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('Finance') }}</p>
                         <a wire:navigate href="{{ route('finance.transactions') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('finance.transactions') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Income & Expense') }}</a>
+                        <a wire:navigate href="{{ route('analytics.cash-bank-records') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.cash-bank-records') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Cash & Bank') }}</a>
+                        <a wire:navigate href="{{ route('analytics.accounts-receivable') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.accounts-receivable') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Accounts Receivable') }}</a>
+                        <a wire:navigate href="{{ route('analytics.accounts-payable') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.accounts-payable') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Accounts Payable') }}</a>
                     </div>
                     @endrole
 
+                    @role(['Super Admin', 'Manager', 'Analyst'])
+                    <div class="space-y-1 pl-4">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('Bookkeeping') }}</p>
+                        <a wire:navigate href="{{ route('analytics.chart-of-accounts') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.chart-of-accounts') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Chart of Accounts') }}</a>
+                        <a wire:navigate href="{{ route('analytics.journal') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.journal') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Journal Entries') }}</a>
+                        <a wire:navigate href="{{ route('analytics.general-ledger') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.general-ledger') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('General Ledger') }}</a>
+                        <a wire:navigate href="{{ route('analytics.memo') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.memo') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Memos / Adjustments') }}</a>
+                    </div>
+                    @endrole
+
+                    @role(['Super Admin', 'Manager', 'Analyst'])
                     <div class="space-y-1 pl-4">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('Analytics') }}</p>
                         <a wire:navigate href="{{ route('analytics.overview') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.overview') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Overview') }}</a>
@@ -381,11 +430,15 @@
                         <a wire:navigate href="{{ route('analytics.cash-flow') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.cash-flow') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Cash Flow') }}</a>
                         <a wire:navigate href="{{ route('analytics.balance-sheet') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.balance-sheet') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Balance Sheet') }}</a>
                         <a wire:navigate href="{{ route('analytics.inventory-capital') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.inventory-capital') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Inventory Capital') }}</a>
+                        <a wire:navigate href="{{ route('analytics.trial-balance') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.trial-balance') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Trial Balance') }}</a>
                         @role(['Super Admin', 'Manager'])
                         <a wire:navigate href="{{ route('analytics.tax-report') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('analytics.tax-report') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Tax Report') }}</a>
                         @endrole
-                        <a wire:navigate href="{{ route('reports.sales') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('reports.sales') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Reports') }}</a>
+                        <a wire:navigate href="{{ route('reports.sales') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('reports.sales') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Sales Reports') }}</a>
+                        <a wire:navigate href="{{ route('reports.inventory') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('reports.inventory') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Inventory Reports') }}</a>
+                        <a wire:navigate href="{{ route('reports.expenses') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('reports.expenses') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Expenses Reports') }}</a>
                     </div>
+                    @endrole
 
                     <!-- System -->
                     <div class="px-3 pt-4 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider border-t border-gray-700 mt-2">{{ __('System') }}</div>
@@ -396,19 +449,28 @@
                         <a wire:navigate href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('admin.dashboard') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Admin Panel') }}</a>
                         <a wire:navigate href="{{ route('admin.users') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('admin.users') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Users') }}</a>
                         <a wire:navigate href="{{ route('admin.roles') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('admin.roles') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Roles') }}</a>
+                        <a wire:navigate href="{{ route('admin.branches') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('admin.branches') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Branches') }}</a>
+                        <a wire:navigate href="{{ route('admin.audit-logs') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('admin.audit-logs') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Audit Logs') }}</a>
+                        <a wire:navigate href="{{ route('admin.system-health') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('admin.system-health') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('System Health') }}</a>
                     </div>
                     @endrole
 
+                    @role(['Super Admin', 'Manager'])
                     <div class="space-y-1 pl-4">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">{{ __('Settings') }}</p>
                         <a wire:navigate href="{{ route('settings.general') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.general') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('General') }}</a>
                         <a wire:navigate href="{{ route('settings.receipt') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.receipt') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Receipt') }}</a>
+                        <a wire:navigate href="{{ route('settings.taxes') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.taxes') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Taxes') }}</a>
                         @role('Super Admin')
                         <a wire:navigate href="{{ route('settings.payment') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.payment') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Payment Methods') }}</a>
                         <a wire:navigate href="{{ route('settings.notifications') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.notifications') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Notifications') }}</a>
+                        <a wire:navigate href="{{ route('settings.integrations') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.integrations') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Integrations') }}</a>
+                        <a wire:navigate href="{{ route('settings.api-keys') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.api-keys') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('API Keys') }}</a>
+                        <a wire:navigate href="{{ route('settings.backup') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.backup') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('Backups') }}</a>
                         @endrole
                         <a wire:navigate href="{{ route('settings.profile') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('settings.profile') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700' }} ml-2">{{ __('My Profile') }}</a>
                     </div>
+                    @endrole
 
                     <div class="pt-4 pb-3 border-t border-gray-700 mt-4">
                         <div class="flex items-center px-5">

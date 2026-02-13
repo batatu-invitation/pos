@@ -110,12 +110,13 @@ new #[Layout('components.layouts.app')]
 
     public function calculateMargin()
     {
-        $price = (float) str_replace(['.', ','], '', $this->price);
-        $cost = (float) str_replace(['.', ','], '', $this->cost);
+        // Parse ID format: 1.000,00 -> 1000.00
+        $price = (float) str_replace(',', '.', str_replace('.', '', $this->price));
+        $cost = (float) str_replace(',', '.', str_replace('.', '', $this->cost));
 
         if ($price > 0) {
-            // Margin formula: ((Price - Cost) / Price) * 100
-            $this->margin = number_format((($price - $cost) / $price) * 100, 2, ',', '.');
+            // Margin formula: Price - Cost (Profit)
+            $this->margin = number_format($price - $cost, 0, ',', '.');
         } else {
             $this->margin = 0;
         }
@@ -136,14 +137,26 @@ new #[Layout('components.layouts.app')]
         ]);
         $user = auth()->user();
 
-        $price = str_replace(['.', ','], '', $this->price);
-        $cost = str_replace(['.', ','], '', $this->cost);
+        // Parse ID format: 1.000,00 -> 1000.00
+        $price = (float) str_replace(',', '.', str_replace('.', '', $this->price));
+        $cost = (float) str_replace(',', '.', str_replace('.', '', $this->cost));
 
         // Ensure margin is calculated before saving
         $this->calculateMargin();
 
+        // Margin is already a string "9.000", we want to save "9000"
         $margin = str_replace('.', '', $this->margin);
-        $margin = str_replace(',', '.', $margin);
+        // If there were decimals (e.g. 9.000,00), str_replace(',', '.', ...) would be needed. 
+        // Since we use 0 decimal places in calculateMargin, no comma is present.
+        // But let's be safe and strip commas too if present? 
+        // Or reconstruct based on the number_format used.
+        // If number_format(..., 0, ',', '.') -> "9.000" -> remove dot -> "9000".
+        // If number_format(..., 2, ',', '.') -> "9.000,00" -> remove dot -> "9000,00" -> replace comma -> "9000.00".
+        
+        // Let's assume 0 decimals for consistency with edit().
+        $margin = str_replace('.', '', $this->margin); 
+
+
 
         $data = [
             'name' => $this->name,
@@ -514,7 +527,7 @@ new #[Layout('components.layouts.app')]
                                 <x-input-label for="cost" :value="__('Cost Price')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">Rp</span>
-                                    <x-text-input wire:model.live="cost" id="cost" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" x-mask:dynamic="$money($input, '.')" placeholder="0" />
+                                    <x-text-input wire:model.live="cost" id="cost" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" x-mask:dynamic="$money($input, ',')" placeholder="0" />
                                 </div>
                                 <x-input-error :messages="$errors->get('cost')" class="mt-1" />
                             </div>
@@ -522,14 +535,14 @@ new #[Layout('components.layouts.app')]
                                 <x-input-label for="price" :value="__('Selling Price')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">Rp</span>
-                                    <x-text-input wire:model.live="price" id="price" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" x-mask:dynamic="$money($input, '.')" placeholder="0" />
+                                    <x-text-input wire:model.live="price" id="price" class="block w-full pl-10 rounded-xl border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" type="text" x-mask:dynamic="$money($input, ',')" placeholder="0" />
                                 </div>
                                 <x-input-error :messages="$errors->get('price')" class="mt-1" />
                             </div>
                         </div>
 
-                         <div>
-                            <x-input-label for="margin" :value="__('Margin (%)')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
+                        <div>
+                            <x-input-label for="margin" :value="__('Margin (Rp)')" class="text-gray-700 font-medium mb-1 dark:text-gray-300" />
                             <x-text-input wire:model="margin" id="margin" class="block w-full rounded-xl border-gray-200 bg-gray-50 text-gray-500 py-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300" type="text" readonly />
                         </div>
 

@@ -66,6 +66,15 @@ class Sale extends Model
     }
 
     /**
+     * Get journal entries for this sale
+     */
+    public function journalEntries()
+    {
+        return JournalEntry::where('reference', $this->invoice_number)
+            ->where('type', 'sale');
+    }
+
+    /**
      * Get the transaction associated with this sale (auto-generated)
      */
     public function transaction()
@@ -82,6 +91,9 @@ class Sale extends Model
             // Auto-create transaction for completed sales
             if ($sale->status === 'completed') {
                 self::createTransactionFromSale($sale);
+                
+                // Auto-create journal entry for general ledger
+                app(\App\Services\JournalEntryService::class)->createFromSale($sale);
             }
         });
 
@@ -95,6 +107,9 @@ class Sale extends Model
         static::deleting(function ($sale) {
             // Delete associated transaction when sale is deleted
             $sale->transaction()->delete();
+            
+            // Delete associated journal entry
+            app(\App\Services\JournalEntryService::class)->deleteFromSale($sale);
         });
     }
 

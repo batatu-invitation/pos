@@ -2,8 +2,6 @@
 
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\Category;
-use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -15,8 +13,8 @@ use App\Exports\ProfitLossExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 new #[Layout('components.layouts.app')]
-    #[Title('Profit & Loss')]
-    class extends Component
+#[Title('Profit & Loss')]
+class extends Component
 {
     public $revenueItems = [];
     public $expenseItems = [];
@@ -28,143 +26,128 @@ new #[Layout('components.layouts.app')]
 
     public function mount()
     {
+        // Default ke bulan berjalan
         $this->startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
         $this->endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
         $this->loadData();
     }
+
+    public function updatedStartDate() { $this->loadData(); }
+    public function updatedEndDate() { $this->loadData(); }
 
     public function loadData()
     {
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end = Carbon::parse($this->endDate)->endOfDay();
 
-        // Previous Period Calculation
+        // 1. Kalkulasi Periode Sebelumnya untuk Growth (YoY/MoM sesuai range)
         $days = $start->diffInDays($end) + 1;
         $prevStart = $start->copy()->subDays($days);
         $prevEnd = $end->copy()->subDays($days);
 
-        // --- Cashier Sales ---
+        // Reset data
         $this->revenueItems = [];
+        $this->expenseItems = [];
 
-        $salesBySeller = Sale::query()
+        // --- 2. OPTIMASI REVENUE & DISCOUNTS ---
+        // Menghitung Penjualan per Kasir, Total Diskon, dan Penjualan Periode Lalu dalam SATU QUERY
+        $salesData = Sale::query()
             ->join('users', 'sales.user_id', '=', 'users.id')
-            ->whereBetween('sales.created_at', [$start, $end])
             ->where('sales.status', 'completed')
-            ->select(
-                'users.first_name',
-                'users.last_name',
-                DB::raw('SUM(sales.subtotal) as total_sales')
-            )
+            ->selectRaw("
+                users.first_name, users.last_name,
+                SUM(CASE WHEN sales.created_at BETWEEN '{$start}' AND '{$end}' THEN sales.subtotal ELSE 0 END) as current_subtotal,
+                SUM(CASE WHEN sales.created_at BETWEEN '{$start}' AND '{$end}' THEN sales.discount ELSE 0 END) as current_discount,
+                SUM(CASE WHEN sales.created_at BETWEEN '{$prevStart}' AND '{$prevEnd}' THEN sales.subtotal - sales.discount ELSE 0 END) as prev_net_revenue
+            ")
             ->groupBy('users.id', 'users.first_name', 'users.last_name')
             ->get();
 
-        foreach ($salesBySeller as $sellerSale) {
-            if ($sellerSale->total_sales > 0) {
+        $totalCurrentDiscount = 0;
+        $totalPrevNetRevenue = 0;
+
+        foreach ($salesData as $row) {
+            if ($row->current_subtotal > 0) {
                 $this->revenueItems[] = [
-                    'name' => $sellerSale->first_name . ' ' . $sellerSale->last_name,
-                    'amount' => $sellerSale->total_sales
+                    'name' => "{$row->first_name} {$row->last_name}",
+                    'amount' => (float) $row->current_subtotal
                 ];
+            }
+            $totalCurrentDiscount += $row->current_discount;
+            $totalPrevNetRevenue += $row->prev_net_revenue;
+        }
+
+        if ($totalCurrentDiscount > 0) {
+            $this->revenueItems[] = [
+                'name' => __('Discounts & Promotions'),
+                'amount' => -(float) $totalCurrentDiscount
+            ];
+        }
+
+        // --- 3. OPTIMASI TRANSAKSI (INCOME & EXPENSE) ---
+        $transactions = Transaction::query()
+            ->where('status', 'completed')
+            ->selectRaw("
+                type, category,
+                SUM(CASE WHEN date BETWEEN '{$start->format('Y-m-d')}' AND '{$end->format('Y-m-d')}' THEN amount ELSE 0 END) as current_total,
+                SUM(CASE WHEN date BETWEEN '{$prevStart->format('Y-m-d')}' AND '{$prevEnd->format('Y-m-d')}' THEN amount ELSE 0 END) as prev_total
+            ")
+            ->groupBy('type', 'category')
+            ->get();
+
+        $prevOtherIncome = 0;
+        $prevOtherExpense = 0;
+
+        foreach ($transactions as $trans) {
+            if ($trans->type === 'income') {
+                if ($trans->current_total > 0) {
+                    $this->revenueItems[] = ['name' => $trans->category ?? __('Other Income'), 'amount' => (float)$trans->current_total];
+                }
+                $prevOtherIncome += $trans->prev_total;
+            } else {
+                if ($trans->current_total > 0) {
+                    $this->expenseItems[] = ['name' => $trans->category ?? __('Other Expense'), 'amount' => (float)$trans->current_total];
+                }
+                $prevOtherExpense += $trans->prev_total;
             }
         }
 
-        // Discounts (Negative Revenue)
-        $discounts = Sale::whereBetween('created_at', [$start, $end])
-            ->where('status', 'completed')
-            ->sum('discount');
+        // --- 4. OPTIMASI COGS (HPP) ---
+        $cogsData = DB::table('sale_items')
+            ->join('products', 'sale_items.product_id', '=', 'products.id')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->where('sales.status', 'completed')
+            ->selectRaw("
+                SUM(CASE WHEN sales.created_at BETWEEN '{$start}' AND '{$end}' THEN sale_items.quantity * products.cost ELSE 0 END) as current_cogs,
+                SUM(CASE WHEN sales.created_at BETWEEN '{$prevStart}' AND '{$prevEnd}' THEN sale_items.quantity * products.cost ELSE 0 END) as prev_cogs
+            ")
+            ->first();
 
-        if ($discounts > 0) {
-            $this->revenueItems[] = [
-                'name' => __('Discounts & Promotions'),
-                'amount' => -$discounts
+        if ($cogsData->current_cogs > 0) {
+            $this->expenseItems[] = [
+                'name' => __('Cost of Goods Sold (COGS)'),
+                'amount' => (float) $cogsData->current_cogs
             ];
         }
 
-        // Other Income (Transactions)
-        $otherIncome = Transaction::where('type', 'income')
-            ->whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
-            ->where('status', 'completed')
-            ->select('category', DB::raw('SUM(amount) as total'))
-            ->groupBy('category')
-            ->get();
-
-        foreach ($otherIncome as $income) {
-            $this->revenueItems[] = [
-                'name' => $income->category ?? __('Other Income'),
-                'amount' => $income->total
-            ];
-        }
-
-        // Revenue Growth
+        // --- 5. FINAL GROWTH & MARGIN CALCULATIONS ---
         $currentRevenue = $this->getTotalRevenue();
-        $prevItemRevenue = Sale::whereBetween('created_at', [$prevStart, $prevEnd])
-            ->where('status', 'completed')
-            ->sum('subtotal');
+        $prevTotalRevenue = (float)$totalPrevNetRevenue + $prevOtherIncome;
+        $this->revenueGrowth = $this->calculateGrowth($currentRevenue, $prevTotalRevenue);
 
-        $prevDiscounts = Sale::whereBetween('created_at', [$prevStart, $prevEnd])
-            ->where('status', 'completed')
-            ->sum('discount');
-
-        $prevOtherIncome = Transaction::where('type', 'income')
-            ->whereBetween('date', [$prevStart->format('Y-m-d'), $prevEnd->format('Y-m-d')])
-            ->where('status', 'completed')
-            ->sum('amount');
-
-        $prevRevenue = ($prevItemRevenue - $prevDiscounts) + $prevOtherIncome;
-
-        $this->revenueGrowth = $prevRevenue != 0 ? (($currentRevenue - $prevRevenue) / abs($prevRevenue)) * 100 : ($currentRevenue > 0 ? 100 : 0);
-
-        // --- Expenses ---
-        $this->expenseItems = [];
-
-        // Cost of Goods Sold (COGS)
-        $cogs = SaleItem::join('products', 'sale_items.product_id', '=', 'products.id')
-            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
-            ->whereBetween('sales.created_at', [$start, $end])
-            ->where('sales.status', 'completed')
-            ->sum(DB::raw('sale_items.quantity * products.cost'));
-
-        if ($cogs > 0) {
-            $this->expenseItems[] = [
-                'name' => __('Cost of Goods Sold'),
-                'amount' => $cogs
-            ];
-        }
-
-        // Operating Expenses (Transactions)
-        $operatingExpenses = Transaction::where('type', 'expense')
-            ->whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
-            ->where('status', 'completed')
-            ->select('category', DB::raw('SUM(amount) as total'))
-            ->groupBy('category')
-            ->get();
-
-        foreach ($operatingExpenses as $expense) {
-            $this->expenseItems[] = [
-                'name' => $expense->category ?? __('Other Expense'),
-                'amount' => $expense->total
-            ];
-        }
-
-        // Expense Growth
         $currentExpenses = $this->getTotalExpenses();
-        $prevCOGS = SaleItem::join('products', 'sale_items.product_id', '=', 'products.id')
-            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
-            ->whereBetween('sales.created_at', [$prevStart, $prevEnd])
-            ->where('sales.status', 'completed')
-            ->sum(DB::raw('sale_items.quantity * products.cost'));
+        $prevTotalExpenses = (float)$cogsData->prev_cogs + $prevOtherExpense;
+        $this->expenseGrowth = $this->calculateGrowth($currentExpenses, $prevTotalExpenses);
 
-        $prevOperatingExpenses = Transaction::where('type', 'expense')
-            ->whereBetween('date', [$prevStart->format('Y-m-d'), $prevEnd->format('Y-m-d')])
-            ->where('status', 'completed')
-            ->sum('amount');
-
-        $prevExpenses = $prevCOGS + $prevOperatingExpenses;
-
-        $this->expenseGrowth = $prevExpenses != 0 ? (($currentExpenses - $prevExpenses) / abs($prevExpenses)) * 100 : ($currentExpenses > 0 ? 100 : 0);
-
-        // Net Profit Margin
         $netProfit = $currentRevenue - $currentExpenses;
         $this->netProfitMargin = $currentRevenue != 0 ? ($netProfit / $currentRevenue) * 100 : 0;
+    }
+
+    private function calculateGrowth($current, $previous)
+    {
+        if ($previous == 0) return $current > 0 ? 100 : 0;
+        // Menggunakan abs() pada pembagi untuk menangani pertumbuhan dari nilai negatif
+        return (($current - $previous) / abs($previous)) * 100;
     }
 
     public function getTotalRevenue()
@@ -182,9 +165,9 @@ new #[Layout('components.layouts.app')]
         return $this->getTotalRevenue() - $this->getTotalExpenses();
     }
 
+    // --- EXPORT HANDLERS ---
     public function exportExcel()
     {
-        $this->loadData();
         return Excel::download(new ProfitLossExport(
             $this->revenueItems,
             $this->expenseItems,
@@ -193,12 +176,11 @@ new #[Layout('components.layouts.app')]
             $this->getNetProfit(),
             $this->startDate,
             $this->endDate
-        ), 'profit-loss.xlsx');
+        ), 'profit-loss-' . $this->startDate . '.xlsx');
     }
 
     public function exportPdf()
     {
-        $this->loadData();
         $pdf = Pdf::loadView('pdf.profit-loss', [
             'revenueItems' => $this->revenueItems,
             'expenseItems' => $this->expenseItems,
@@ -207,10 +189,10 @@ new #[Layout('components.layouts.app')]
             'netProfit' => $this->getNetProfit(),
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
+            'netProfitMargin' => $this->netProfitMargin
         ]);
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'profit-loss.pdf');
+
+        return response()->streamDownload(fn() => print($pdf->output()), 'profit-loss.pdf');
     }
 }; ?>
 
